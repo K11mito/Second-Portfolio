@@ -2,19 +2,145 @@
 
 import { useRef, useMemo, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useScroll, useGLTF, Html } from '@react-three/drei'
+import { useScroll, useGLTF, useTexture, Html } from '@react-three/drei'
 import * as THREE from 'three'
 
 // Preload the prayer wheel model
 useGLTF.preload('/models/prayer_wheel.glb')
 
-function PrayerWheel({ rotationRef }) {
+// Individual 3D Project Card with glass effect
+function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpacing }) {
+  const meshRef = useRef()
+  const [hovered, setHovered] = useState(false)
+
+  // Load project image as texture
+  const texture = useTexture(project.image)
+  texture.colorSpace = THREE.SRGBColorSpace
+
+  // Card position: each card is spaced by cardSpacing (cardWidth + gap)
+  const xPos = index * cardSpacing
+
+  return (
+    <group position={[xPos, 0, 2]}>
+      {/* Card background - dark grey with low opacity */}
+      <mesh
+        ref={meshRef}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <planeGeometry args={[cardWidth, cardHeight]} />
+        <meshBasicMaterial
+          color={hovered ? "#3a3a3a" : "#1a1a1a"}
+          transparent
+          opacity={0.15}
+        />
+      </mesh>
+
+      {/* Project image frame - slightly in front of glass */}
+      <mesh position={[0, cardHeight * 0.15, 0.1]}>
+        <planeGeometry args={[cardWidth * 0.8, cardHeight * 0.4]} />
+        <meshBasicMaterial map={texture} transparent opacity={0.9} />
+      </mesh>
+
+      {/* HTML content overlay - positioned on the card */}
+      <Html
+        center
+        position={[0, -cardHeight * 0.2, 0.15]}
+        distanceFactor={1.2}
+        style={{
+          width: `${cardWidth * 100}px`,
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="text-center px-2">
+          {/* Project title */}
+          <h3 className="text-base font-bold text-white font-tibetan mb-1 drop-shadow-lg">
+            {project.title}
+          </h3>
+
+          {/* Project description */}
+          <p className="text-[10px] text-white/80 mb-2 line-clamp-2 drop-shadow">
+            {project.description}
+          </p>
+
+          {/* Tags */}
+          <div className="flex flex-wrap justify-center gap-1">
+            {project.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="px-1.5 py-0.5 text-[9px] bg-amber-500/40 rounded-full text-white/90"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </Html>
+    </group>
+  )
+}
+
+// The main carousel rig that handles horizontal scrolling
+function CarouselRig({ projects }) {
+  const groupRef = useRef()
+  const { viewport } = useThree()
+  const scroll = useScroll()
+
+  const totalCards = projects.length
+  const cardGap = 0.3 // Gap between cards
+  const cardWidth = Math.min(viewport.width * 0.3, 2.5) // Smaller card width
+  const cardHeight = cardWidth * 1.3 // Card aspect ratio
+  const cardSpacing = cardWidth + cardGap // Tighter spacing based on card width
+
+  useFrame(() => {
+    if (groupRef.current) {
+      // Only activate carousel in prayer wheel section (after 85% scroll)
+      const sectionStart = 0.85
+      const sectionEnd = 1.0
+
+      if (scroll.offset > sectionStart) {
+        // Normalize scroll within the prayer wheel section
+        const localProgress = (scroll.offset - sectionStart) / (sectionEnd - sectionStart)
+
+        // Calculate target X: scroll down = slide left
+        const totalWidth = cardSpacing * (totalCards - 1)
+        const targetX = -localProgress * totalWidth
+
+        // Smooth lerp to target position
+        groupRef.current.position.x = THREE.MathUtils.lerp(
+          groupRef.current.position.x,
+          targetX,
+          0.1
+        )
+      }
+    }
+  })
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0]}>
+      {projects.map((project, index) => (
+        <ProjectCard3D
+          key={project.title}
+          project={project}
+          index={index}
+          cardWidth={cardWidth}
+          cardHeight={cardHeight}
+          cardGap={cardGap}
+          cardSpacing={cardSpacing}
+        />
+      ))}
+    </group>
+  )
+}
+
+// Prayer wheel that stays centered in background
+function PrayerWheel() {
   const { scene } = useGLTF('/models/prayer_wheel.glb')
   const wheelRef = useRef()
   const scroll = useScroll()
+  const rotationRef = useRef(0)
   const lastScrollOffset = useRef(0)
 
-  // Clone the scene
   const clonedScene = useMemo(() => {
     const clone = scene.clone()
     clone.traverse((child) => {
@@ -34,7 +160,7 @@ function PrayerWheel({ rotationRef }) {
 
       // Only spin when in the prayer wheel section (after 80% scroll)
       if (scrollOffset > 0.8) {
-        // Scroll-based rotation synced with projects carousel
+        // Scroll-based rotation
         rotationRef.current += scrollDelta * 15
 
         // Apply rotation to wheel
@@ -50,162 +176,10 @@ function PrayerWheel({ rotationRef }) {
     <primitive
       ref={wheelRef}
       object={clonedScene}
-      position={[0, -80, 0]}
-      scale={[0.14, 0.14, 0.14]}
+      position={[0, -5, -5]} // Behind the cards (z = -5)
+      scale={[0.01, 0.01, 0.01]}
       rotation={[0, 0, 0]}
     />
-  )
-}
-
-// Project card that orbits the prayer wheel
-function ProjectCard({ project, index, total, radius, yOffset, rotation, visible }) {
-  const [hovered, setHovered] = useState(false)
-
-  // Calculate angle based on index and current rotation
-  const baseAngle = (index / total) * Math.PI * 2
-  const currentAngle = baseAngle + rotation
-
-  // Calculate position on the carousel
-  const x = Math.cos(currentAngle) * radius
-  const z = Math.sin(currentAngle) * radius
-
-  // Calculate opacity based on position (front is more visible)
-  const frontness = (Math.cos(currentAngle) + 1) / 2  // 0 to 1, 1 = front
-
-  // Don't render if not visible
-  if (!visible) return null
-
-  return (
-    <Html
-      center
-      position={[x, yOffset, z]}
-      distanceFactor={12}
-      style={{
-        pointerEvents: frontness > 0.3 ? 'auto' : 'none',
-        opacity: 0.4 + frontness * 0.6,
-        transform: `scale(${0.7 + frontness * 0.3})`,
-        transition: 'opacity 0.3s, transform 0.3s',
-      }}
-    >
-      <div
-        className={`
-          w-64 p-4 rounded-xl
-          bg-gradient-to-br from-amber-900/80 to-amber-950/90
-          backdrop-blur-md border border-amber-600/40
-          transition-all duration-300
-          ${hovered ? 'scale-105 border-amber-400/60 shadow-xl shadow-amber-500/20' : ''}
-        `}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-        {/* Project Image */}
-        <div className="w-full h-32 rounded-lg overflow-hidden mb-3 bg-amber-800/30">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Project Title */}
-        <h3 className="text-amber-100 font-tibetan text-lg mb-2">
-          {project.title}
-        </h3>
-
-        {/* Project Description */}
-        <p className="text-amber-200/70 text-sm mb-3 line-clamp-2">
-          {project.description}
-        </p>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 text-xs bg-amber-700/50 rounded-full text-amber-200/80"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* View Project Link */}
-        {project.link && (
-          <a
-            href={project.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-block text-amber-400 text-sm hover:text-amber-300 transition-colors"
-          >
-            View Project →
-          </a>
-        )}
-      </div>
-    </Html>
-  )
-}
-
-function ProjectsCarousel({ wheelY, rotationRef }) {
-  const [rotation, setRotation] = useState(0)
-  const [visible, setVisible] = useState(false)
-  const scroll = useScroll()
-
-  const projects = useMemo(() => [
-    {
-      title: 'Mountain Explorer',
-      description: 'An immersive 3D experience showcasing the beauty of mountain landscapes.',
-      image: '/images/knott.png',
-      tags: ['Three.js', 'React', 'WebGL'],
-      link: '#'
-    },
-    {
-      title: 'Prayer Wheel App',
-      description: 'A meditative mobile application featuring traditional Tibetan prayer wheels.',
-      image: '/images/prayerflags.png',
-      tags: ['React Native', 'Expo'],
-      link: '#'
-    },
-    {
-      title: 'Stupa Gallery',
-      description: 'Virtual tour of ancient Buddhist stupas and monuments.',
-      image: '/images/stupa.png',
-      tags: ['Next.js', 'Framer'],
-      link: '#'
-    },
-    {
-      title: 'Himalayan Trails',
-      description: 'Interactive map and guide for trekking routes in the Himalayas.',
-      image: '/images/prayerflag2.png',
-      tags: ['Mapbox', 'Node.js'],
-      link: '#'
-    },
-  ], [])
-
-  const radius = 60  // Radius around the prayer wheel
-
-  useFrame(() => {
-    // Sync rotation with prayer wheel
-    setRotation(rotationRef.current)
-
-    // Only show when in prayer wheel section (after 85% scroll)
-    setVisible(scroll.offset > 0.85)
-  })
-
-  return (
-    <group position={[0, wheelY, 0]}>
-      {projects.map((project, index) => (
-        <ProjectCard
-          key={project.title}
-          project={project}
-          index={index}
-          total={projects.length}
-          radius={radius}
-          yOffset={0}
-          rotation={rotation}
-          visible={visible}
-        />
-      ))}
-    </group>
   )
 }
 
@@ -214,9 +188,6 @@ function MonasteryEnvironment() {
   const scroll = useScroll()
   const floorRef = useRef()
   const backWallRef = useRef()
-  const ceilingRef = useRef()
-  const leftWallRef = useRef()
-  const rightWallRef = useRef()
 
   useFrame(() => {
     const scrollOffset = scroll.offset
@@ -224,16 +195,13 @@ function MonasteryEnvironment() {
 
     if (floorRef.current) floorRef.current.visible = visible
     if (backWallRef.current) backWallRef.current.visible = visible
-    if (ceilingRef.current) ceilingRef.current.visible = visible
-    if (leftWallRef.current) leftWallRef.current.visible = visible
-    if (rightWallRef.current) rightWallRef.current.visible = visible
   })
 
   return (
     <group>
       {/* Floor */}
-      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]} receiveShadow visible={false}>
-        <planeGeometry args={[200, 200]} />
+      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]} receiveShadow visible={false}>
+        <planeGeometry args={[100, 100]} />
         <meshStandardMaterial
           color="#1a0f0a"
           roughness={0.9}
@@ -242,70 +210,15 @@ function MonasteryEnvironment() {
       </mesh>
 
       {/* Back wall */}
-      <mesh ref={backWallRef} position={[0, 30, -60]} visible={false}>
-        <planeGeometry args={[200, 100]} />
+      <mesh ref={backWallRef} position={[0, 0, -15]} visible={false}>
+        <planeGeometry args={[100, 50]} />
         <meshStandardMaterial
           color="#0d0805"
           roughness={1}
           metalness={0}
         />
       </mesh>
-
-      {/* Ceiling */}
-      <mesh ref={ceilingRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 70, 0]} visible={false}>
-        <planeGeometry args={[200, 200]} />
-        <meshStandardMaterial
-          color="#050302"
-          roughness={1}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Left wall */}
-      <mesh ref={leftWallRef} rotation={[0, Math.PI / 2, 0]} position={[-80, 30, 0]} visible={false}>
-        <planeGeometry args={[200, 100]} />
-        <meshStandardMaterial
-          color="#0a0604"
-          roughness={1}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Right wall */}
-      <mesh ref={rightWallRef} rotation={[0, -Math.PI / 2, 0]} position={[80, 30, 0]} visible={false}>
-        <planeGeometry args={[200, 100]} />
-        <meshStandardMaterial
-          color="#0a0604"
-          roughness={1}
-          metalness={0}
-        />
-      </mesh>
     </group>
-  )
-}
-
-// Footer text with scroll visibility
-function FooterText() {
-  const [visible, setVisible] = useState(false)
-  const scroll = useScroll()
-
-  useFrame(() => {
-    setVisible(scroll.offset > 0.85)
-  })
-
-  if (!visible) return null
-
-  return (
-    <Html
-      center
-      position={[0, -110, 50]}
-      distanceFactor={18}
-      style={{ pointerEvents: 'none' }}
-    >
-      <div className="text-center text-amber-200/80 text-xl whitespace-nowrap font-tibetan">
-        <p>Scroll to explore projects</p>
-      </div>
-    </Html>
   )
 }
 
@@ -316,7 +229,6 @@ function CandleLight({ position, intensity = 1 }) {
 
   useFrame((state) => {
     if (lightRef.current) {
-      // Flickering effect
       const flicker = Math.sin(state.clock.elapsedTime * 10) * 0.1 +
         Math.sin(state.clock.elapsedTime * 15) * 0.05 +
         Math.random() * 0.05
@@ -330,15 +242,46 @@ function CandleLight({ position, intensity = 1 }) {
       position={position}
       intensity={intensity}
       color="#ff6b35"
-      distance={50}
+      distance={30}
       decay={2}
     />
   )
 }
 
+// Projects data
+const projectsData = [
+  {
+    title: 'Mountain Explorer',
+    description: 'An immersive 3D experience showcasing the beauty of mountain landscapes with realistic terrain.',
+    image: '/images/knott.png',
+    tags: ['Three.js', 'React', 'WebGL'],
+    link: '#'
+  },
+  {
+    title: 'Prayer Wheel App',
+    description: 'A meditative mobile application featuring traditional Tibetan prayer wheels and mantras.',
+    image: '/images/prayerflags.png',
+    tags: ['React Native', 'Expo'],
+    link: '#'
+  },
+  {
+    title: 'Stupa Gallery',
+    description: 'Virtual tour of ancient Buddhist stupas and monuments from around the world.',
+    image: '/images/stupa.png',
+    tags: ['Next.js', 'Framer'],
+    link: '#'
+  },
+  {
+    title: 'Himalayan Trails',
+    description: 'Interactive map and guide for trekking routes in the Himalayas with elevation data.',
+    image: '/images/prayerflag2.png',
+    tags: ['Mapbox', 'Node.js'],
+    link: '#'
+  },
+]
+
 export default function PrayerWheelFooter() {
   const groupRef = useRef()
-  const rotationRef = useRef(0)  // Shared rotation between wheel and carousel
   const { camera, scene } = useThree()
   const scroll = useScroll()
 
@@ -353,11 +296,11 @@ export default function PrayerWheelFooter() {
         // Set dark background color for monastery feel
         scene.background = new THREE.Color('#030201')
 
-        // Move camera to face the prayer wheel - zoomed out to see projects
+        // Position camera for the carousel view
         if (scrollOffset > 0.87) {
-          const targetPos = new THREE.Vector3(0, -60, 220)
+          const targetPos = new THREE.Vector3(0, 0, 10)
           camera.position.lerp(targetPos, 0.05)
-          camera.lookAt(0, -70, 0)
+          camera.lookAt(0, 0, 0)
         }
       } else {
         groupRef.current.visible = false
@@ -370,38 +313,29 @@ export default function PrayerWheelFooter() {
       {/* Dark monastery environment */}
       <MonasteryEnvironment />
 
-      {/* Dim ambient light - like a dark monastery */}
-      <ambientLight intensity={0.2} color="#2a1810" />
+      {/* Dim ambient light */}
+      <ambientLight intensity={0.3} color="#2a1810" />
 
-      {/* Main spotlight on prayer wheel - like light from above */}
+      {/* Main spotlight on prayer wheel */}
       <spotLight
-        position={[0, 40, 20]}
-        angle={0.5}
+        position={[0, 10, 5]}
+        angle={0.6}
         penumbra={0.8}
         intensity={3}
         color="#ffb366"
         castShadow
-        target-position={[0, 5, 0]}
       />
 
-      {/* Candle lights around the room */}
-      <CandleLight position={[-40, -60, 40]} intensity={2} />
-      <CandleLight position={[40, -60, 40]} intensity={2} />
-      <CandleLight position={[-50, -60, -20]} intensity={1.5} />
-      <CandleLight position={[50, -60, -20]} intensity={1.5} />
-      <CandleLight position={[0, -60, -50]} intensity={1} />
+      {/* Candle lights */}
+      <CandleLight position={[-8, -4, 5]} intensity={1.5} />
+      <CandleLight position={[8, -4, 5]} intensity={1.5} />
+      <CandleLight position={[0, -4, -8]} intensity={1} />
 
-      {/* Subtle rim light */}
-      <pointLight position={[0, 30, -20]} intensity={0.5} color="#4a3020" />
+      {/* Prayer wheel - stays centered in background at z = -5 */}
+      <PrayerWheel />
 
-      {/* Prayer wheel model - centered */}
-      <PrayerWheel rotationRef={rotationRef} />
-
-      {/* Projects carousel around the prayer wheel */}
-      <ProjectsCarousel wheelY={-80} rotationRef={rotationRef} />
-
-      {/* Footer text */}
-      <FooterText />
+      {/* 3D Carousel - cards at z = 2, in front of prayer wheel */}
+      <CarouselRig projects={projectsData} />
     </group>
   )
 }

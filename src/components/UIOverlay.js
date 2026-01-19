@@ -251,53 +251,20 @@ function ProjectsSection() {
   )
 }
 
-function SkillsSection() {
-  const skills = [
-    { name: 'React / Next.js', level: 90 },
-    { name: 'Three.js / WebGL', level: 85 },
-    { name: 'Node.js', level: 80 },
-    { name: 'UI/UX Design', level: 75 },
-    { name: 'Python', level: 70 },
-  ]
-
+function EnteringCloudsSection() {
   return (
-    <section className="min-h-screen w-full flex items-center justify-center px-4 py-20">
-      <div className="max-w-3xl mx-auto w-full">
-        <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-bold text-white text-center mb-16 text-shadow font-tibetan"
-        >
-          Skills & Expertise
-        </motion.h2>
-
-        <div className="space-y-6">
-          {skills.map((skill, index) => (
-            <motion.div
-              key={skill.name}
-              initial={{ opacity: 0, x: -60 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="flex justify-between mb-2">
-                <span className="text-white font-medium">{skill.name}</span>
-                <span className="text-white/60">{skill.level}%</span>
-              </div>
-              <div className="h-3 bg-white/10 rounded-full overflow-hidden glass">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${skill.level}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: index * 0.1, ease: 'easeOut' }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+    <section className="h-screen w-full flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="text-center"
+      >
+        <h2 className="text-5xl md:text-7xl font-bold text-white text-shadow font-tibetan">
+          Entering the clouds
+        </h2>
+      </motion.div>
     </section>
   )
 }
@@ -317,8 +284,8 @@ export default function UIOverlay() {
       {/* Projects Section - 100vh */}
       <ProjectsSection />
 
-      {/* Skills Section - 100vh */}
-      <SkillsSection />
+      {/* Entering the Clouds Section - 100vh */}
+      <EnteringCloudsSection />
 
       {/* Empty space for cloud transition and prayer wheel section */}
       <div className="h-screen" />
