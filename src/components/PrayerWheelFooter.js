@@ -160,14 +160,11 @@ function PrayerWheel() {
 
       // Only spin when in the prayer wheel section (after 80% scroll)
       if (scrollOffset > 0.8) {
-        // Scroll-based rotation
-        rotationRef.current += scrollDelta * 15
+        // Scroll-based rotation only (reversed direction)
+        rotationRef.current -= scrollDelta * 15
 
         // Apply rotation to wheel
         wheelRef.current.rotation.y = rotationRef.current
-
-        // Add gentle continuous rotation
-        rotationRef.current += delta * 0.1
       }
     }
   })
