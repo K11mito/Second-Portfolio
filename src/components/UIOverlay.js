@@ -253,7 +253,7 @@ function ProjectsSection() {
 
 function EnteringCloudsSection() {
   return (
-    <section className="h-screen w-full flex items-center justify-center px-4">
+    <section className="h-[60vh] w-full flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -287,8 +287,25 @@ export default function UIOverlay() {
       {/* Entering the Clouds Section - 100vh */}
       <EnteringCloudsSection />
 
-      {/* Empty space for cloud transition and prayer wheel section */}
-      <div className="h-screen" />
+      {/* Empty space for cloud transition */}
+      <div className="h-[80vh]" />
+
+      {/* Prayer wheel section header */}
+      <section className="h-screen w-full flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="text-center"
+        >
+          <h2 className="text-5xl md:text-7xl font-bold text-white text-shadow font-tibetan">
+            A few cool things
+          </h2>
+        </motion.div>
+      </section>
+
+      {/* Extra space for prayer wheel carousel */}
       <div className="h-screen" />
     </div>
   )
