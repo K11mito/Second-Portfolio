@@ -9,10 +9,10 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: 'easeOut' }
 }
 
-const TibetanCorner = ({ className, style }) => (
-  <div className={`absolute w-16 h-16 md:w-24 md:h-24 pointer-events-none transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ${className}`} style={style}>
+const TibetanCorner = ({ className, style, src = "/images/tibetan-corner.png" }) => (
+  <div className={`absolute pointer-events-none transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ${className}`} style={style}>
     <Image
-      src="/images/tibetan-corner.png"
+      src={src}
       alt="Tibetan Corner"
       fill
       className="object-contain"
@@ -81,10 +81,10 @@ function AboutSection() {
         <div className="absolute inset-0 border border-white/5 rounded-3xl bg-black/20 backdrop-blur-sm -z-10 transition-all duration-500 group-hover:border-white/20 group-hover:bg-black/30" />
 
         {/* Tibetan Decorative Corners */}
-        <TibetanCorner className="top-0 left-0 -translate-x-2 -translate-y-2" />
-        <TibetanCorner className="top-0 right-0 translate-x-2 -translate-y-2 rotate-90" />
-        <TibetanCorner className="bottom-0 right-0 translate-x-2 translate-y-2 rotate-180" />
-        <TibetanCorner className="bottom-0 left-0 -translate-x-2 translate-y-2 -rotate-90" />
+        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 top-0 left-0 -translate-x-2 -translate-y-2" />
+        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 top-0 right-0 translate-x-2 -translate-y-2 rotate-90" />
+        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 bottom-0 right-0 translate-x-2 translate-y-2 rotate-180" />
+        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 bottom-0 left-0 -translate-x-2 translate-y-2 -rotate-90" />
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Profile Image - Now a Box */}
@@ -159,22 +159,22 @@ function AboutSection() {
 function ProjectsSection() {
   const projects = [
     {
-      title: 'Project One',
-      description: 'A stunning web application built with modern technologies.',
-      image: '/images/knott.png',
-      tags: ['React', 'Three.js', 'WebGL'],
+      title: 'Get Shit Done',
+      description: 'Daily goal setting and productivity app',
+      image: '/images/getshitdone.png',
+      tags: ['Next.js', 'Three.js', 'Tailwind'],
     },
     {
-      title: 'Project Two',
-      description: 'Mobile-first design with seamless user experience.',
-      image: '/images/prayerflags.png',
-      tags: ['Next.js', 'Tailwind', 'Framer'],
+      title: 'Food and Macro tracking app',
+      description: 'Uses realtime Object-detction to track and log macro details',
+      image: '/images/foodmacro.png',
+      tags: ['Yolo.v8', 'React', 'Vite'],
     },
     {
-      title: 'Project Three',
-      description: 'Full-stack application with real-time features.',
-      image: '/images/stupa.png',
-      tags: ['Node.js', 'MongoDB', 'Socket.io'],
+      title: '3D illusion engine',
+      description: 'An engine that creates the illusion of depth behind your monitor and creates a depth map of any image you upload',
+      image: '/images/illusion.png',
+      tags: ['Transformers.js', 'MediaPipe', 'Three.js', 'Tailwind'],
     },
   ]
 
@@ -187,7 +187,7 @@ function ProjectsSection() {
           viewport={{ once: true }}
           className="text-4xl md:text-5xl font-bold text-white text-center mb-16 text-shadow font-tibetan"
         >
-          Featured Projects
+          Few cool things I built
         </motion.h2>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -199,8 +199,14 @@ function ProjectsSection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
               whileHover={{ y: -10, scale: 1.02 }}
-              className="glass rounded-2xl overflow-hidden group cursor-pointer"
+              className="glass rounded-2xl overflow-hidden group cursor-pointer relative"
             >
+              {/* Tibetan Decorative Corners - Smaller for cards */}
+              <TibetanCorner src="/images/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 left-0 -translate-x-1 -translate-y-1 z-20" />
+              <TibetanCorner src="/images/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 right-0 translate-x-1 -translate-y-1 rotate-90 z-20" />
+              <TibetanCorner src="/images/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 right-0 translate-x-1 translate-y-1 rotate-180 z-20" />
+              <TibetanCorner src="/images/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 left-0 -translate-x-1 translate-y-1 -rotate-90 z-20" />
+
               {/* Project Image */}
               <div className="relative h-48 overflow-hidden">
                 <Image
@@ -252,7 +258,7 @@ function EnteringCloudsSection() {
         className="text-center"
       >
         <h2 className="text-5xl md:text-7xl font-bold text-white text-shadow font-tibetan">
-          Entering the clouds
+          Entering the clouds..
         </h2>
       </motion.div>
     </section>

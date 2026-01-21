@@ -94,8 +94,8 @@ function CarouselRig({ projects }) {
 
   useFrame(() => {
     if (groupRef.current) {
-      // Only activate carousel in prayer wheel section (after 85% scroll)
-      const sectionStart = 0.85
+      // Only activate carousel in prayer wheel section (after 82% scroll)
+      const sectionStart = 0.82
       const sectionEnd = 1.0
 
       if (scroll.offset > sectionStart) {
@@ -286,15 +286,15 @@ export default function PrayerWheelFooter() {
     const scrollOffset = scroll.offset
 
     if (groupRef.current) {
-      // Show prayer wheel section after cloud transition (after 85%)
-      if (scrollOffset > 0.85) {
+      // Show prayer wheel section after cloud transition (after 82%)
+      if (scrollOffset > 0.82) {
         groupRef.current.visible = true
 
         // Set dark background color for monastery feel
         scene.background = new THREE.Color('#030201')
 
         // Position camera for the carousel view
-        if (scrollOffset > 0.87) {
+        if (scrollOffset > 0.84) {
           const targetPos = new THREE.Vector3(0, 0, 10)
           camera.position.lerp(targetPos, 0.05)
           camera.lookAt(0, 0, 0)

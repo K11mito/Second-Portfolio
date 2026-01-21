@@ -53,14 +53,14 @@ export default function CloudTransition() {
   useFrame(() => {
     const scrollOffset = scroll.offset
 
-    // Cloud transition timing - clouds come in earlier
-    // Phase 1: Clouds converge (0.38 - 0.58) - comes in quicker
-    // Phase 2: Clouds fully cover (0.58 - 0.68)
-    // Phase 3: Clouds part to reveal prayer wheel (0.68 - 0.82)
-    const convergeStart = 0.38
-    const convergeEnd = 0.58
-    const holdEnd = 0.68
-    const partEnd = 0.82
+    // Cloud transition timing - slowed down as requested
+    // Phase 1: Clouds converge (0.35 - 0.75) - smoother, slower entry
+    // Phase 2: Clouds fully cover (0.75 - 0.82)
+    // Phase 3: Clouds part to reveal prayer wheel (0.82 - 0.98)
+    const convergeStart = 0.4
+    const convergeEnd = 0.75
+    const holdEnd = 0.82
+    const partEnd = 0.98
 
     if (groupRef.current) {
       // Show clouds during the entire transition
