@@ -1,58 +1,12 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6, ease: 'easeOut' }
-}
-
-// Prayer flag curtains that drape from top
-function PrayerFlagCurtains() {
-  const { scrollYProgress } = useScroll()
-
-  // Transform scroll progress to movement - flags move outward as you scroll
-  const leftX = useTransform(scrollYProgress, [0, 0.15], ['0%', '-100%'])
-  const rightX = useTransform(scrollYProgress, [0, 0.15], ['0%', '100%'])
-  const flagsOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0])
-
-  return (
-    <>
-      {/* Left prayer flag curtain */}
-      <motion.div
-        className="fixed top-0 left-0 h-screen w-[35%] md:w-[28%] z-50 pointer-events-none"
-        style={{ x: leftX, opacity: flagsOpacity }}
-      >
-        <div className="relative w-full h-full">
-          <Image
-            src="/images/prayerflags.png"
-            alt="Prayer Flags"
-            fill
-            className="object-cover object-right-top"
-            priority
-          />
-        </div>
-      </motion.div>
-
-      {/* Right prayer flag curtain */}
-      <motion.div
-        className="fixed top-0 right-0 h-screen w-[35%] md:w-[28%] z-50 pointer-events-none"
-        style={{ x: rightX, opacity: flagsOpacity }}
-      >
-        <div className="relative w-full h-full scale-x-[-1]">
-          <Image
-            src="/images/prayerflags.png"
-            alt="Prayer Flags"
-            fill
-            className="object-cover object-right-top"
-            priority
-          />
-        </div>
-      </motion.div>
-    </>
-  )
 }
 
 function HeroSection() {
@@ -272,9 +226,6 @@ function EnteringCloudsSection() {
 export default function UIOverlay() {
   return (
     <div className="relative w-full">
-      {/* Prayer flag curtains draping from sides */}
-      <PrayerFlagCurtains />
-
       {/* Hero Section - First screen */}
       <HeroSection />
 
@@ -287,25 +238,9 @@ export default function UIOverlay() {
       {/* Entering the Clouds Section - 100vh */}
       <EnteringCloudsSection />
 
-      {/* Empty space for cloud transition */}
+      {/* Empty space for cloud transition and prayer wheel section */}
       <div className="h-[80vh]" />
-
-      {/* Prayer wheel section header */}
-      <section className="h-screen w-full flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="text-center"
-        >
-          <h2 className="text-5xl md:text-7xl font-bold text-white text-shadow font-tibetan">
-            A few cool things
-          </h2>
-        </motion.div>
-      </section>
-
-      {/* Extra space for prayer wheel carousel */}
+      <div className="h-screen" />
       <div className="h-screen" />
     </div>
   )

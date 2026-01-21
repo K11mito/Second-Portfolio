@@ -3,11 +3,59 @@
 import { Canvas } from '@react-three/fiber'
 import { ScrollControls, Scroll, Preload } from '@react-three/drei'
 import { Suspense, useState } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import Image from 'next/image'
 import MountainExperience from './MountainExperience'
 import PrayerWheelFooter from './PrayerWheelFooter'
 import UIOverlay from './UIOverlay'
 import CloudTransition from './CloudTransition'
 import LoadingScreen from './LoadingScreen'
+
+// Prayer flag curtains - rendered outside Canvas for proper fixed positioning
+function PrayerFlagCurtains() {
+  const { scrollYProgress } = useScroll()
+
+  // Transform scroll progress to movement - flags move outward as you scroll
+  const leftX = useTransform(scrollYProgress, [0, 0.15], ['0%', '-100%'])
+  const rightX = useTransform(scrollYProgress, [0, 0.15], ['0%', '100%'])
+  const flagsOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0])
+
+  return (
+    <>
+      {/* Left prayer flag curtain */}
+      <motion.div
+        className="fixed top-0 left-0 h-screen w-[35%] md:w-[28%] z-[100] pointer-events-none"
+        style={{ x: leftX, opacity: flagsOpacity }}
+      >
+        <div className="relative w-full h-full">
+          <Image
+            src="/images/prayerflags.png"
+            alt="Prayer Flags"
+            fill
+            className="object-cover object-right-top"
+            priority
+          />
+        </div>
+      </motion.div>
+
+      {/* Right prayer flag curtain */}
+      <motion.div
+        className="fixed top-0 right-0 h-screen w-[35%] md:w-[28%] z-[100] pointer-events-none"
+        style={{ x: rightX, opacity: flagsOpacity }}
+      >
+        <div className="relative w-full h-full scale-x-[-1]">
+          <Image
+            src="/images/prayerflags.png"
+            alt="Prayer Flags"
+            fill
+            className="object-cover object-right-top"
+            priority
+          />
+        </div>
+      </motion.div>
+    </>
+  )
+}
 
 export default function Scene() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -15,6 +63,9 @@ export default function Scene() {
   return (
     <>
       {!isLoaded && <LoadingScreen />}
+
+      {/* Prayer flag curtains - outside Canvas for proper fixed positioning */}
+      {isLoaded && <PrayerFlagCurtains />}
 
       <div className="canvas-container">
         <Canvas

@@ -32,7 +32,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
         <meshBasicMaterial
           color={hovered ? "#3a3a3a" : "#1a1a1a"}
           transparent
-          opacity={0.15}
+          opacity={0.6}
         />
       </mesh>
 
@@ -45,7 +45,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
       {/* HTML content overlay - positioned on the card */}
       <Html
         center
-        position={[0, -cardHeight * 0.2, 0.15]}
+        position={[0, -cardHeight * 0.22, 0.15]}
         distanceFactor={1.2}
         style={{
           width: `${cardWidth * 100}px`,
@@ -59,7 +59,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
           </h3>
 
           {/* Project description */}
-          <p className="text-[10px] text-white/80 mb-2 line-clamp-2 drop-shadow">
+          <p className="text-xs text-white mb-2 drop-shadow">
             {project.description}
           </p>
 
@@ -327,6 +327,18 @@ export default function PrayerWheelFooter() {
       <CandleLight position={[-8, -4, 5]} intensity={1.5} />
       <CandleLight position={[8, -4, 5]} intensity={1.5} />
       <CandleLight position={[0, -4, -8]} intensity={1} />
+
+      {/* Section header */}
+      <Html
+        center
+        position={[0, 4, 5]}
+        distanceFactor={1}
+        style={{ pointerEvents: 'none' }}
+      >
+        <h2 className="text-4xl md:text-6xl font-bold text-white text-center font-tibetan drop-shadow-lg whitespace-nowrap">
+          A few cool things
+        </h2>
+      </Html>
 
       {/* Prayer wheel - stays centered in background at z = -5 */}
       <PrayerWheel />
