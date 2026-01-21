@@ -81,10 +81,10 @@ function AboutSection() {
         <div className="absolute inset-0 border border-white/5 rounded-3xl bg-black/20 backdrop-blur-sm -z-10 transition-all duration-500 group-hover:border-white/20 group-hover:bg-black/30" />
 
         {/* Tibetan Decorative Corners */}
-        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 top-0 left-0 -translate-x-2 -translate-y-2" />
-        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 top-0 right-0 translate-x-2 -translate-y-2 rotate-90" />
-        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 bottom-0 right-0 translate-x-2 translate-y-2 rotate-180" />
-        <TibetanCorner className="w-16 h-16 md:w-24 md:h-24 bottom-0 left-0 -translate-x-2 translate-y-2 -rotate-90" />
+        <TibetanCorner className="w-20 h-20 md:w-28 md:h-28 top-0 left-0 -translate-x-3 -translate-y-3" />
+        <TibetanCorner className="w-20 h-20 md:w-28 md:h-28 top-0 right-0 translate-x-3 -translate-y-3 rotate-90" />
+        <TibetanCorner className="w-20 h-20 md:w-28 md:h-28 bottom-0 right-0 translate-x-3 translate-y-3 rotate-180" />
+        <TibetanCorner className="w-20 h-20 md:w-28 md:h-28 bottom-0 left-0 -translate-x-3 translate-y-3 -rotate-90" />
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Profile Image - Now a Box */}
