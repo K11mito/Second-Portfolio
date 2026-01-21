@@ -9,6 +9,17 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: 'easeOut' }
 }
 
+const TibetanCorner = ({ className, style }) => (
+  <div className={`absolute w-16 h-16 md:w-24 md:h-24 pointer-events-none transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ${className}`} style={style}>
+    <Image
+      src="/images/tibetan-corner.png"
+      alt="Tibetan Corner"
+      fill
+      className="object-contain"
+    />
+  </div>
+)
+
 function HeroSection() {
   return (
     <section className="h-screen w-full flex flex-col items-center justify-start pt-32 md:pt-40 px-4">
@@ -64,57 +75,82 @@ function AboutSection() {
         initial="initial"
         whileInView="animate"
         viewport={{ once: true, margin: '-100px' }}
-        className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center"
+        className="max-w-5xl mx-auto relative p-8 md:p-16 group transition-colors duration-500"
       >
-        {/* Profile Image */}
-        <motion.div
-          variants={fadeInUp}
-          className="relative"
-        >
-          <div className="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30" />
-            <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-white/20 glass">
-              <Image
-                src="/images/ary.JPG"
-                alt="Profile"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-        </motion.div>
+        {/* Main Fancy Border Container */}
+        <div className="absolute inset-0 border border-white/5 rounded-3xl bg-black/20 backdrop-blur-sm -z-10 transition-all duration-500 group-hover:border-white/20 group-hover:bg-black/30" />
 
-        {/* About Text */}
-        <motion.div
-          variants={fadeInUp}
-          transition={{ delay: 0.2 }}
-          className="text-center md:text-left"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 text-shadow font-tibetan">
-            About Me
-          </h2>
-          <p className="text-lg text-white/80 mb-4 leading-relaxed">
-            I&apos;m a creative developer passionate about building immersive digital experiences
-            that blend art and technology.
-          </p>
-          <p className="text-lg text-white/80 mb-6 leading-relaxed">
-            With a background in both design and engineering, I craft websites and applications
-            that are not just functional, but memorable.
-          </p>
+        {/* Tibetan Decorative Corners */}
+        <TibetanCorner className="top-0 left-0 -translate-x-2 -translate-y-2" />
+        <TibetanCorner className="top-0 right-0 translate-x-2 -translate-y-2 rotate-90" />
+        <TibetanCorner className="bottom-0 right-0 translate-x-2 translate-y-2 rotate-180" />
+        <TibetanCorner className="bottom-0 left-0 -translate-x-2 translate-y-2 -rotate-90" />
 
-          {/* Education Badge */}
-          <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3">
-            <div className="relative w-10 h-10">
-              <Image
-                src="/images/Mahidollogo.png"
-                alt="Mahidol University"
-                fill
-                className="object-contain"
-              />
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Profile Image - Now a Box */}
+          <motion.div
+            variants={fadeInUp}
+            className="relative"
+          >
+            <div className="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl blur-2xl opacity-30" />
+              <div className="relative w-full h-full rounded-3xl overflow-hidden border border-white/20 glass shadow-2xl">
+                <Image
+                  src="/images/ary.JPG"
+                  alt="Profile"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
-            <span className="text-white/90 font-medium">Mahidol University</span>
-          </div>
-        </motion.div>
+          </motion.div>
+
+          {/* About Text */}
+          <motion.div
+            variants={fadeInUp}
+            transition={{ delay: 0.2 }}
+            className="text-center md:text-left"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 text-shadow font-tibetan">
+              Yo I'm Aryendra
+            </h2>
+            <p className="text-lg text-white/80 mb-4 leading-relaxed">
+              I&apos;m a creative entrepreneur and technologist driven by curiosity across disciplines and a constant drive to learn
+            </p>
+            <ul className="text-lg text-white/80 mb-6 leading-relaxed list-disc list-inside space-y-2">
+              <li>Majoring in Finance @ Mahidol University.</li>
+              <li>Interned at Fuse Machines</li>
+              <li>Always working on something new</li>
+            </ul>
+
+            {/* Experience Badges */}
+            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+              <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
+                <div className="relative w-10 h-10">
+                  <Image
+                    src="/images/Mahidollogo.png"
+                    alt="Mahidol University"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-white/90 font-medium">Mahidol University</span>
+              </div>
+
+              <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
+                <div className="relative w-10 h-10">
+                  <Image
+                    src="/images/fusemachines.png"
+                    alt="Fuse Machines"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-white/90 font-medium">Fuse Machines</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </section>
   )
