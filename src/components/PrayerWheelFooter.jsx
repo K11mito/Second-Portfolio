@@ -11,14 +11,34 @@ useGLTF.preload('/models/prayer_wheel.glb')
 // Individual 3D Project Card with glass effect
 function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpacing }) {
   const meshRef = useRef()
+  const groupRef = useRef()
   const [hovered, setHovered] = useState(false)
 
   // Load project image as texture
   const texture = useTexture(project.image)
   texture.colorSpace = THREE.SRGBColorSpace
 
+  // Load Tibetan corner texture
+  const cornerTexture = useTexture('/images/decorations/tibetan-corner-small.png')
+  cornerTexture.colorSpace = THREE.SRGBColorSpace
+
   // Card position: each card is spaced by cardSpacing (cardWidth + gap)
   const xPos = index * cardSpacing
+  
+  // Corner size - proportional to card size (increased size)
+  const cornerSize = cardWidth * 0.15
+
+  // Smooth pop-up animation on hover
+  useFrame(() => {
+    if (groupRef.current) {
+      const targetZ = hovered ? 2.3 : 2
+      groupRef.current.position.z = THREE.MathUtils.lerp(
+        groupRef.current.position.z,
+        targetZ,
+        0.15
+      )
+    }
+  })
 
   const textTexture = useMemo(() => {
     if (typeof document === 'undefined') return null
@@ -65,7 +85,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
   }, [project.description, project.title])
 
   return (
-    <group position={[xPos, 0, 2]}>
+    <group ref={groupRef} position={[xPos, 0, 2]}>
       {/* Card background - dark grey with low opacity */}
       <mesh
         ref={meshRef}
@@ -74,9 +94,74 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
       >
         <planeGeometry args={[cardWidth, cardHeight]} />
         <meshBasicMaterial
-          color={hovered ? "#3a3a3a" : "#1a1a1a"}
+          color="#1a1a1a"
           transparent
           opacity={0.6}
+        />
+      </mesh>
+
+      {/* Tibetan corner decorations - positioned at card corners with glow effect */}
+      {/* Top-left corner */}
+      <mesh 
+        position={[-cardWidth * 0.5 + cornerSize * 0.3, cardHeight * 0.5 - cornerSize * 0.3, 0.05]}
+        rotation={[0, 0, 0]}
+        scale={hovered ? 1.1 : 1}
+      >
+        <planeGeometry args={[cornerSize, cornerSize]} />
+        <meshStandardMaterial 
+          map={cornerTexture} 
+          transparent 
+          opacity={hovered ? 1 : 0.4}
+          emissive={hovered ? "#ffffff" : "#000000"}
+          emissiveIntensity={hovered ? 0.8 : 0}
+        />
+      </mesh>
+
+      {/* Top-right corner */}
+      <mesh 
+        position={[cardWidth * 0.5 - cornerSize * 0.3, cardHeight * 0.5 - cornerSize * 0.3, 0.05]}
+        rotation={[0, 0, -Math.PI / 2]}
+        scale={hovered ? 1.1 : 1}
+      >
+        <planeGeometry args={[cornerSize, cornerSize]} />
+        <meshStandardMaterial 
+          map={cornerTexture} 
+          transparent 
+          opacity={hovered ? 1 : 0.4}
+          emissive={hovered ? "#ffffff" : "#000000"}
+          emissiveIntensity={hovered ? 0.8 : 0}
+        />
+      </mesh>
+
+      {/* Bottom-right corner */}
+      <mesh 
+        position={[cardWidth * 0.5 - cornerSize * 0.3, -cardHeight * 0.5 + cornerSize * 0.3, 0.05]}
+        rotation={[0, 0, Math.PI]}
+        scale={hovered ? 1.1 : 1}
+      >
+        <planeGeometry args={[cornerSize, cornerSize]} />
+        <meshStandardMaterial 
+          map={cornerTexture} 
+          transparent 
+          opacity={hovered ? 1 : 0.4}
+          emissive={hovered ? "#ffffff" : "#000000"}
+          emissiveIntensity={hovered ? 0.8 : 0}
+        />
+      </mesh>
+
+      {/* Bottom-left corner */}
+      <mesh 
+        position={[-cardWidth * 0.5 + cornerSize * 0.3, -cardHeight * 0.5 + cornerSize * 0.3, 0.05]}
+        rotation={[0, 0, Math.PI / 2]}
+        scale={hovered ? 1.1 : 1}
+      >
+        <planeGeometry args={[cornerSize, cornerSize]} />
+        <meshStandardMaterial 
+          map={cornerTexture} 
+          transparent 
+          opacity={hovered ? 1 : 0.4}
+          emissive={hovered ? "#ffffff" : "#000000"}
+          emissiveIntensity={hovered ? 0.8 : 0}
         />
       </mesh>
 
@@ -94,6 +179,47 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
         </mesh>
       )}
     </group>
+  )
+}
+
+// Header component for "Experiences" text
+function ExperiencesHeader() {
+  const { viewport } = useThree()
+  
+  const headerTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null
+    const canvas = document.createElement('canvas')
+    canvas.width = 1024
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    // Transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Title text with Yatra One font (Tibetan font)
+    ctx.fillStyle = '#f2f2f2'
+    ctx.font = 'bold 80px var(--font-tibetan)'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('Experiences', canvas.width / 2, canvas.height / 2)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.needsUpdate = true
+    return texture
+  }, [])
+
+  const headerWidth = Math.min(viewport.width * 0.6, 6)
+  const headerHeight = headerWidth * 0.25
+
+  if (!headerTexture) return null
+
+  return (
+    <mesh position={[0, 2.5, 2]}>
+      <planeGeometry args={[headerWidth, headerHeight]} />
+      <meshBasicMaterial map={headerTexture} transparent opacity={0.9} />
+    </mesh>
   )
 }
 
@@ -370,6 +496,9 @@ export default function PrayerWheelFooter() {
 
       {/* Prayer wheel - stays centered in background at z = -5 */}
       <PrayerWheel />
+
+      {/* Experiences header */}
+      <ExperiencesHeader />
 
       {/* 3D Carousel - cards at z = 2, in front of prayer wheel */}
       <CarouselRig projects={projectsData} />
