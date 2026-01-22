@@ -3,7 +3,7 @@
 import { Canvas } from '@react-three/fiber'
 import { ScrollControls, Scroll, Preload } from '@react-three/drei'
 import { Suspense, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import Image from 'next/image'
 import MountainExperience from './MountainExperience'
 import PrayerWheelFooter from './PrayerWheelFooter'
@@ -57,6 +57,99 @@ function PrayerFlagCurtains() {
   )
 }
 
+// Projects data for the carousel cards
+const carouselProjects = [
+  {
+    title: 'Mountain Explorer',
+    description: 'An immersive 3D experience showcasing mountain landscapes with realistic terrain.',
+    tags: ['Three.js', 'React', 'WebGL'],
+  },
+  {
+    title: 'Prayer Wheel App',
+    description: 'A meditative mobile app featuring traditional Tibetan prayer wheels and mantras.',
+    tags: ['React Native', 'Expo'],
+  },
+  {
+    title: 'Stupa Gallery',
+    description: 'Virtual tour of ancient Buddhist stupas and monuments from around the world.',
+    tags: ['Next.js', 'Framer'],
+  },
+  {
+    title: 'Himalayan Trails',
+    description: 'Interactive map and guide for trekking routes in the Himalayas.',
+    tags: ['Mapbox', 'Node.js'],
+  },
+]
+
+// Single card info display component
+function CardInfo({ project, isActive }) {
+  return (
+    <motion.div
+      className="absolute inset-0 flex flex-col items-center justify-center px-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isActive ? 1 : 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <h3 className="text-2xl font-bold text-white mb-2">{project.title}</h3>
+      <p className="text-white/80 text-sm mb-3 text-center">{project.description}</p>
+      <div className="flex gap-2 flex-wrap justify-center">
+        {project.tags.map((tag) => (
+          <span key={tag} className="px-3 py-1 text-xs bg-amber-500/60 rounded-full text-white">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// Prayer wheel section text and card info - rendered outside Canvas
+function PrayerWheelText() {
+  const { scrollYProgress } = useScroll()
+  const [activeCard, setActiveCard] = useState(0)
+
+  // Show text only in prayer wheel section (80% - 100% scroll)
+  const opacity = useTransform(scrollYProgress, [0.78, 0.82, 0.95, 1.0], [0, 1, 1, 0])
+  const y = useTransform(scrollYProgress, [0.78, 0.85], [50, 0])
+  const bottomY = useTransform(scrollYProgress, [0.82, 0.88], [30, 0])
+
+  // Update active card based on scroll
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (latest >= 0.82 && latest <= 1.0) {
+      const progress = (latest - 0.82) / (1.0 - 0.82)
+      const cardIndex = Math.min(Math.floor(progress * carouselProjects.length), carouselProjects.length - 1)
+      setActiveCard(cardIndex)
+    }
+  })
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-full h-screen z-[50] pointer-events-none flex flex-col items-center justify-between py-16"
+      style={{ opacity }}
+    >
+      {/* Header */}
+      <motion.div style={{ y }} className="text-center">
+        <h2 className="text-4xl md:text-6xl font-bold text-white font-tibetan drop-shadow-lg">
+          Experiences
+        </h2>
+        <p className="text-white/70 mt-2 px-4">
+          Scroll through some of my favorite projects
+        </p>
+      </motion.div>
+
+      {/* Card info at bottom */}
+      <motion.div
+        className="relative text-center px-8 py-6 bg-black/40 backdrop-blur-sm rounded-2xl mx-4 max-w-md min-h-[150px]"
+        style={{ y: bottomY }}
+      >
+        {carouselProjects.map((project, index) => (
+          <CardInfo key={project.title} project={project} isActive={activeCard === index} />
+        ))}
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export default function Scene() {
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -66,6 +159,9 @@ export default function Scene() {
 
       {/* Prayer flag curtains - outside Canvas for proper fixed positioning */}
       {isLoaded && <PrayerFlagCurtains />}
+
+      {/* Prayer wheel section text - outside Canvas */}
+      {isLoaded && <PrayerWheelText />}
 
       <div className="canvas-container">
         <Canvas

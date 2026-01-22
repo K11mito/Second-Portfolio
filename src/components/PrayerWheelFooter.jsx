@@ -2,7 +2,7 @@
 
 import { useRef, useMemo, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useScroll, useGLTF, useTexture, Html } from '@react-three/drei'
+import { useScroll, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
 // Preload the prayer wheel model
@@ -19,6 +19,50 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
 
   // Card position: each card is spaced by cardSpacing (cardWidth + gap)
   const xPos = index * cardSpacing
+
+  const textTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null
+    const canvas = document.createElement('canvas')
+    canvas.width = 512
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    // Transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Title
+    ctx.fillStyle = '#f2f2f2'
+    ctx.font = 'bold 36px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
+    ctx.fillText(project.title, canvas.width / 2, 10)
+
+    // Description (simple wrap)
+    ctx.fillStyle = '#cfcfcf'
+    ctx.font = '24px Arial'
+    const maxWidth = canvas.width * 0.88
+    const words = project.description.split(' ')
+    let line = ''
+    let y = 70
+    for (let i = 0; i < words.length; i += 1) {
+      const testLine = line + words[i] + ' '
+      const { width } = ctx.measureText(testLine)
+      if (width > maxWidth && i > 0) {
+        ctx.fillText(line.trim(), canvas.width / 2, y)
+        line = words[i] + ' '
+        y += 30
+      } else {
+        line = testLine
+      }
+    }
+    ctx.fillText(line.trim(), canvas.width / 2, y)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.needsUpdate = true
+    return texture
+  }, [project.description, project.title])
 
   return (
     <group position={[xPos, 0, 2]}>
@@ -42,40 +86,13 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
         <meshBasicMaterial map={texture} transparent opacity={0.9} />
       </mesh>
 
-      {/* HTML content overlay - positioned on the card */}
-      <Html
-        center
-        position={[0, -cardHeight * 0.22, 0.15]}
-        distanceFactor={1.2}
-        style={{
-          width: `${cardWidth * 100}px`,
-          pointerEvents: 'none',
-        }}
-      >
-        <div className="text-center px-2">
-          {/* Project title */}
-          <h3 className="text-base font-bold text-white font-tibetan mb-1 drop-shadow-lg">
-            {project.title}
-          </h3>
-
-          {/* Project description */}
-          <p className="text-xs text-white mb-2 drop-shadow">
-            {project.description}
-          </p>
-
-          {/* Tags */}
-          <div className="flex flex-wrap justify-center gap-1">
-            {project.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="px-1.5 py-0.5 text-[9px] bg-amber-500/40 rounded-full text-white/90"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </Html>
+      {/* Title + description as a baked texture */}
+      {textTexture && (
+        <mesh position={[0, -cardHeight * 0.22, 0.12]}>
+          <planeGeometry args={[cardWidth * 0.85, cardHeight * 0.38]} />
+          <meshBasicMaterial map={textTexture} transparent opacity={0.95} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -343,18 +360,6 @@ export default function PrayerWheelFooter() {
       <CandleLight position={[-8, -4, 5]} intensity={1.5} />
       <CandleLight position={[8, -4, 5]} intensity={1.5} />
       <CandleLight position={[0, -4, -8]} intensity={1} />
-
-      {/* Section header */}
-      <Html
-        center
-        position={[0, 4, 5]}
-        distanceFactor={1}
-        style={{ pointerEvents: 'none' }}
-      >
-        <h2 className="text-4xl md:text-6xl font-bold text-white text-center font-tibetan drop-shadow-lg whitespace-nowrap">
-          Experiences
-        </h2>
-      </Html>
 
       {/* Prayer wheel - stays centered in background at z = -5 */}
       <PrayerWheel />
