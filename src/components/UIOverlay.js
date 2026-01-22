@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import { FaGithub } from 'react-icons/fa'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -163,18 +164,21 @@ function ProjectsSection() {
       description: 'Daily goal setting and productivity app',
       image: '/images/getshitdone.png',
       tags: ['Next.js', 'Three.js', 'Tailwind'],
+      githubLink: 'https://github.com/K11mito/Goal-tracking-and-daily-routine-app',
     },
     {
       title: 'Food and Macro tracking app',
       description: 'Uses realtime Object-detction to track and log macro details',
       image: '/images/foodmacro.png',
       tags: ['Yolo.v8', 'React', 'Vite'],
+      githubLink: 'https://github.com/K11mito',
     },
     {
       title: '3D illusion engine',
       description: 'An engine that creates the illusion of depth behind your monitor and creates a depth map of any image you upload',
       image: '/images/illusion.png',
       tags: ['Transformers.js', 'MediaPipe', 'Three.js', 'Tailwind'],
+      githubLink: 'https://github.com/K11mito',
     },
   ]
 
@@ -239,11 +243,26 @@ function ProjectsSection() {
                   ))}
                 </div>
               </div>
+
+              {/* GitHub Link */}
+              {project.githubLink && (
+                <div className="absolute bottom-6 right-6 z-30">
+                  <a
+                    href={project.githubLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <FaGithub size={24} />
+                  </a>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
       </div>
-    </section>
+    </section >
   )
 }
 

@@ -173,8 +173,8 @@ function PrayerWheel() {
     <primitive
       ref={wheelRef}
       object={clonedScene}
-      position={[0, -5, -5]} // Behind the cards (z = -5)
-      scale={[0.01, 0.01, 0.01]}
+      position={[0, -6, -5]} // Behind the cards (z = -5)
+      scale={[0.012, 0.012, 0.012]}
       rotation={[0, 0, 0]}
     />
   )
@@ -286,12 +286,28 @@ export default function PrayerWheelFooter() {
     const scrollOffset = scroll.offset
 
     if (groupRef.current) {
-      // Show prayer wheel section after cloud transition (after 82%)
-      if (scrollOffset > 0.82) {
+      // Show prayer wheel section after cloud transition (starts entering at 75%)
+      if (scrollOffset > 0.75) {
         groupRef.current.visible = true
 
+        // Calculate entrance progress (0 to 1) between 75% and 82%
+        // This creates a "rising" animation when scrolling down, and "sinking" when scrolling up
+        const entranceStart = 0.75
+        const entranceEnd = 0.82
+        const progress = Math.min(1, Math.max(0, (scrollOffset - entranceStart) / (entranceEnd - entranceStart)))
+
+        // Animate scale and position based on progress
+        // Starts smaller and lower, moves to full size and position
+        const targetScale = THREE.MathUtils.lerp(0.8, 1, progress)
+        const targetY = THREE.MathUtils.lerp(-5, 0, progress)
+
+        groupRef.current.scale.setScalar(targetScale)
+        groupRef.current.position.y = targetY
+
         // Set dark background color for monastery feel
-        scene.background = new THREE.Color('#030201')
+        if (progress > 0.5) {
+          scene.background = new THREE.Color('#030201')
+        }
 
         // Position camera for the carousel view
         if (scrollOffset > 0.84) {
@@ -336,7 +352,7 @@ export default function PrayerWheelFooter() {
         style={{ pointerEvents: 'none' }}
       >
         <h2 className="text-4xl md:text-6xl font-bold text-white text-center font-tibetan drop-shadow-lg whitespace-nowrap">
-          A few cool things
+          Experiences
         </h2>
       </Html>
 
