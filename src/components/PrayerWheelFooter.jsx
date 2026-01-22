@@ -88,7 +88,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
 
       {/* Title + description as a baked texture */}
       {textTexture && (
-        <mesh position={[0, -cardHeight * 0.22, 0.12]}>
+        <mesh position={[0, -cardHeight * 0.25, 0.12]}>
           <planeGeometry args={[cardWidth * 0.85, cardHeight * 0.38]} />
           <meshBasicMaterial map={textTexture} transparent opacity={0.95} />
         </mesh>
@@ -265,30 +265,37 @@ function CandleLight({ position, intensity = 1 }) {
 // Projects data
 const projectsData = [
   {
-    title: 'Mountain Explorer',
-    description: 'An immersive 3D experience showcasing the beauty of mountain landscapes with realistic terrain.',
-    image: '/images/decorations/knott.png',
-    tags: ['Three.js', 'React', 'WebGL'],
+    title: 'Data Intelligence Intern',
+    description: 'Worked on GEO & AEO related projects. Created Agents to manage GA4 and Clarity Analytics.',
+    image: '/images/logos/fusemachines4.png',
+    tags: ['Python', 'AI', 'Data Science'],
     link: '#'
   },
   {
-    title: 'Prayer Wheel App',
-    description: 'A meditative mobile application featuring traditional Tibetan prayer wheels and mantras.',
-    image: '/images/decorations/prayerflags.png',
+    title: 'Founder',
+    description: 'Launched and scaled a gaming accessory store to generate over $10k in revenue. Averaged a 4.2x ROAS',
+    image: '/images/logos/Esports.png',
     tags: ['React Native', 'Expo'],
     link: '#'
   },
   {
-    title: 'Stupa Gallery',
-    description: 'Virtual tour of ancient Buddhist stupas and monuments from around the world.',
-    image: '/images/decorations/stupa.png',
+    title: 'Co-Founder',
+    description: 'Started an online store to buy and sell furniture targeting people moving in and out of homes. Worked with companies like ArtMaya to offer larger offering',
+    image: '/images/logos/Sajilo.png',
     tags: ['Next.js', 'Framer'],
     link: '#'
   },
   {
-    title: 'Himalayan Trails',
-    description: 'Interactive map and guide for trekking routes in the Himalayas with elevation data.',
-    image: '/images/decorations/prayerflag2.png',
+    title: 'Perp-Trading Group',
+    description: 'Founded a crypto trading group to gather information and trade together. Mainly traded ETH, BTC, SOL',
+    image: '/images/logos/seize2.png',
+    tags: ['Python', 'Perp Trading', 'Crypto'],
+    link: '#'
+  },
+  {
+    title: 'Basketball',
+    description: 'Played basketball at the College & High School level. Won the school championship in 2024.',
+    image: '/images/profile/basketball.jpg',
     tags: ['Mapbox', 'Node.js'],
     link: '#'
   },

@@ -161,7 +161,7 @@ function ProjectsSection() {
   const projects = [
     {
       title: 'Get Shit Done',
-      description: 'Daily goal setting and productivity app',
+      description: 'Daily goal setting and productivity app, Breaking large goals into everyday tasks',
       image: '/images/projects/getshitdone.png',
       tags: ['Next.js', 'Three.js', 'Tailwind'],
       githubLink: 'https://github.com/K11mito/Goal-tracking-and-daily-routine-app',
