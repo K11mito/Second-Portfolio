@@ -9,8 +9,8 @@ const yatraOne = Yatra_One({
 })
 
 export const metadata = {
-  title: '3D Portfolio | Mountain Journey',
-  description: 'An immersive 3D portfolio experience',
+  title: 'Aryendra Shrestha | Portfolio',
+  description: 'A sideproject to test UI/UX',
 }
 
 export default function RootLayout({ children }) {
