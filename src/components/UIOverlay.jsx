@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { FaGithub } from 'react-icons/fa'
+import { FaGithub, FaInstagram, FaLinkedin, FaEnvelope } from 'react-icons/fa'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -124,8 +124,8 @@ function AboutSection() {
               <li>Always working on something new</li>
             </ul>
 
-            {/* Experience Badges */}
-            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+            {/* Experience Badge */}
+            <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-4">
               <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
                 <div className="relative w-10 h-10">
                   <Image
@@ -137,18 +137,42 @@ function AboutSection() {
                 </div>
                 <span className="text-white/90 font-medium">Mahidol University</span>
               </div>
+            </div>
 
-              <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
-                <div className="relative w-10 h-10">
-                  <Image
-                    src="/images/logos/fusemachines.png"
-                    alt="Fuse Machines"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <span className="text-white/90 font-medium">Fuse Machines</span>
-              </div>
+            {/* Social Links */}
+            <div className="flex gap-3 justify-center md:justify-start">
+              <a
+                href="https://www.instagram.com/aryendrashrestha/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-12 h-12 glass rounded-full border border-white/10 transition-all hover:scale-110 hover:border-white/30 text-white/70 hover:text-white"
+              >
+                <FaInstagram size={20} />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/aryendra-shrestha-199913303/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-12 h-12 glass rounded-full border border-white/10 transition-all hover:scale-110 hover:border-white/30 text-white/70 hover:text-white"
+              >
+                <FaLinkedin size={20} />
+              </a>
+              <a
+                href="https://github.com/K11mito"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-12 h-12 glass rounded-full border border-white/10 transition-all hover:scale-110 hover:border-white/30 text-white/70 hover:text-white"
+              >
+                <FaGithub size={20} />
+              </a>
+              <a
+                href="mailto:aryendrashrestha@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-12 h-12 glass rounded-full border border-white/10 transition-all hover:scale-110 hover:border-white/30 text-white/70 hover:text-white"
+              >
+                <FaEnvelope size={20} />
+              </a>
             </div>
           </motion.div>
         </div>

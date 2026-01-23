@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo, useState } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useScroll, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
@@ -24,7 +24,7 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
 
   // Card position: each card is spaced by cardSpacing (cardWidth + gap)
   const xPos = index * cardSpacing
-  
+
   // Corner size - proportional to card size (increased size)
   const cornerSize = cardWidth * 0.15
 
@@ -102,15 +102,15 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
 
       {/* Tibetan corner decorations - positioned at card corners with glow effect */}
       {/* Top-left corner */}
-      <mesh 
+      <mesh
         position={[-cardWidth * 0.5 + cornerSize * 0.3, cardHeight * 0.5 - cornerSize * 0.3, 0.05]}
         rotation={[0, 0, 0]}
         scale={hovered ? 1.1 : 1}
       >
         <planeGeometry args={[cornerSize, cornerSize]} />
-        <meshStandardMaterial 
-          map={cornerTexture} 
-          transparent 
+        <meshStandardMaterial
+          map={cornerTexture}
+          transparent
           opacity={hovered ? 1 : 0.4}
           emissive={hovered ? "#ffffff" : "#000000"}
           emissiveIntensity={hovered ? 0.8 : 0}
@@ -118,15 +118,15 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
       </mesh>
 
       {/* Top-right corner */}
-      <mesh 
+      <mesh
         position={[cardWidth * 0.5 - cornerSize * 0.3, cardHeight * 0.5 - cornerSize * 0.3, 0.05]}
         rotation={[0, 0, -Math.PI / 2]}
         scale={hovered ? 1.1 : 1}
       >
         <planeGeometry args={[cornerSize, cornerSize]} />
-        <meshStandardMaterial 
-          map={cornerTexture} 
-          transparent 
+        <meshStandardMaterial
+          map={cornerTexture}
+          transparent
           opacity={hovered ? 1 : 0.4}
           emissive={hovered ? "#ffffff" : "#000000"}
           emissiveIntensity={hovered ? 0.8 : 0}
@@ -134,15 +134,15 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
       </mesh>
 
       {/* Bottom-right corner */}
-      <mesh 
+      <mesh
         position={[cardWidth * 0.5 - cornerSize * 0.3, -cardHeight * 0.5 + cornerSize * 0.3, 0.05]}
         rotation={[0, 0, Math.PI]}
         scale={hovered ? 1.1 : 1}
       >
         <planeGeometry args={[cornerSize, cornerSize]} />
-        <meshStandardMaterial 
-          map={cornerTexture} 
-          transparent 
+        <meshStandardMaterial
+          map={cornerTexture}
+          transparent
           opacity={hovered ? 1 : 0.4}
           emissive={hovered ? "#ffffff" : "#000000"}
           emissiveIntensity={hovered ? 0.8 : 0}
@@ -150,15 +150,15 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
       </mesh>
 
       {/* Bottom-left corner */}
-      <mesh 
+      <mesh
         position={[-cardWidth * 0.5 + cornerSize * 0.3, -cardHeight * 0.5 + cornerSize * 0.3, 0.05]}
         rotation={[0, 0, Math.PI / 2]}
         scale={hovered ? 1.1 : 1}
       >
         <planeGeometry args={[cornerSize, cornerSize]} />
-        <meshStandardMaterial 
-          map={cornerTexture} 
-          transparent 
+        <meshStandardMaterial
+          map={cornerTexture}
+          transparent
           opacity={hovered ? 1 : 0.4}
           emissive={hovered ? "#ffffff" : "#000000"}
           emissiveIntensity={hovered ? 0.8 : 0}
@@ -185,29 +185,45 @@ function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpa
 // Header component for "Experiences" text
 function ExperiencesHeader() {
   const { viewport } = useThree()
-  
-  const headerTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null
-    const canvas = document.createElement('canvas')
-    canvas.width = 1024
-    canvas.height = 256
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return null
+  const [headerTexture, setHeaderTexture] = useState(null)
 
-    // Transparent background
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  useEffect(() => {
+    if (typeof document === 'undefined') return
 
-    // Title text with Yatra One font (Tibetan font)
-    ctx.fillStyle = '#f2f2f2'
-    ctx.font = 'bold 80px var(--font-tibetan)'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('Experiences', canvas.width / 2, canvas.height / 2)
+    const createTexture = async () => {
+      const fontFamily = "'Inter', 'Segoe UI', sans-serif"
+      const fontString = `bold 120px ${fontFamily}`
 
-    const texture = new THREE.CanvasTexture(canvas)
-    texture.colorSpace = THREE.SRGBColorSpace
-    texture.needsUpdate = true
-    return texture
+      // Wait for the font to load before drawing
+      try {
+        await document.fonts.load(fontString)
+      } catch {
+        // Continue even if font load fails - will use system sans-serif
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = 1024
+      canvas.height = 256
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      // Transparent background
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Title text with sans-serif font
+      ctx.fillStyle = '#f2f2f2'
+      ctx.font = fontString
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('Experiences', canvas.width / 2, canvas.height / 2)
+
+      const texture = new THREE.CanvasTexture(canvas)
+      texture.colorSpace = THREE.SRGBColorSpace
+      texture.needsUpdate = true
+      setHeaderTexture(texture)
+    }
+
+    createTexture()
   }, [])
 
   const headerWidth = Math.min(viewport.width * 0.6, 6)
