@@ -1,5 +1,6 @@
 import { Inter, Yatra_One } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const yatraOne = Yatra_One({
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${yatraOne.variable} font-sans antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   )
