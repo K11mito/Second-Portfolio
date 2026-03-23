@@ -91,7 +91,7 @@ function CameraRig() {
 
   // Camera starts EYE-TO-EYE with mountain peak, then descends
   // Start looking straight at the peak (same Y level), then gradually descend
-  const startPosition = useMemo(() => new THREE.Vector3(80, -75, 30), [])    // Eye level with peak
+  const startPosition = useMemo(() => new THREE.Vector3(80, -5, 30), [])    // Eye level with peak
   const midPosition = useMemo(() => new THREE.Vector3(50, -180, 180), [])     // Descending
   const endPosition = useMemo(() => new THREE.Vector3(20, -290, 550), [])      // Near the base
 

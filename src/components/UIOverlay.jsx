@@ -198,11 +198,12 @@ function ProjectsSection() {
       githubLink: 'https://github.com/K11mito',
     },
     {
-      title: '3D illusion engine',
-      description: 'An engine that creates the illusion of depth behind your monitor and creates a depth map of any image you upload',
-      image: '/images/projects/illusion.png',
-      tags: ['Transformers.js', 'MediaPipe', 'Three.js', 'Tailwind'],
-      githubLink: 'https://github.com/K11mito',
+      title: 'Vessel',
+      description: 'A solution to having multiple agentic terminals open at once. Helps manage multiple terminal windows at once.',
+      image: '/images/projects/vessel-preview.png',
+      tags: ['Three.js', 'Typescript', 'Electron'],
+      liveLink: 'https://vessel-landing-one.vercel.app/#',
+      githubLink: 'https://github.com/AryaShrestha05/vessel/tree/Frontend-test',
     },
   ]
 
@@ -219,14 +220,20 @@ function ProjectsSection() {
         </motion.h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.title}
+          {projects.map((project, index) => {
+            const CardWrapper = project.liveLink ? motion.a : motion.div
+
+            return (
+              <CardWrapper
+                key={project.title}
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
               whileHover={{ y: -10, scale: 1.02 }}
+              href={project.liveLink}
+              target={project.liveLink ? '_blank' : undefined}
+              rel={project.liveLink ? 'noopener noreferrer' : undefined}
               className="glass rounded-2xl overflow-hidden group cursor-pointer relative"
             >
               {/* Tibetan Decorative Corners - Smaller for cards */}
@@ -237,12 +244,24 @@ function ProjectsSection() {
 
               {/* Project Image */}
               <div className="relative h-48 overflow-hidden">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+                {project.video ? (
+                  <video
+                    src={project.video}
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 pointer-events-none"
+                  />
+                ) : (
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 
@@ -282,8 +301,9 @@ function ProjectsSection() {
                   </a>
                 </div>
               )}
-            </motion.div>
-          ))}
+            </CardWrapper>
+            )
+          })}
         </div>
       </div>
     </section >

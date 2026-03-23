@@ -246,7 +246,7 @@ function CarouselRig({ projects }) {
   const scroll = useScroll()
 
   const totalCards = projects.length
-  const cardGap = 0.3 // Gap between cards
+  const cardGap = 1.0 // Gap between cards
   const cardWidth = Math.min(viewport.width * 0.3, 2.5) // Smaller card width
   const cardHeight = cardWidth * 1.3 // Card aspect ratio
   const cardSpacing = cardWidth + cardGap // Tighter spacing based on card width
@@ -269,7 +269,7 @@ function CarouselRig({ projects }) {
         groupRef.current.position.x = THREE.MathUtils.lerp(
           groupRef.current.position.x,
           targetX,
-          0.1
+          0.05
         )
       }
     }
