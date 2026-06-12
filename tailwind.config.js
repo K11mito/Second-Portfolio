@@ -7,6 +7,14 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        ink: '#0e1626',
+        gold: '#d9a441',
+        maroon: '#7e2f24',
+        ochre: '#b88d3f',
+        snow: '#f4f7fb',
+        mist: '#cfe0ef',
+      },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         tibetan: ['var(--font-tibetan)', 'serif'],
