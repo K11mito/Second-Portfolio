@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { FaGithub, FaInstagram, FaLinkedin, FaEnvelope } from 'react-icons/fa'
+import { projects } from '@/data/site'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -14,8 +15,9 @@ const TibetanCorner = ({ className, style, src = "/images/decorations/tibetan-co
   <div className={`absolute pointer-events-none transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ${className}`} style={style}>
     <Image
       src={src}
-      alt="Tibetan Corner"
+      alt=""
       fill
+      sizes="112px"
       className="object-contain"
     />
   </div>
@@ -31,11 +33,12 @@ function HeroSection() {
         className="text-center"
       >
         {/* Tibetan Knot */}
-        <div className="relative w-40 h-40 md:w-56 md:h-56 mx-auto mb-8">
+            <div className="relative w-40 h-40 md:w-56 md:h-56 mx-auto mb-8">
           <Image
             src="/images/decorations/knott.png"
-            alt="Endless Knot"
+            alt=""
             fill
+            sizes="224px"
             className="object-contain"
           />
         </div>
@@ -97,9 +100,10 @@ function AboutSection() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl blur-2xl opacity-30" />
               <div className="relative w-full h-full rounded-3xl overflow-hidden border border-white/20 glass shadow-2xl">
                 <Image
-                  src="/images/profile/ary.JPG"
-                  alt="Profile"
+                  src="/images/profile/ary.webp"
+                  alt="Aryendra Shrestha"
                   fill
+                  sizes="320px"
                   className="object-cover"
                 />
               </div>
@@ -129,9 +133,10 @@ function AboutSection() {
               <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
                 <div className="relative w-10 h-10">
                   <Image
-                    src="/images/logos/Mahidollogo.png"
+                    src="/images/logos/Mahidollogo.webp"
                     alt="Mahidol University"
                     fill
+                    sizes="40px"
                     className="object-contain"
                   />
                 </div>
@@ -182,34 +187,9 @@ function AboutSection() {
 }
 
 function ProjectsSection() {
-  const projects = [
-    {
-      title: 'Get Shit Done',
-      description: 'Daily goal setting and productivity app, Breaking large goals into everyday tasks',
-      image: '/images/projects/getshitdone.png',
-      tags: ['Next.js', 'Three.js', 'Tailwind'],
-      githubLink: 'https://github.com/K11mito/Goal-tracking-and-daily-routine-app',
-    },
-    {
-      title: 'Food and Macro tracking app',
-      description: 'Uses realtime Object-detction to track and log macro details',
-      image: '/images/projects/foodmacro.png',
-      tags: ['Yolo.v8', 'React', 'Vite'],
-      githubLink: 'https://github.com/K11mito',
-    },
-    {
-      title: 'Vessel',
-      description: 'A solution to having multiple agentic terminals open at once. Helps manage multiple terminal windows at once.',
-      image: '/images/projects/vessel-preview.png',
-      tags: ['Three.js', 'Typescript', 'Electron'],
-      liveLink: 'https://vessel-landing-one.vercel.app/#',
-      githubLink: 'https://github.com/AryaShrestha05/vessel/tree/Frontend-test',
-    },
-  ]
-
   return (
     <section className="min-h-screen w-full flex items-center justify-center px-4 py-20">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -219,53 +199,43 @@ function ProjectsSection() {
           Few cool things I built
         </motion.h2>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {projects.map((project, index) => {
-            const CardWrapper = project.liveLink ? motion.a : motion.div
-
-            return (
-              <CardWrapper
-                key={project.title}
+        <div className="grid sm:grid-cols-2 gap-8">
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.title}
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
               whileHover={{ y: -10, scale: 1.02 }}
-              href={project.liveLink}
-              target={project.liveLink ? '_blank' : undefined}
-              rel={project.liveLink ? 'noopener noreferrer' : undefined}
-              className="glass rounded-2xl overflow-hidden group cursor-pointer relative"
+              className="glass rounded-2xl overflow-hidden group relative"
             >
-              {/* Tibetan Decorative Corners - Smaller for cards */}
+              {project.liveLink && (
+                <a
+                  href={project.liveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 z-10"
+                  aria-label={`Open ${project.title}`}
+                />
+              )}
+
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 left-0 -translate-x-1 -translate-y-1 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 right-0 translate-x-1 -translate-y-1 rotate-90 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 right-0 translate-x-1 translate-y-1 rotate-180 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 left-0 -translate-x-1 translate-y-1 -rotate-90 z-20" />
 
-              {/* Project Image */}
               <div className="relative h-48 overflow-hidden">
-                {project.video ? (
-                  <video
-                    src={project.video}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    preload="metadata"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 pointer-events-none"
-                  />
-                ) : (
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                )}
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 
-              {/* Project Info */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2">
                   {project.title}
@@ -273,8 +243,6 @@ function ProjectsSection() {
                 <p className="text-white/70 text-sm mb-4">
                   {project.description}
                 </p>
-
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
                     <span
@@ -287,23 +255,19 @@ function ProjectsSection() {
                 </div>
               </div>
 
-              {/* GitHub Link */}
               {project.githubLink && (
-                <div className="absolute bottom-6 right-6 z-30">
-                  <a
-                    href={project.githubLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white/60 hover:text-white transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FaGithub size={24} />
-                  </a>
-                </div>
+                <a
+                  href={project.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-6 right-6 z-30 text-white/60 hover:text-white transition-colors"
+                  aria-label={`${project.title} on GitHub`}
+                >
+                  <FaGithub size={24} />
+                </a>
               )}
-            </CardWrapper>
-            )
-          })}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section >

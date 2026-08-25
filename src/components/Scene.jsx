@@ -1,28 +1,25 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import { ScrollControls, Scroll, Preload } from '@react-three/drei'
-import { Suspense, useState } from 'react'
+import { ScrollControls, Scroll, AdaptiveDpr } from '@react-three/drei'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import Image from 'next/image'
 import MountainExperience from './MountainExperience'
-import PrayerWheelFooter from './PrayerWheelFooter'
 import UIOverlay from './UIOverlay'
-import CloudTransition from './CloudTransition'
 import LoadingScreen from './LoadingScreen'
+import ProgressGate from './ProgressGate'
+import DeferredSections from './DeferredSections'
+import { experiences } from '@/data/site'
 
-// Prayer flag curtains - rendered outside Canvas for proper fixed positioning
 function PrayerFlagCurtains() {
   const { scrollYProgress } = useScroll()
-
-  // Transform scroll progress to movement - flags move outward as you scroll
   const leftX = useTransform(scrollYProgress, [0, 0.15], ['0%', '-100%'])
   const rightX = useTransform(scrollYProgress, [0, 0.15], ['0%', '100%'])
   const flagsOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0])
 
   return (
     <>
-      {/* Left prayer flag curtain */}
       <motion.div
         className="fixed top-0 left-0 h-screen w-[35%] md:w-[28%] z-[100] pointer-events-none"
         style={{ x: leftX, opacity: flagsOpacity }}
@@ -30,15 +27,16 @@ function PrayerFlagCurtains() {
         <div className="relative w-full h-full">
           <Image
             src="/images/decorations/prayerflags.png"
-            alt="Prayer Flags"
+            alt=""
             fill
+            sizes="35vw"
+            quality={60}
             className="object-cover object-right-top"
             priority
           />
         </div>
       </motion.div>
 
-      {/* Right prayer flag curtain */}
       <motion.div
         className="fixed top-0 right-0 h-screen w-[35%] md:w-[28%] z-[100] pointer-events-none"
         style={{ x: rightX, opacity: flagsOpacity }}
@@ -46,8 +44,10 @@ function PrayerFlagCurtains() {
         <div className="relative w-full h-full scale-x-[-1]">
           <Image
             src="/images/decorations/prayerflags.png"
-            alt="Prayer Flags"
+            alt=""
             fill
+            sizes="35vw"
+            quality={60}
             className="object-cover object-right-top"
             priority
           />
@@ -57,31 +57,6 @@ function PrayerFlagCurtains() {
   )
 }
 
-// Projects data for the carousel cards
-const carouselProjects = [
-  {
-    title: 'Mountain Explorer',
-    description: 'An immersive 3D experience showcasing mountain landscapes with realistic terrain.',
-    tags: ['Three.js', 'React', 'WebGL'],
-  },
-  {
-    title: 'Prayer Wheel App',
-    description: 'A meditative mobile app featuring traditional Tibetan prayer wheels and mantras.',
-    tags: ['React Native', 'Expo'],
-  },
-  {
-    title: 'Stupa Gallery',
-    description: 'Virtual tour of ancient Buddhist stupas and monuments from around the world.',
-    tags: ['Next.js', 'Framer'],
-  },
-  {
-    title: 'Himalayan Trails',
-    description: 'Interactive map and guide for trekking routes in the Himalayas.',
-    tags: ['Mapbox', 'Node.js'],
-  },
-]
-
-// Single card info display component
 function CardInfo({ project, isActive }) {
   return (
     <motion.div
@@ -103,21 +78,21 @@ function CardInfo({ project, isActive }) {
   )
 }
 
-// Prayer wheel section text and card info - rendered outside Canvas
 function PrayerWheelText() {
   const { scrollYProgress } = useScroll()
   const [activeCard, setActiveCard] = useState(0)
 
-  // Show text only in prayer wheel section (80% - 100% scroll)
   const opacity = useTransform(scrollYProgress, [0.78, 0.82, 0.95, 1.0], [0, 1, 1, 0])
   const y = useTransform(scrollYProgress, [0.78, 0.85], [50, 0])
   const bottomY = useTransform(scrollYProgress, [0.82, 0.88], [30, 0])
 
-  // Update active card based on scroll
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+  useMotionValueEvent(scrollYProgress, 'change', (latest) => {
     if (latest >= 0.82 && latest <= 1.0) {
       const progress = (latest - 0.82) / (1.0 - 0.82)
-      const cardIndex = Math.min(Math.floor(progress * carouselProjects.length), carouselProjects.length - 1)
+      const cardIndex = Math.min(
+        Math.floor(progress * experiences.length),
+        experiences.length - 1
+      )
       setActiveCard(cardIndex)
     }
   })
@@ -127,7 +102,6 @@ function PrayerWheelText() {
       className="fixed top-0 left-0 w-full h-screen z-[50] pointer-events-none flex flex-col items-center justify-between py-16"
       style={{ opacity }}
     >
-      {/* Header */}
       <motion.div style={{ y }} className="text-center">
         <h2 className="text-4xl md:text-6xl font-bold text-white font-tibetan drop-shadow-lg">
           Experiences
@@ -137,12 +111,11 @@ function PrayerWheelText() {
         </p>
       </motion.div>
 
-      {/* Card info at bottom */}
       <motion.div
         className="relative text-center px-8 py-6 bg-black/40 backdrop-blur-sm rounded-2xl mx-4 max-w-md min-h-[150px]"
         style={{ y: bottomY }}
       >
-        {carouselProjects.map((project, index) => (
+        {experiences.map((project, index) => (
           <CardInfo key={project.title} project={project} isActive={activeCard === index} />
         ))}
       </motion.div>
@@ -150,62 +123,101 @@ function PrayerWheelText() {
   )
 }
 
+function usePreferLowPower() {
+  const [lowPower, setLowPower] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => {
+      const cores = navigator.hardwareConcurrency || 8
+      setLowPower(mq.matches || cores <= 4)
+    }
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  return lowPower
+}
+
 export default function Scene() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [webglError, setWebglError] = useState(false)
+  const lowPower = usePreferLowPower()
+
+  const handleProgress = useCallback((value) => {
+    setProgress(value)
+  }, [])
+
+  const handleReady = useCallback(() => {
+    setIsLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+    if (!gl) setWebglError(true)
+
+    const timeout = setTimeout(() => setIsLoaded(true), 10000)
+    return () => clearTimeout(timeout)
+  }, [])
+
+  if (webglError) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-6">
+        <div className="max-w-lg text-center">
+          <h1 className="text-3xl font-tibetan mb-4">Aryendra Shrestha</h1>
+          <p className="text-white/70 mb-6">
+            This page needs WebGL for the 3D experience. Try another browser, or visit the projects directly.
+          </p>
+          <a
+            href="https://github.com/K11mito"
+            className="underline text-white/90"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            github.com/K11mito
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
-      {!isLoaded && <LoadingScreen />}
-
-      {/* Prayer flag curtains - outside Canvas for proper fixed positioning */}
+      {!isLoaded && <LoadingScreen progress={progress} />}
       {isLoaded && <PrayerFlagCurtains />}
-
-      {/* Prayer wheel section text - outside Canvas */}
       {isLoaded && <PrayerWheelText />}
 
       <div className="canvas-container">
         <Canvas
-          shadows
-          camera={{ position: [80, -80, 280], fov: 50, near: 0.1, far: 3000 }}
-          gl={{ antialias: true, alpha: false }}
-          onCreated={() => setIsLoaded(true)}
+          dpr={lowPower ? [1, 1.25] : [1, 1.5]}
+          gl={{
+            antialias: !lowPower,
+            alpha: false,
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true,
+          }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#0a0a1e')
+          }}
         >
+          <AdaptiveDpr pixelated />
+          <ProgressGate onProgress={handleProgress} onReady={handleReady} />
           <Suspense fallback={null}>
-            {/* Ambient lighting */}
             <ambientLight intensity={0.4} />
-            <directionalLight
-              position={[10, 20, 10]}
-              intensity={1.5}
-              castShadow
-              shadow-mapSize={[2048, 2048]}
-              shadow-camera-far={50}
-              shadow-camera-left={-20}
-              shadow-camera-right={20}
-              shadow-camera-top={20}
-              shadow-camera-bottom={-20}
-            />
+            <directionalLight position={[10, 20, 10]} intensity={1.5} />
+            <hemisphereLight skyColor="#87CEEB" groundColor="#8B4513" intensity={0.6} />
 
-            {/* Hemisphere light for natural outdoor feel */}
-            <hemisphereLight
-              skyColor="#87CEEB"
-              groundColor="#8B4513"
-              intensity={0.6}
-            />
-
-            {/* ScrollControls wraps everything - 5 pages of scroll */}
             <ScrollControls pages={5} damping={0.25}>
-              {/* 3D Content that responds to scroll */}
               <MountainExperience />
-              <CloudTransition />
-              <PrayerWheelFooter />
-
-              {/* HTML UI Overlay - floats in foreground */}
+              <DeferredSections />
               <Scroll html style={{ width: '100%' }}>
                 <UIOverlay />
               </Scroll>
             </ScrollControls>
-
-            <Preload all />
           </Suspense>
         </Canvas>
       </div>
