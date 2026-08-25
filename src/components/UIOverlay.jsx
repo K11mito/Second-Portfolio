@@ -200,53 +200,42 @@ function ProjectsSection() {
         </motion.h2>
 
         <div className="grid sm:grid-cols-2 gap-8">
-          {projects.map((project, index) => {
-            const CardWrapper = project.liveLink ? motion.a : motion.div
-
-            return (
-              <CardWrapper
-                key={project.title}
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.title}
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
               whileHover={{ y: -10, scale: 1.02 }}
-              href={project.liveLink}
-              target={project.liveLink ? '_blank' : undefined}
-              rel={project.liveLink ? 'noopener noreferrer' : undefined}
-              className="glass rounded-2xl overflow-hidden group cursor-pointer relative"
+              className="glass rounded-2xl overflow-hidden group relative"
             >
-              {/* Tibetan Decorative Corners - Smaller for cards */}
+              {project.liveLink && (
+                <a
+                  href={project.liveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 z-10"
+                  aria-label={`Open ${project.title}`}
+                />
+              )}
+
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 left-0 -translate-x-1 -translate-y-1 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 top-0 right-0 translate-x-1 -translate-y-1 rotate-90 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 right-0 translate-x-1 translate-y-1 rotate-180 z-20" />
               <TibetanCorner src="/images/decorations/tibetan-corner-small.png" className="w-12 h-12 md:w-16 md:h-16 bottom-0 left-0 -translate-x-1 translate-y-1 -rotate-90 z-20" />
 
-              {/* Project Image */}
               <div className="relative h-48 overflow-hidden">
-                {project.video ? (
-                  <video
-                    src={project.video}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    preload="metadata"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 pointer-events-none"
-                  />
-                ) : (
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                )}
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
 
-              {/* Project Info */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2">
                   {project.title}
@@ -254,8 +243,6 @@ function ProjectsSection() {
                 <p className="text-white/70 text-sm mb-4">
                   {project.description}
                 </p>
-
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
                     <span
@@ -268,23 +255,19 @@ function ProjectsSection() {
                 </div>
               </div>
 
-              {/* GitHub Link */}
               {project.githubLink && (
-                <div className="absolute bottom-6 right-6 z-30">
-                  <a
-                    href={project.githubLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white/60 hover:text-white transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FaGithub size={24} />
-                  </a>
-                </div>
+                <a
+                  href={project.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-6 right-6 z-30 text-white/60 hover:text-white transition-colors"
+                  aria-label={`${project.title} on GitHub`}
+                >
+                  <FaGithub size={24} />
+                </a>
               )}
-            </CardWrapper>
-            )
-          })}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section >

@@ -31,7 +31,12 @@ export default function RootLayout({ children }) {
           as="fetch"
           crossOrigin="anonymous"
         />
-        <link rel="preload" href="/images/backgrounds/background6.jpg" as="image" />
+        <link
+          rel="preload"
+          href="/images/backgrounds/background6.jpg"
+          as="image"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className={`${inter.variable} ${yatraOne.variable} font-sans antialiased`}>
         {children}
