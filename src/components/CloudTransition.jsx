@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useMemo } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { useScroll, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -16,11 +16,10 @@ function easeInQuad(t) {
 export default function CloudTransition() {
   const groupRef = useRef()
   const scroll = useScroll()
-  const { camera } = useThree()
 
   // Load cloud textures
-  const cloud1Texture = useTexture('/images/clouds/cloud1.png')
-  const cloud2Texture = useTexture('/images/clouds/cloud2.png')
+  const cloud1Texture = useTexture('/images/clouds/cloud1.webp')
+  const cloud2Texture = useTexture('/images/clouds/cloud2.webp')
 
   // Configure textures
   cloud1Texture.colorSpace = THREE.SRGBColorSpace

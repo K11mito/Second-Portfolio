@@ -5,12 +5,11 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useScroll, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
-// Preload the mountain model
-useGLTF.preload('/models/snowy_mountain.glb')
+useGLTF.preload('/models/snowy_mountain.glb', true, true)
 
 // Hemisphere backdrop covering the entire scene
 function HemisphereBackdrop() {
-  const texture = useTexture('/images/backgrounds/background6.png')
+  const texture = useTexture('/images/backgrounds/background6.jpg')
 
   // Configure texture
   texture.colorSpace = THREE.SRGBColorSpace
@@ -55,18 +54,17 @@ function HemisphereBackdrop() {
 }
 
 function Mountain() {
-  const { scene } = useGLTF('/models/snowy_mountain.glb')
+  const { scene } = useGLTF('/models/snowy_mountain.glb', true, true)
   const mountainRef = useRef()
 
-  // Clone the scene to avoid issues with reusing geometry
   const clonedScene = useMemo(() => {
     const clone = scene.clone()
     clone.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = true
-        child.receiveShadow = true
-        // Ensure materials are properly set
+        child.castShadow = false
+        child.receiveShadow = false
         if (child.material) {
+          child.material.side = THREE.FrontSide
           child.material.needsUpdate = true
         }
       }

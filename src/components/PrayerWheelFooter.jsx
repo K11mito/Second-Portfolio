@@ -4,9 +4,7 @@ import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useScroll, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
-
-// Preload the prayer wheel model
-useGLTF.preload('/models/prayer_wheel.glb')
+import { experiences } from '@/data/site'
 
 // Individual 3D Project Card with glass effect
 function ProjectCard3D({ project, index, cardWidth, cardHeight, cardGap, cardSpacing }) {
@@ -294,7 +292,7 @@ function CarouselRig({ projects }) {
 
 // Prayer wheel that stays centered in background
 function PrayerWheel() {
-  const { scene } = useGLTF('/models/prayer_wheel.glb')
+  const { scene } = useGLTF('/models/prayer_wheel.glb', true, true)
   const wheelRef = useRef()
   const scroll = useScroll()
   const rotationRef = useRef(0)
@@ -304,8 +302,8 @@ function PrayerWheel() {
     const clone = scene.clone()
     clone.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = true
-        child.receiveShadow = true
+        child.castShadow = false
+        child.receiveShadow = false
       }
     })
     return clone
@@ -356,7 +354,7 @@ function MonasteryEnvironment() {
   return (
     <group>
       {/* Floor */}
-      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]} receiveShadow visible={false}>
+      <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -8, 0]} visible={false}>
         <planeGeometry args={[100, 100]} />
         <meshStandardMaterial
           color="#1a0f0a"
@@ -403,45 +401,6 @@ function CandleLight({ position, intensity = 1 }) {
     />
   )
 }
-
-// Projects data
-const projectsData = [
-  {
-    title: 'Data Intelligence Intern',
-    description: 'Worked on GEO & AEO related projects. Created Agents to manage GA4 and Clarity Analytics.',
-    image: '/images/logos/fusemachines4.png',
-    tags: ['Python', 'AI', 'Data Science'],
-    link: '#'
-  },
-  {
-    title: 'Founder',
-    description: 'Launched and scaled a gaming accessory store to generate over $10k in revenue. Averaged a 4.2x ROAS',
-    image: '/images/logos/Esports.png',
-    tags: ['React Native', 'Expo'],
-    link: '#'
-  },
-  {
-    title: 'Co-Founder',
-    description: 'Started an online store to buy and sell furniture targeting people moving in and out of homes. Worked with companies like ArtMaya to offer larger offering',
-    image: '/images/logos/Sajilo.png',
-    tags: ['Next.js', 'Framer'],
-    link: '#'
-  },
-  {
-    title: 'Perp-Trading Group',
-    description: 'Founded a crypto trading group to gather information and trade together. Mainly traded ETH, BTC, SOL',
-    image: '/images/logos/seize2.png',
-    tags: ['Python', 'Perp Trading', 'Crypto'],
-    link: '#'
-  },
-  {
-    title: 'Basketball',
-    description: 'Played basketball at the College & High School level. Won the school championship in 2024.',
-    image: '/images/profile/basketball.jpg',
-    tags: ['Mapbox', 'Node.js'],
-    link: '#'
-  },
-]
 
 export default function PrayerWheelFooter() {
   const groupRef = useRef()
@@ -502,7 +461,6 @@ export default function PrayerWheelFooter() {
         penumbra={0.8}
         intensity={3}
         color="#ffb366"
-        castShadow
       />
 
       {/* Candle lights */}
@@ -517,7 +475,7 @@ export default function PrayerWheelFooter() {
       <ExperiencesHeader />
 
       {/* 3D Carousel - cards at z = 2, in front of prayer wheel */}
-      <CarouselRig projects={projectsData} />
+      <CarouselRig projects={experiences} />
     </group>
   )
 }

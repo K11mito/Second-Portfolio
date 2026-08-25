@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { FaGithub, FaInstagram, FaLinkedin, FaEnvelope } from 'react-icons/fa'
+import { projects } from '@/data/site'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -14,8 +15,9 @@ const TibetanCorner = ({ className, style, src = "/images/decorations/tibetan-co
   <div className={`absolute pointer-events-none transition-all duration-500 opacity-40 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] ${className}`} style={style}>
     <Image
       src={src}
-      alt="Tibetan Corner"
+      alt=""
       fill
+      sizes="112px"
       className="object-contain"
     />
   </div>
@@ -31,11 +33,12 @@ function HeroSection() {
         className="text-center"
       >
         {/* Tibetan Knot */}
-        <div className="relative w-40 h-40 md:w-56 md:h-56 mx-auto mb-8">
+            <div className="relative w-40 h-40 md:w-56 md:h-56 mx-auto mb-8">
           <Image
             src="/images/decorations/knott.png"
-            alt="Endless Knot"
+            alt=""
             fill
+            sizes="224px"
             className="object-contain"
           />
         </div>
@@ -97,9 +100,10 @@ function AboutSection() {
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl blur-2xl opacity-30" />
               <div className="relative w-full h-full rounded-3xl overflow-hidden border border-white/20 glass shadow-2xl">
                 <Image
-                  src="/images/profile/ary.JPG"
-                  alt="Profile"
+                  src="/images/profile/ary.webp"
+                  alt="Aryendra Shrestha"
                   fill
+                  sizes="320px"
                   className="object-cover"
                 />
               </div>
@@ -129,9 +133,10 @@ function AboutSection() {
               <div className="inline-flex items-center gap-3 glass rounded-full px-6 py-3 border border-white/10 transition-transform hover:scale-105">
                 <div className="relative w-10 h-10">
                   <Image
-                    src="/images/logos/Mahidollogo.png"
+                    src="/images/logos/Mahidollogo.webp"
                     alt="Mahidol University"
                     fill
+                    sizes="40px"
                     className="object-contain"
                   />
                 </div>
@@ -182,34 +187,9 @@ function AboutSection() {
 }
 
 function ProjectsSection() {
-  const projects = [
-    {
-      title: 'Get Shit Done',
-      description: 'Daily goal setting and productivity app, Breaking large goals into everyday tasks',
-      image: '/images/projects/getshitdone.png',
-      tags: ['Next.js', 'Three.js', 'Tailwind'],
-      githubLink: 'https://github.com/K11mito/Goal-tracking-and-daily-routine-app',
-    },
-    {
-      title: 'Food and Macro tracking app',
-      description: 'Uses realtime Object-detction to track and log macro details',
-      image: '/images/projects/foodmacro.png',
-      tags: ['Yolo.v8', 'React', 'Vite'],
-      githubLink: 'https://github.com/K11mito',
-    },
-    {
-      title: 'Vessel',
-      description: 'A solution to having multiple agentic terminals open at once. Helps manage multiple terminal windows at once.',
-      image: '/images/projects/vessel-preview.png',
-      tags: ['Three.js', 'Typescript', 'Electron'],
-      liveLink: 'https://vessel-landing-one.vercel.app/#',
-      githubLink: 'https://github.com/AryaShrestha05/vessel/tree/Frontend-test',
-    },
-  ]
-
   return (
     <section className="min-h-screen w-full flex items-center justify-center px-4 py-20">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -219,7 +199,7 @@ function ProjectsSection() {
           Few cool things I built
         </motion.h2>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 gap-8">
           {projects.map((project, index) => {
             const CardWrapper = project.liveLink ? motion.a : motion.div
 
@@ -259,6 +239,7 @@ function ProjectsSection() {
                     src={project.image}
                     alt={project.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 )}

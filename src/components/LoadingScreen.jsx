@@ -2,19 +2,11 @@
 
 import { motion } from 'framer-motion'
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ progress = 0 }) {
+  const clamped = Math.max(0, Math.min(100, progress))
+
   return (
-    <motion.div
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 0 }}
-      transition={{ duration: 1, delay: 2 }}
-      onAnimationComplete={(definition) => {
-        // The component will be unmounted by parent after loading
-      }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800"
-      style={{ pointerEvents: 'none' }}
-    >
-      {/* Mountain silhouette animation */}
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -44,47 +36,23 @@ export default function LoadingScreen() {
         </svg>
       </motion.div>
 
-      {/* Loading text */}
       <motion.h2
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
         className="text-2xl font-light text-white mb-4"
       >
         Ascending to the peak
       </motion.h2>
 
-      {/* Loading bar */}
       <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
         <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: '100%' }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="w-full h-full bg-gradient-to-r from-transparent via-white to-transparent"
+          className="h-full bg-gradient-to-r from-white/40 via-white to-white/40"
+          initial={{ width: '0%' }}
+          animate={{ width: `${clamped}%` }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
         />
       </div>
-
-      {/* Loading dots */}
-      <div className="flex gap-2 mt-6">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0.3 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              duration: 0.6,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              delay: i * 0.2,
-            }}
-            className="w-2 h-2 bg-white rounded-full"
-          />
-        ))}
-      </div>
-    </motion.div>
+      <p className="mt-3 text-sm text-white/50 tabular-nums">{clamped}%</p>
+    </div>
   )
 }
