@@ -132,6 +132,8 @@ const HALL = {
 }
 
 const hallBackground = new THREE.Color('#060405')
+// Just under the summit: centring this puts the peak in the upper middle of a portrait frame.
+const PEAK_AIM = new THREE.Vector3(-37, 365, 15)
 
 function segment(keys, t) {
   if (t <= keys[0].t) return [keys[0], keys[0], 0]
@@ -221,6 +223,10 @@ export default function Director() {
       const [a, b, k] = segment(MOUNTAIN, tt)
       paths.mCam.getPoint(tt / 3, tmp.pos)
       paths.mLook.getPoint(tt / 3, tmp.look)
+      // Landscape frames push the peak aside to make room for type; portrait
+      // screens are too narrow for that, so ease the aim back onto the summit.
+      const frame = smooth(0.55, 1.35, env.aspect)
+      if (frame < 1) tmp.look.lerp(PEAK_AIM, (1 - frame) * (1 - smooth(2.2, 3, tt)))
       // descent into the cloud sea during the interlude
       if (t >= 3) {
         const sink = smooth(0, 0.46, ps)

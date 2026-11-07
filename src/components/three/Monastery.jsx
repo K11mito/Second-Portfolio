@@ -6,8 +6,12 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { env, HALL_ORIGIN } from './env'
 import { pinProgress, scrollState } from '@/lib/scroll'
+import { ringTurn } from '@/lib/ring'
+import { experience } from '@/content/site'
 
 useGLTF.preload('/models/prayer_wheel.glb')
+
+const CARD_COUNT = experience.length
 
 const WHEEL_SCALE = 0.0125
 
@@ -87,9 +91,8 @@ function Wheel({ envMap }) {
     const dt = Math.min(delta, 1 / 20)
     // Scroll turns the wheel clockwise (seen from above), in step with the card
     // ring; a slow idle turn keeps it alive, as if someone just passed by.
-    const p = pinProgress('experience')
-    const k = Math.min(1, Math.max(0, (p - 0.04) / 0.88))
-    const scrollTurn = -k * ((Math.PI * 2 * 4) / 5)
+    // same detented mapping as the HTML card ring, so the two turn as one
+    const scrollTurn = -ringTurn(pinProgress('experience'), CARD_COUNT) * ((Math.PI * 2) / CARD_COUNT)
     const idle = scrollState.reducedMotion ? 0 : -env.time * 0.12
     const target = scrollTurn + idle
     angle.current = scrollState.reducedMotion ? target : THREE.MathUtils.damp(angle.current, target, 4, dt)
@@ -353,10 +356,44 @@ export default function Monastery() {
   const amb = useRef()
   const envMap = useHallEnvironment()
 
+  const { gl, scene } = useThree()
+
   // A spotlight's target must live in the scene graph, or it aims at the origin.
   useEffect(() => {
     if (key.current && keyTarget.current) key.current.target = keyTarget.current
   }, [])
+
+  // Warm-up: three.js picks shader programs per *visible light setup* (and for
+  // the screen's tone mapping, which render targets don't use). So when the
+  // page is idle, briefly show only the hall and ask for its programs with
+  // compileAsync, which links them in the background where the browser allows.
+  // Entering the monastery then never stalls.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 600))
+    const cancel = window.cancelIdleCallback || clearTimeout
+    const id = idle(() => {
+      const saved = []
+      scene.traverse((o) => {
+        if (o.userData.act) {
+          saved.push([o, o.visible])
+          o.visible = o.userData.act === 'monastery'
+        }
+      })
+      const cam = new THREE.PerspectiveCamera(34, 1.6, 0.5, 400)
+      cam.position.copy(HALL_ORIGIN).add(new THREE.Vector3(0, 7, 31))
+      cam.lookAt(HALL_ORIGIN.x, HALL_ORIGIN.y + 7, HALL_ORIGIN.z)
+      cam.updateMatrixWorld()
+      try {
+        // program selection happens synchronously inside this call
+        const parallel = gl.compileAsync && gl.extensions.has('KHR_parallel_shader_compile')
+        if (parallel) gl.compileAsync(scene, cam).catch(() => {})
+        else gl.compile(scene, cam)
+      } finally {
+        saved.forEach(([o, v]) => (o.visible = v))
+      }
+    })
+    return () => cancel(id)
+  }, [gl, scene])
 
   useFrame(() => {
     const on = env.act === 'monastery'
@@ -369,7 +406,7 @@ export default function Monastery() {
   })
 
   return (
-    <group ref={group} position={HALL_ORIGIN} visible={false}>
+    <group ref={group} position={HALL_ORIGIN} visible={false} userData={{ act: 'monastery' }}>
       <ambientLight ref={amb} color="#3a2a26" />
       {/* skylight key */}
       <spotLight

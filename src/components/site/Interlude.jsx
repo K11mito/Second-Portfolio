@@ -3,8 +3,8 @@
 // driven from <Atmosphere/>, in lock-step with the white-out.
 export default function Interlude() {
   return (
-    <section id="interlude" data-scene="interlude" className="relative h-[270vh]" aria-label="Interlude">
-      <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden">
+    <section id="interlude" data-scene="interlude" className="interlude relative" aria-label="Interlude">
+      <div className="interlude-stage flex items-center justify-center overflow-hidden py-32">
         <div data-interlude className="shell text-center will-change-[opacity,transform]">
           <p className="eyebrow text-snow/75">Descending</p>
           <p className="display mt-6 text-[clamp(3.5rem,10.5vw,10rem)] italic text-snow [text-shadow:0_4px_60px_rgb(40_20_40/0.35)]">

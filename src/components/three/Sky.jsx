@@ -38,7 +38,7 @@ export default function Sky() {
   })
 
   return (
-    <mesh ref={mesh} renderOrder={-10} frustumCulled={false}>
+    <mesh ref={mesh} renderOrder={-10} frustumCulled={false} userData={{ act: 'mountain' }}>
       <sphereGeometry args={[8000, 48, 24]} />
       <shaderMaterial
         side={THREE.BackSide}

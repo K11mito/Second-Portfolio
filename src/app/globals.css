@@ -239,6 +239,17 @@ html.lenis body {
     0 40px 90px -40px rgb(0 0 0 / 0.8);
 }
 
+/* The descent is only tall when there is a scene to descend through. */
+.js .interlude {
+  height: 270vh;
+}
+.js .interlude-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  padding-block: 0;
+}
+
 /* ------------------------------------------------------------------ experience ring */
 /* Fallback (no JS): a plain horizontal list you can swipe through. */
 .exp-stage {
@@ -310,6 +321,10 @@ html.lenis body {
 @media (max-width: 767px) {
   .js .exp-header .exp-counter {
     display: none;
+  }
+  /* narrow cards wrap more lines: give them more height */
+  .js .exp-ring {
+    --ch: calc(var(--cw) * 1.42 + 3rem);
   }
 }
 

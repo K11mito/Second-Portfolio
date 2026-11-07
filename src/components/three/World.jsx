@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import Director from './Director'
 import Lights from './Lights'
 import Sky from './Sky'
@@ -17,7 +18,10 @@ export default function World() {
       <Terrain />
       <CloudSea />
       <PrayerFlags />
-      <Monastery />
+      {/* The monastery is far down the page: stream it in without holding up the summit. */}
+      <Suspense fallback={null}>
+        <Monastery />
+      </Suspense>
     </>
   )
 }

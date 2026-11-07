@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { experience } from '@/content/site'
 import { pinProgress, scrollState } from '@/lib/scroll'
+import { ringTurn } from '@/lib/ring'
 
 const N = experience.length
 const STEP = 360 / N
@@ -26,9 +27,7 @@ export default function Experience() {
       const p = pinProgress('experience')
       if (Math.abs(p - last) < 1e-5) return
       last = p
-      // hold the first card briefly, then turn one card per stretch of scroll
-      const k = Math.min(1, Math.max(0, (p - 0.04) / 0.88))
-      const rot = -k * STEP * (N - 1)
+      const rot = -ringTurn(p, N) * STEP
       ring.current.style.transform = `translateZ(calc(var(--r) * -1)) rotateY(${rot}deg)`
       let front = 0
       cards.current.forEach((card, i) => {

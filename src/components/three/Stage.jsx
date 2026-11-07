@@ -1,34 +1,18 @@
 'use client'
 
 import { Suspense, useEffect, useRef } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import World from './World'
 import { setLoading } from '@/lib/loading'
 
-// Signals "ready" once every asset inside the Suspense boundary has resolved,
-// all shaders (including hidden acts) are compiled, and a frame has been drawn.
+// Signals "ready" once the summit's assets have resolved and a few frames have
+// been drawn (the first frame compiles the shaders, hidden under the poster).
+// The monastery streams in separately and warms itself up (see Monastery).
 function Ready() {
-  const { gl, scene, camera } = useThree()
   const frames = useRef(0)
   const done = useRef(false)
-
-  useEffect(() => {
-    const hidden = []
-    scene.traverse((o) => {
-      if (!o.visible) {
-        hidden.push(o)
-        o.visible = true
-      }
-    })
-    try {
-      gl.compile(scene, camera)
-    } catch (e) {
-      // compile is an optimisation only
-    }
-    hidden.forEach((o) => (o.visible = false))
-  }, [gl, scene, camera])
 
   useFrame(() => {
     if (done.current) return

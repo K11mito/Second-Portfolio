@@ -159,7 +159,7 @@ export default function CloudSea() {
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} userData={{ act: 'mountain' }}>
       {CLOUD_LAYERS.map((L, i) => (
         // seen from above, the lowest layer must draw first
         <mesh key={i} geometry={plane} material={materials[i]} position={[0, L.y, 0]} renderOrder={2 + CLOUD_LAYERS.length - i} />

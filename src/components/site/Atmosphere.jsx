@@ -62,7 +62,7 @@ export default function Atmosphere() {
   }, [])
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[1]" aria-hidden="true">
+    <div id="atmosphere" className="pointer-events-none fixed inset-0 z-[1]" aria-hidden="true">
       <div
         className="absolute inset-0"
         style={{

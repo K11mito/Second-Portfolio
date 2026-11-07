@@ -179,7 +179,7 @@ export default function PrayerFlags() {
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} userData={{ act: 'mountain' }}>
       <primitive object={mesh} />
       {cordGeos.map((g, i) => (
         <mesh key={i} geometry={g}>

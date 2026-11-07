@@ -56,8 +56,8 @@ export default function Lights() {
 
   return (
     <>
-      <directionalLight ref={sunLight} castShadow />
-      <hemisphereLight ref={hemi} groundColor="#4a3a30" />
+      <directionalLight ref={sunLight} castShadow userData={{ act: 'mountain' }} />
+      <hemisphereLight ref={hemi} groundColor="#4a3a30" userData={{ act: 'mountain' }} />
     </>
   )
 }

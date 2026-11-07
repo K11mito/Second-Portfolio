@@ -281,7 +281,7 @@ export default function Terrain() {
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} userData={{ act: 'mountain' }}>
       <mesh geometry={geo} material={mat} castShadow receiveShadow />
       {RANGES.map((r, i) => (
         <mesh
