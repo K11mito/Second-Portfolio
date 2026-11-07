@@ -214,7 +214,10 @@ export default function Director() {
     const p = debugT ? THREE.MathUtils.clamp(t - 3, 0, 1) : pinProgress('interlude')
     const ps = debugT ? p : pinProgress('interlude', sy)
     const inHall = t >= 3 && p >= 0.55
-    env.act = inHall ? 'monastery' : 'mountain'
+    // While the white-out/black-out fully covers the screen there is nothing to
+    // see: hide every act so the GPU only clears (saves the heaviest frames).
+    const covered = !debugT && p > 0.45 && p < 0.82
+    env.act = covered ? 'void' : inHall ? 'monastery' : 'mountain'
     env.whiteout = t < 3 ? 0 : smooth(0.2, 0.44, p)
 
     let fov

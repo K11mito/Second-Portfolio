@@ -22,7 +22,7 @@ function ProjectCard({ project, index, total }) {
 
       <div className="flex flex-col justify-between gap-10 p-7 sm:p-9 md:col-span-5 lg:p-11">
         <div>
-          <div className="eyebrow flex items-center justify-between text-snow/50">
+          <div className="eyebrow flex items-center justify-between text-snow/60">
             <span>
               <span className="text-snow/85">{String(index + 1).padStart(2, '0')}</span> / {String(total).padStart(2, '0')}
             </span>

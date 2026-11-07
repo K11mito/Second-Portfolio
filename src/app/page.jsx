@@ -9,6 +9,19 @@ import Work from '@/components/site/Work'
 import Interlude from '@/components/site/Interlude'
 import Experience from '@/components/site/Experience'
 import Contact from '@/components/site/Contact'
+import Footer from '@/components/site/Footer'
+import { person, socials } from '@/content/site'
+
+// Structured data so search engines understand whose site this is.
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: person.name,
+  description: person.lede,
+  email: `mailto:${person.email}`,
+  affiliation: { '@type': 'CollegeOrUniversity', name: 'Mahidol University' },
+  sameAs: socials.map((s) => s.href),
+}
 
 export default function Home() {
   return (
@@ -32,7 +45,9 @@ export default function Home() {
         <Experience />
         <Contact />
       </main>
+      <Footer />
       <div className="grain" aria-hidden="true" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
     </>
   )
 }

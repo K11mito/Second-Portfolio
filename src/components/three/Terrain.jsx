@@ -11,6 +11,7 @@ import { getNoiseTexture } from './noiseTexture'
 // Welding + smooth normals is what removes the streaky, faceted look.
 
 const { N, SIZE, MIN_H, MAX_H, V_SCALE, CURVE } = TERRAIN
+export const SHADOW_LAYER = 1
 
 function buildGeometry(heights, stride = 1) {
   const n = Math.floor((N - 1) / stride) + 1
@@ -256,7 +257,7 @@ export default function Terrain() {
   const mask = useLoader(THREE.TextureLoader, '/terrain/snow-mask.webp')
   const group = useRef()
 
-  const { geo, low, mat } = useMemo(() => {
+  const { geo, low, shadowGeo, mat } = useMemo(() => {
     const heights = new Uint16Array(buffer)
     mask.flipY = false
     mask.colorSpace = THREE.NoColorSpace
@@ -266,6 +267,8 @@ export default function Terrain() {
     return {
       geo: buildGeometry(heights, 1),
       low: buildGeometry(heights, 4),
+      // a quarter of the triangles, used only to cast the sun's shadows
+      shadowGeo: buildGeometry(heights, 2),
       mat: makeTerrainMaterial(mask, terrainUniforms),
     }
   }, [buffer, mask])
@@ -282,7 +285,9 @@ export default function Terrain() {
 
   return (
     <group ref={group} userData={{ act: 'mountain' }}>
-      <mesh geometry={geo} material={mat} castShadow receiveShadow />
+      <mesh geometry={geo} material={mat} receiveShadow />
+      {/* shadow caster on layer 1: drawn into the shadow map, never by the camera */}
+      <mesh geometry={shadowGeo} material={mat} castShadow ref={(m) => m && m.layers.set(SHADOW_LAYER)} />
       {RANGES.map((r, i) => (
         <mesh
           key={i}

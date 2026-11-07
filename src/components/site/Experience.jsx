@@ -67,11 +67,11 @@ export default function Experience() {
           <p className="mt-4 max-w-[24rem] text-[0.98rem] leading-[1.65] text-snow/70">
             Ventures, roles and teams I&rsquo;ve been part of. Each turn of the wheel, another chapter.
           </p>
-          <p className="eyebrow exp-counter mt-6 text-snow/55" aria-hidden="true">
+          <p className="eyebrow exp-counter mt-6 text-snow/65" aria-hidden="true">
             <span ref={counter} className="text-saffron">
               01
             </span>{' '}
-            / {String(N).padStart(2, '0')} <span className="ml-3 text-snow/40">Scroll to turn</span>
+            / {String(N).padStart(2, '0')} <span className="ml-3 text-snow/55">Scroll to turn</span>
           </p>
         </header>
 
@@ -96,7 +96,7 @@ export default function Experience() {
                     <div aria-hidden="true" className="absolute inset-0 ring-1 ring-inset ring-white/[0.07]" />
                   </div>
                   <div className="flex flex-1 flex-col p-6 sm:p-7">
-                    <div className="eyebrow flex items-center justify-between text-snow/50">
+                    <div className="eyebrow flex items-center justify-between text-snow/60">
                       <span>{item.role}</span>
                       <span>{String(i + 1).padStart(2, '0')}</span>
                     </div>

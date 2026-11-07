@@ -76,8 +76,10 @@ const fragmentShader = /* glsl */ `
 
     float dens = smoothstep(0.26, 0.66, d + uCover - clear * 0.35) * (1.0 - clear * 0.85);
 
-    // billowy relief from the density gradient
-    // broad, gentle relief: high-frequency glints make clouds read as water
+    // Billowy relief from the density gradient, by finite differences over a
+    // broad step (screen-space derivatives were tried: cheaper, but blocky and
+    // flat at grazing angles; these fetches all hit one tiny cached texture).
+    // Broad and gentle on purpose: high-frequency glints make clouds read as water.
     float e = 18.0;
     float dx = density(p + vec2(e, 0.0)) - d;
     float dz = density(p + vec2(0.0, e)) - d;

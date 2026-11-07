@@ -10,7 +10,7 @@ export default function SceneStatus() {
   const pct = Math.round(progress * 100)
   return (
     <p
-      className="eyebrow flex items-center gap-3 text-snow/55 transition-opacity duration-1000"
+      className="eyebrow flex items-center gap-3 text-snow/65 transition-opacity duration-1000"
       style={{ opacity: ready ? 0 : 1 }}
       aria-live="polite"
       aria-hidden={ready}

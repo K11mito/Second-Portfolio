@@ -1,8 +1,8 @@
 'use client'
 
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useProgress } from '@react-three/drei'
+import { PerformanceMonitor, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import World from './World'
 import { setLoading } from '@/lib/loading'
@@ -33,16 +33,28 @@ function ProgressBridge() {
   return null
 }
 
+// Resolution budget: phones start lighter; the PerformanceMonitor steps the
+// pixel ratio down when frames slip and back up when there is headroom.
+function initialDpr() {
+  if (typeof window === 'undefined') return 1
+  const native = window.devicePixelRatio || 1
+  const small = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+  return Math.min(native, small ? 1.5 : 1.75)
+}
+
 export default function Stage() {
+  const [dpr, setDpr] = useState(initialDpr)
+  const ceiling = useRef(initialDpr())
+
   return (
     <>
       <ProgressBridge />
       <Canvas
         className="!fixed inset-0"
         shadows
-        dpr={[1, 1.75]}
+        dpr={dpr}
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false, stencil: false }}
-        camera={{ fov: 36, near: 1, far: 9000, position: [330, 330, 470] }}
+        camera={{ fov: 36, near: 1, far: 9000, position: [-560, 360, 620] }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.toneMappingExposure = 1.0
@@ -57,6 +69,12 @@ export default function Stage() {
         aria-hidden="true"
         tabIndex={-1}
       >
+        <PerformanceMonitor
+          flipflops={3}
+          onDecline={() => setDpr((d) => Math.max(1, +(d - 0.25).toFixed(2)))}
+          onIncline={() => setDpr((d) => Math.min(ceiling.current, +(d + 0.25).toFixed(2)))}
+          onFallback={() => setDpr(1)}
+        />
         <Suspense fallback={null}>
           <World />
           <Ready />

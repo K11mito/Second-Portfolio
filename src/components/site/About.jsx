@@ -37,7 +37,7 @@ export default function About() {
                 />
               </div>
             </div>
-            <figcaption className="eyebrow mt-4 flex items-center justify-between text-snow/55">
+            <figcaption className="eyebrow mt-4 flex items-center justify-between text-snow/65">
               <span>On the trail</span>
               <span className="flag-rule" aria-hidden="true">
                 <i className="bg-flag-blue" />
@@ -60,7 +60,7 @@ export default function About() {
               <dl className="mt-9 border-t border-white/10">
                 {about.facts.map((f) => (
                   <div key={f.term} className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-white/10 py-3.5 sm:grid-cols-[9rem_1fr]">
-                    <dt className="eyebrow pt-[0.3rem] text-snow/50">{f.term}</dt>
+                    <dt className="eyebrow pt-[0.3rem] text-snow/60">{f.term}</dt>
                     <dd className="text-[0.975rem] text-snow/90">{f.detail}</dd>
                   </div>
                 ))}

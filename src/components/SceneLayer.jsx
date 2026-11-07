@@ -60,6 +60,7 @@ export default function SceneLayer() {
     <div className="pointer-events-none fixed inset-0 z-0 bg-[#0b1f3d]" aria-hidden="true">
       <picture>
         <source media="(max-aspect-ratio: 1/1)" srcSet={tall.srcSet} sizes="100vw" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture> fed by getImageProps (optimised srcset) */}
         <img
           {...wide}
           alt=""
@@ -71,6 +72,7 @@ export default function SceneLayer() {
         />
       </picture>
       {fallback && (
+        // eslint-disable-next-line @next/next/no-img-element -- optimised srcset from getImageProps
         <img
           ref={hallRef}
           {...hall}

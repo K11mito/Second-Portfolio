@@ -1,15 +1,13 @@
 import { person, socials } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
 import CopyEmail from './CopyEmail'
-import Knot from './Knot'
 
 export default function Contact() {
-  const year = new Date().getFullYear()
   return (
     <section
       id="contact"
       data-scene="contact"
-      className="relative flex min-h-[100svh] flex-col"
+      className="relative flex min-h-[calc(100svh-5.5rem)] flex-col"
       aria-labelledby="contact-title"
     >
       <div
@@ -17,7 +15,7 @@ export default function Contact() {
         className="pointer-events-none absolute inset-0"
         style={{ background: 'linear-gradient(to right, rgb(6 4 6 / 0.72) 0%, rgb(6 4 6 / 0.35) 45%, transparent 75%)' }}
       />
-      <div className="shell relative flex flex-1 flex-col justify-center py-28 md:py-36">
+      <div className="shell relative flex flex-1 flex-col justify-center pb-16 pt-28 md:pt-36">
         <div data-reveal>
           <p className="eyebrow text-snow/70">
             <span className="text-snow">04</span> — Contact
@@ -60,24 +58,6 @@ export default function Contact() {
         </ul>
       </div>
 
-      <footer className="shell relative pb-8">
-        <div className="hairline" />
-        <div className="flex flex-col gap-5 pt-6 text-[0.8125rem] text-snow/50 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <Knot id="knot-footer" className="h-4 w-4 text-snow/60" strokeWidth={2.4} />
-            <span>
-              © {year} {person.name}
-            </span>
-          </div>
-          <span className="hidden md:inline">Designed &amp; built with Next.js and three.js</span>
-          <a href="#top" className="group inline-flex items-center gap-2 text-snow/60 transition-colors hover:text-snow">
-            Back to the summit
-            <span aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-y-0.5">
-              ↑
-            </span>
-          </a>
-        </div>
-      </footer>
     </section>
   )
 }

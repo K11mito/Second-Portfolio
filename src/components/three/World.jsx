@@ -6,6 +6,7 @@ import Lights from './Lights'
 import Sky from './Sky'
 import Terrain from './Terrain'
 import CloudSea from './CloudSea'
+import CloudPuffs from './CloudPuffs'
 import PrayerFlags from './PrayerFlags'
 import Monastery from './Monastery'
 
@@ -17,6 +18,7 @@ export default function World() {
       <Sky />
       <Terrain />
       <CloudSea />
+      <CloudPuffs />
       <PrayerFlags />
       {/* The monastery is far down the page: stream it in without holding up the summit. */}
       <Suspense fallback={null}>

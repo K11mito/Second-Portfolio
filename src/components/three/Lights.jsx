@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env } from './env'
+import { SHADOW_LAYER } from './Terrain'
 
 // Sun + sky light for the mountain act, retinted every frame by the Director.
 // The shadow map is only re-rendered when the sun actually moves, so a page
@@ -19,7 +20,8 @@ export default function Lights() {
     gl.shadowMap.needsUpdate = true
     const l = sunLight.current
     if (!l) return
-    l.shadow.mapSize.set(2048, 2048)
+    const small = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+    l.shadow.mapSize.set(small ? 1024 : 2048, small ? 1024 : 2048)
     const cam = l.shadow.camera
     cam.left = -620
     cam.right = 620
@@ -27,9 +29,10 @@ export default function Lights() {
     cam.bottom = -620
     cam.near = 10
     cam.far = 3200
+    cam.layers.set(SHADOW_LAYER) // only the decimated caster renders into the shadow map
     cam.updateProjectionMatrix()
     l.shadow.bias = -0.0004
-    l.shadow.normalBias = 1.2
+    l.shadow.normalBias = 2.4
     l.target.position.set(-40, 150, 0)
     l.target.updateMatrixWorld()
   }, [gl])

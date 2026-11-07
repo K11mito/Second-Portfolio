@@ -138,7 +138,7 @@ export default function Nav() {
                 opacity: open ? 1 : 0,
               }}
             >
-              <span className="eyebrow text-snow/40">0{i + 1}</span>
+              <span className="eyebrow text-snow/50">0{i + 1}</span>
               {item.label}
             </a>
           ))}
