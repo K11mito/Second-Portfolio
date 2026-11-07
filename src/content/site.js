@@ -34,6 +34,8 @@ export const about = {
   ],
 }
 
+// Each project can also take `video: '/videos/projects/name.mp4'` for a looping
+// preview (muted, plays while on screen); `image` is then used as its poster.
 export const projects = [
   {
     title: 'Vessel',

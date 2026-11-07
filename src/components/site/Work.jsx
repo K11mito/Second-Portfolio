@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { projects } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
+import ProjectVideo from './ProjectVideo'
 
 function ProjectCard({ project, index, total }) {
   const flip = index % 2 === 1
@@ -9,14 +10,18 @@ function ProjectCard({ project, index, total }) {
       <div
         className={`relative aspect-[16/10] overflow-hidden md:col-span-7 md:aspect-auto md:min-h-[27rem] ${flip ? 'md:order-2' : ''}`}
       >
-        <Image
-          src={project.image}
-          alt={project.imageAlt}
-          fill
-          sizes="(min-width: 768px) 55vw, 100vw"
-          className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.035]"
-          style={{ objectPosition: project.focus || 'center' }}
-        />
+        {project.video ? (
+          <ProjectVideo src={project.video} poster={project.image} label={project.imageAlt} />
+        ) : (
+          <Image
+            src={project.image}
+            alt={project.imageAlt}
+            fill
+            sizes="(min-width: 768px) 55vw, 100vw"
+            className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.035]"
+            style={{ objectPosition: project.focus || 'center' }}
+          />
+        )}
         <div aria-hidden="true" className="absolute inset-0 ring-1 ring-inset ring-white/[0.06]" />
       </div>
 

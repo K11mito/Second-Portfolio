@@ -5,6 +5,7 @@ import { getImageProps } from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { setLoading, useLoading } from '@/lib/loading'
 import { pinProgress, scrollState } from '@/lib/scroll'
+import SceneBoundary from './SceneBoundary'
 
 const Stage = dynamic(() => import('./three/Stage'), { ssr: false })
 
@@ -54,7 +55,7 @@ export default function SceneLayer() {
     return () => cancelAnimationFrame(raf)
   }, [fallback])
 
-  const live = ready && canRender
+  const live = ready && canRender && !fallback
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 bg-[#0b1f3d]" aria-hidden="true">
@@ -83,7 +84,15 @@ export default function SceneLayer() {
       )}
       {canRender && (
         <div className="absolute inset-0 transition-opacity duration-[1400ms] ease-out" style={{ opacity: ready ? 1 : 0 }}>
-          <Stage />
+          <SceneBoundary
+            onError={() => {
+              setCanRender(false)
+              setFallback(true)
+              setLoading({ unsupported: true, ready: true, progress: 1 })
+            }}
+          >
+            <Stage />
+          </SceneBoundary>
         </div>
       )}
     </div>

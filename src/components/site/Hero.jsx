@@ -16,7 +16,7 @@ export default function Hero() {
 
       <div className="shell relative flex h-full flex-col justify-end pb-[clamp(1.75rem,5.5vh,3.5rem)]">
         <div className="max-w-[52rem]">
-          <p className="eyebrow hero-in text-snow/75" style={{ '--d': '150ms' }}>
+          <p className="eyebrow hero-in text-snow/75 [@media(max-height:720px)]:md:hidden" style={{ '--d': '150ms' }}>
             Finance <span className="mx-2 text-snow/35">/</span> Technology <span className="mx-2 text-snow/35">/</span> Ventures
           </p>
 

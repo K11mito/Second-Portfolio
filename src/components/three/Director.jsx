@@ -281,6 +281,18 @@ export default function Director() {
       tmp.pos.lerpVectors(A.cam, B.cam, e).lerp(C.cam, c).lerp(D.cam, f)
       tmp.look.lerpVectors(A.look, B.look, e).lerp(C.look, c).lerp(D.look, f)
       fov = THREE.MathUtils.lerp(THREE.MathUtils.lerp(THREE.MathUtils.lerp(A.fov, B.fov, e), C.fov, c), D.fov, f)
+      // Portrait: the type stacks above the scene instead of beside it, so the
+      // contact shot needn't shove the wheel aside; and stepping back keeps the
+      // wheel from towering over the card ring.
+      const portrait = 1 - smooth(0.7, 1.15, env.aspect)
+      if (portrait > 0) {
+        tmp.pos.x *= 1 - portrait * 0.8
+        tmp.look.x *= 1 - portrait * 0.8
+        tmp.v.subVectors(tmp.pos, tmp.look).multiplyScalar(portrait * 0.28)
+        tmp.pos.add(tmp.v)
+        // for contact, aim higher so the wheel settles below the stacked type
+        tmp.look.y += portrait * c * 4.5
+      }
       tmp.pos.add(HALL_ORIGIN)
       tmp.look.add(HALL_ORIGIN)
       fog.color.set('#060405')

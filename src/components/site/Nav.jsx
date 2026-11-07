@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Knot from './Knot'
+import SoundToggle from './SoundToggle'
 import { nav, person } from '@/content/site'
 import { scrollState } from '@/lib/scroll'
 
@@ -95,7 +96,10 @@ export default function Nav() {
                   </a>
                 </li>
               ))}
-              <li className="ml-3">
+              <li className="ml-1">
+                <SoundToggle />
+              </li>
+              <li className="ml-2">
                 <a
                   href={`mailto:${person.email}`}
                   className="block rounded-full border border-snow/25 px-4 py-2 text-[0.875rem] text-snow transition-colors duration-300 hover:border-snow/60 hover:bg-snow/10"
@@ -106,15 +110,18 @@ export default function Nav() {
             </ul>
           </nav>
 
-          <button
-            type="button"
-            className="-mr-2 rounded-full px-3 py-2 text-[0.875rem] text-snow md:hidden"
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? 'Close' : 'Menu'}
-          </button>
+          <div className="-mr-2 flex items-center gap-1 md:hidden">
+            <SoundToggle />
+            <button
+              type="button"
+              className="rounded-full px-3 py-2 text-[0.875rem] text-snow"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? 'Close' : 'Menu'}
+            </button>
+          </div>
         </div>
       </header>
 

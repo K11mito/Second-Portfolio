@@ -361,3 +361,21 @@ html.lenis body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Sound toggle bars */
+.sound-bar {
+  height: 3px;
+  transition: height 0.4s var(--ease-out);
+}
+.sound-bar[data-on='true'] {
+  animation: bar 1.1s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.27s);
+}
+@keyframes bar {
+  from {
+    height: 3px;
+  }
+  to {
+    height: 12px;
+  }
+}

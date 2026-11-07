@@ -26,8 +26,9 @@ export default function About() {
           </header>
 
           <figure className="col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-4 lg:col-start-2" data-reveal style={{ '--d': '120ms' }}>
-            <div className="glass rounded-[1.1rem] p-2.5">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[0.7rem]">
+            {/* a thin print-style mat rather than a device-like bezel */}
+            <div className="rounded-[0.95rem] bg-white/[0.07] p-1.5 ring-1 ring-white/20 backdrop-blur-md">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[0.65rem]">
                 <Image
                   src={person.photo.src}
                   alt={person.photo.alt}

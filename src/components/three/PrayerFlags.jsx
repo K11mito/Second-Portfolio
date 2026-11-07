@@ -14,10 +14,18 @@ const HERO_CAM = new THREE.Vector3(-560, 360, 620)
 const HERO_LOOK = new THREE.Vector3(-190, 384, -110)
 
 // Strings described in the hero camera's frame: [forward, right, up] offsets.
-// Kept in the top fifth of the frame so they crown the shot without touching the type.
+// Both strings fan out from one mast just off the left edge of the opening
+// shot, as they do on a mountain pass, rather than hanging parallel like
+// bunting. They stay below the navigation and above the type. Offsets are in
+// the hero camera's frame: [forward, right, up]; screen positions noted are for
+// a 16:10 landscape window.
+// far enough left to stay off-screen even on 21:9 windows and the 2.4:1 poster
+const POLE = [60, -66, 16]
 const STRINGS = [
-  { a: [40, -34, 16.5], b: [118, 46, 33], sag: 7, count: 21, size: 2.3 },
-  { a: [80, -72, 40], b: [176, 30, 53], sag: 9, count: 17, size: 2.9 },
+  // rises to the right, leaving the frame just under the nav (5% from the top)
+  { a: POLE, b: [150, 82.7, 43.9], sag: 7, count: 26, size: 2.6, from: 0.12 },
+  // sags through the upper quarter and leaves at 18%
+  { a: POLE, b: [120, 66.1, 24.9], sag: 7, count: 23, size: 2.3, from: 0.14 },
 ]
 
 const vertexShader = /* glsl */ `
@@ -103,7 +111,8 @@ function buildStrings() {
     for (let i = 0; i <= 40; i++) pts.push(at(i / 40))
     cords.push(new THREE.CatmullRomCurve3(pts))
     for (let i = 0; i < S.count; i++) {
-      const k = (i + 0.5) / S.count
+      // leave the first stretch of cord bare so the corner (and the logo) stay clean
+      const k = S.from + ((i + 0.5) / S.count) * (1 - S.from)
       const p = at(k)
       const tan = at(Math.min(1, k + 0.01)).sub(at(Math.max(0, k - 0.01))).normalize()
       const up = new THREE.Vector3(0, 1, 0)
