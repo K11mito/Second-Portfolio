@@ -29,7 +29,8 @@ src/components/three/    the WebGL scene
   Director.jsx           scroll -> camera path, time of day, act switch
   Terrain.jsx            mountain rebuilt from a heightmap, snow shader, AO
   CloudSea.jsx           three noise layers that part around the peaks
-  PrayerFlags.jsx        instanced flags with a wind shader
+  PrayerFlags.jsx        strings of lung-ta composed through the hero lens
+  flags/cloth.js         Verlet rope + cloth (runs in a Web Worker)
   Monastery.jsx          prayer wheel, butter lamps, light shaft, dust
 ```
 
@@ -43,6 +44,12 @@ src/components/three/    the WebGL scene
   still readable (the experience ring becomes a swipeable list).
 - **Light.** About 2.3 MB of 3D assets in total, and the monastery streams in
   after the summit is already live.
+- **Real cloth.** The prayer flags are a Verlet simulation: each flag's top
+  row is part of the rope, so heavy flags sag the line and the line whips the
+  flags, and the wind pushes hardest on cloth that faces it. It runs in a
+  worker (scrolling never waits on it), only while the summit is in view, and
+  steps down its own quality if a device can't keep up. Your cursor stirs the
+  air.
 
 ## Assets
 
@@ -51,8 +58,9 @@ src/components/three/    the WebGL scene
 | `public/terrain/height.bin` | 362×362 16-bit heightmap baked from `assets/source/models/snowy_mountain.glb` |
 | `public/terrain/snow-mask.webp` | the model's snow/rock erosion mask, used by the snow shader |
 | `public/models/prayer_wheel.glb` | meshopt + WebP version of `assets/source/models/prayer_wheel.glb` |
-| `public/textures/prayer-flags.webp` | five flags (om ma ni padme hum), drawn on canvas |
+| `public/textures/prayer-flags.webp` | the five lung-ta, fresh and weathered, woodblock-printed (wind horse, mantras, the four dignities); baked by `assets/source/flags/bake-flags.js` |
 | `public/textures/cloud-puffs.webp` | soft cloud sprites |
 | `public/images/poster-*.webp` | frames rendered from the live scene (loading poster and fallback) |
 
-`assets/source/` keeps the original, uncompressed models. They are not deployed.
+`assets/source/` keeps the original, uncompressed models and the script that
+prints the flags. None of it is deployed.

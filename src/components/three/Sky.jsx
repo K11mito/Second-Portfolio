@@ -80,7 +80,7 @@ export default function Sky() {
             col = mix(col, uGlow, clamp(glow, 0.0, 1.0));
             col += uSunColor * (pow(s, 900.0) * 6.0 + pow(s, 60.0) * 0.15);
             // thin cirrus streaks projected on a high dome
-            vec2 cp = d.xz / (0.18 + up) * 1.6 + vec2(uTime * 0.004, 0.0);
+            vec2 cp = d.xz / (0.18 + up) * 1.6 + vec2(0.0, uTime * 0.004);
             float c = fbm(cp * vec2(0.6, 2.4));
             c = smoothstep(0.6, 0.9, c) * smoothstep(0.02, 0.25, up) * (1.0 - smoothstep(0.55, 0.9, up));
             vec3 cirrusCol = mix(vec3(1.0), uGlow, 0.35 + 0.4 * pow(s, 2.0));

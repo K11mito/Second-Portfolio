@@ -5,19 +5,24 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { PerformanceMonitor, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import World from './World'
+import { env } from './env'
 import { setLoading } from '@/lib/loading'
 
-// Signals "ready" once the summit's assets have resolved and a few frames have
-// been drawn (the first frame compiles the shaders, hidden under the poster).
-// The monastery streams in separately and warms itself up (see Monastery).
+// Signals "ready" once the summit's assets have resolved, the prayer flags have
+// settled, and a few frames have been drawn (the first frame compiles the
+// shaders, hidden under the poster). The flags never hold the curtain for more
+// than a few seconds. The monastery streams in separately and warms itself up.
 function Ready() {
   const frames = useRef(0)
   const done = useRef(false)
+  const since = useRef(0)
 
   useFrame(() => {
     if (done.current) return
     frames.current += 1
-    if (frames.current > 3) {
+    if (!since.current) since.current = performance.now()
+    const flags = env.flagsReady || performance.now() - since.current > 4000
+    if (frames.current > 3 && flags) {
       done.current = true
       setLoading({ ready: true, progress: 1 })
     }

@@ -135,6 +135,22 @@ const hallBackground = new THREE.Color('#060405')
 // Just under the summit: centring this puts the peak in the upper middle of a portrait frame.
 const PEAK_AIM = new THREE.Vector3(-37, 365, 15)
 
+// Landscape frames push the peak aside to make room for type; portrait screens
+// are too narrow for that, so the aim eases back onto the summit.
+const aimTowardPeak = (aspect) => 1 - smooth(0.55, 1.35, aspect)
+// Portrait screens see a narrow slice of the world: widen the lens a little.
+const widen = (aspect) => (aspect < 1 ? THREE.MathUtils.lerp(1.35, 1, THREE.MathUtils.clamp(aspect, 0.45, 1)) : 1)
+
+/** The opening shot as framed for a given aspect ratio (before handheld drift). */
+export function heroView(aspect) {
+  const k = MOUNTAIN[0]
+  return {
+    cam: k.cam.clone(),
+    look: k.look.clone().lerp(PEAK_AIM, aimTowardPeak(aspect)),
+    fov: k.fov * widen(aspect),
+  }
+}
+
 function segment(keys, t) {
   if (t <= keys[0].t) return [keys[0], keys[0], 0]
   for (let i = 0; i < keys.length - 1; i++) {
@@ -226,10 +242,8 @@ export default function Director() {
       const [a, b, k] = segment(MOUNTAIN, tt)
       paths.mCam.getPoint(tt / 3, tmp.pos)
       paths.mLook.getPoint(tt / 3, tmp.look)
-      // Landscape frames push the peak aside to make room for type; portrait
-      // screens are too narrow for that, so ease the aim back onto the summit.
-      const frame = smooth(0.55, 1.35, env.aspect)
-      if (frame < 1) tmp.look.lerp(PEAK_AIM, (1 - frame) * (1 - smooth(2.2, 3, tt)))
+      const aim = aimTowardPeak(env.aspect)
+      if (aim > 0) tmp.look.lerp(PEAK_AIM, aim * (1 - smooth(2.2, 3, tt)))
       // descent into the cloud sea during the interlude
       if (t >= 3) {
         const sink = smooth(0, 0.46, ps)
@@ -302,8 +316,7 @@ export default function Director() {
       env.hallLight = t >= 4 ? 1 : smooth(0.78, 1, p)
     }
 
-    // Portrait screens see a narrow slice of the world: widen the lens a little.
-    if (env.aspect < 1) fov *= THREE.MathUtils.lerp(1.35, 1, THREE.MathUtils.clamp(env.aspect, 0.45, 1))
+    fov *= widen(env.aspect)
 
     const debug = typeof window !== 'undefined' ? window.__cam : null
     if (debug) {

@@ -36,7 +36,9 @@ function useHallEnvironment() {
     panel('#ff8a3d', 1.6, 8, 1.5, [-5, -2.5, -2], [0, Math.PI / 2, 0])
     panel('#ff8a3d', 1.6, 8, 1.5, [5, -2.5, -2], [0, -Math.PI / 2, 0])
     panel('#fff1dc', 2.4, 3, 3, [0, 6, 0], [Math.PI / 2, 0, 0]) // skylight
-    panel('#3a4a7a', 0.6, 12, 6, [0, 1, -6], [0, 0, 0]) // cool bounce behind
+    // Dim lamp-glow off the far wall. Brass mirrors whatever is behind it at
+    // grazing angles, so anything cool here shows up as a blue fringe on the drum.
+    panel('#6b4026', 0.55, 12, 6, [0, 1, -6], [0, 0, 0])
     const pmrem = new THREE.PMREMGenerator(gl)
     const tex = pmrem.fromScene(scene, 0.04).texture
     pmrem.dispose()
@@ -419,8 +421,8 @@ export default function Monastery() {
         color="#ffe2bf"
       />
       <object3D ref={keyTarget} position={[0, 6, 0]} />
-      {/* cool rim from behind to separate the wheel from the dark */}
-      <pointLight ref={rim} position={[4, 12, -9]} color="#7f95d6" distance={40} decay={2} />
+      {/* rim from behind to lift the wheel off the dark: lamp-warm, like every light in a gompa */}
+      <pointLight ref={rim} position={[4, 12, -9]} color="#ffc48a" distance={40} decay={2} />
       {/* warm fill thrown up from the lamp rows onto the face of the drum */}
       <pointLight ref={fill} position={[0, 3.2, 12]} color="#ffae6b" distance={34} decay={2} />
 

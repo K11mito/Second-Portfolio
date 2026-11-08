@@ -28,6 +28,8 @@ export const env = {
 
   // 0 = clear, 1 = fully inside the cloud (screen whited out)
   whiteout: 0,
+  // the prayer flags' cloth has settled (they simulate off the main thread)
+  flagsReady: false,
   // monastery
   wheelAngle: 0,
   wheelBoost: 0,

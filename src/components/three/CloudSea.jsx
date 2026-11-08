@@ -51,7 +51,8 @@ const fragmentShader = /* glsl */ `
   const mat2 R2 = mat2(0.28, -0.96, 0.96, 0.28);
 
   float density(vec2 p) {
-    vec2 w = vec2(uTime * 2.2, uTime * 0.9);
+    // drift downwind, the way the prayer flags stream (toward -z)
+    vec2 w = vec2(0.0, uTime * 2.4);
     // domain warp turns lattice blobs into rolling, organic billows
     vec2 q = p * 0.0005 + uSeed;
     vec2 warp = vec2(texture2D(uNoise, q).r, texture2D(uNoise, R2 * q + 0.37).a) - 0.5;
