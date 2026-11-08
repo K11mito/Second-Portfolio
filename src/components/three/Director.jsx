@@ -5,118 +5,29 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env, HALL_ORIGIN } from './env'
 import { terrainUniforms } from './Terrain'
+import { applySky } from './skyLight'
 import { scrollState, timelinePosition, pinProgress } from '@/lib/scroll'
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z)
-const C = (hex) => new THREE.Color(hex)
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
   return t * t * (3 - 2 * t)
 }
 
-// Sun direction from elevation/azimuth in degrees.
-function sun(elev, azim) {
-  const e = THREE.MathUtils.degToRad(elev)
-  const a = THREE.MathUtils.degToRad(azim)
-  return V(Math.cos(e) * Math.sin(a), Math.sin(e), Math.cos(e) * Math.cos(a))
-}
-
 // ---------------------------------------------------------------------------
-// Mountain act. Keyframes sit at timeline positions (section units):
-// 0 hero · 1 about · 2 work · 3 interlude (cloud descent handled separately)
+// Mountain act. Camera keyframes sit at timeline positions (section units):
+// 0 hero · 1 about · 2 work · 3 interlude (cloud descent handled separately).
+// The light is not keyed to scroll: it's the real sky over Bangkok right now
+// (or the visitor's pick), set by applySky() from the sun's true position.
 const MOUNTAIN = [
-  {
-    // hero — dawn alpenglow: low sun behind us paints the peak, deep blue sky ahead
-    t: 0,
-    cam: V(-560, 360, 620),
-    look: V(-190, 384, -110),
-    fov: 36,
-    sun: sun(5, -72),
-    sunColor: C('#ffbf96'),
-    sunI: 3.2,
-    zenith: C('#0a2556'),
-    horizon: C('#c7a7b5'),
-    glow: C('#ffd0b0'),
-    fog: C('#8c9abd'),
-    fogD: 0.0003,
-    haze: 0.0008,
-    ambient: C('#6f84b6'),
-    ambientI: 0.62,
-    rockDark: C('#2e2929'),
-    rockLight: C('#7c6c64'),
-    snow: C('#f3f1f4'),
-    cloudLight: C('#ffd4bd'),
-    cloudShade: C('#65749f'),
-  },
-  {
-    // about — clear morning
-    t: 1,
-    cam: V(-700, 300, 260),
-    look: V(-125, 300, -190),
-    fov: 37,
-    sun: sun(24, -128),
-    sunColor: C('#fff2e0'),
-    sunI: 3.3,
-    zenith: C('#0a3a88'),
-    horizon: C('#a9c8e8'),
-    glow: C('#fff0da'),
-    fog: C('#b3c8e2'),
-    fogD: 0.0003,
-    haze: 0.0008,
-    ambient: C('#a2bde3'),
-    ambientI: 0.66,
-    rockDark: C('#35302d'),
-    rockLight: C('#8a7a6e'),
-    snow: C('#f6f7f9'),
-    cloudLight: C('#ffffff'),
-    cloudShade: C('#a2b3cf'),
-  },
-  {
-    // work — warm afternoon, long light raking across the face
-    t: 2,
-    cam: V(-760, 285, -470),
-    look: V(-40, 310, 10),
-    fov: 38,
-    sun: sun(13, -62),
-    sunColor: C('#ffdcb0'),
-    sunI: 3.3,
-    zenith: C('#0b2f6e'),
-    horizon: C('#cfc4bd'),
-    glow: C('#ffd3a3'),
-    fog: C('#bcbfcc'),
-    fogD: 0.00032,
-    haze: 0.0009,
-    ambient: C('#8fa3cc'),
-    ambientI: 0.6,
-    rockDark: C('#352d2a'),
-    rockLight: C('#88766a'),
-    snow: C('#faf5ef'),
-    cloudLight: C('#fff1e2'),
-    cloudShade: C('#9ca6c0'),
-  },
-  {
-    // interlude — sunset, skimming the cloud tops before we sink in
-    t: 3,
-    cam: V(-620, 232, -760),
-    look: V(-120, 215, -160),
-    fov: 40,
-    sun: sun(1.2, -140),
-    sunColor: C('#ffa27c'),
-    sunI: 2.4,
-    zenith: C('#0a1838'),
-    horizon: C('#dc9582'),
-    glow: C('#ffa07c'),
-    fog: C('#a092a2'),
-    fogD: 0.00042,
-    haze: 0.0012,
-    ambient: C('#626fa0'),
-    ambientI: 0.6,
-    rockDark: C('#2a2528'),
-    rockLight: C('#695c5c'),
-    snow: C('#ebe7ef'),
-    cloudLight: C('#ffc9ad'),
-    cloudShade: C('#7a7a9e'),
-  },
+  // hero: the summit, from the south-west, with room for the type
+  { t: 0, cam: V(-560, 360, 620), look: V(-190, 384, -110), fov: 36 },
+  // about: swinging round to the west face
+  { t: 1, cam: V(-700, 300, 260), look: V(-125, 300, -190), fov: 37 },
+  // work: the long north-west ridge
+  { t: 2, cam: V(-760, 285, -470), look: V(-40, 310, 10), fov: 38 },
+  // interlude: skimming the cloud tops before we sink in
+  { t: 3, cam: V(-620, 232, -760), look: V(-120, 215, -160), fov: 40 },
 ]
 
 // ---------------------------------------------------------------------------
@@ -214,6 +125,8 @@ export default function Director() {
     const dt = Math.min(delta, 1 / 20)
     env.time += dt
     env.aspect = size.width / Math.max(1, size.height)
+    // the light of the moment (cheap: only recomputed when the shown time moves)
+    applySky(env, terrainUniforms)
 
     // ---- smoothed scroll: the camera glides even when a mouse wheel jumps 100px
     const rawY = scrollState.y
@@ -252,24 +165,6 @@ export default function Director() {
         tmp.look.y -= sink * 60
       }
       fov = THREE.MathUtils.lerp(a.fov, b.fov, k)
-
-      env.sunDir.lerpVectors(a.sun, b.sun, k).normalize()
-      env.sunColor.lerpColors(a.sunColor, b.sunColor, k)
-      env.sunIntensity = THREE.MathUtils.lerp(a.sunI, b.sunI, k)
-      env.skyZenith.lerpColors(a.zenith, b.zenith, k)
-      env.skyHorizon.lerpColors(a.horizon, b.horizon, k)
-      env.skyGlow.lerpColors(a.glow, b.glow, k)
-      env.fogColor.lerpColors(a.fog, b.fog, k)
-      env.fogDensity = THREE.MathUtils.lerp(a.fogD, b.fogD, k)
-      env.ambient.lerpColors(a.ambient, b.ambient, k)
-      env.ambientIntensity = THREE.MathUtils.lerp(a.ambientI, b.ambientI, k)
-      terrainUniforms.uRockDark.value.lerpColors(a.rockDark, b.rockDark, k)
-      terrainUniforms.uRockLight.value.lerpColors(a.rockLight, b.rockLight, k)
-      terrainUniforms.uSnow.value.lerpColors(a.snow, b.snow, k)
-      terrainUniforms.uHaze.value = THREE.MathUtils.lerp(a.haze, b.haze, k)
-      env.cloudLight.lerpColors(a.cloudLight, b.cloudLight, k)
-      env.cloudShade.lerpColors(a.cloudShade, b.cloudShade, k)
-
       fog.color.copy(env.fogColor)
       fog.density = env.fogDensity * (1 + env.whiteout * 6)
       scene.background = null

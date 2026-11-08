@@ -8,7 +8,15 @@ export const env = {
   time: 0,
   aspect: 1,
 
+  // the key light (the sun, or the moon at night) and where the sun and moon
+  // really are in the sky; all set from the live Bangkok sky (see skyLight.js)
   sunDir: new THREE.Vector3(0.5, 0.4, -0.6).normalize(),
+  skySunDir: new THREE.Vector3(0.5, 0.4, -0.6).normalize(),
+  moonDir: new THREE.Vector3(0, -1, 0),
+  moonPhase: 0,
+  moonGlow: 0,
+  stars: 0,
+  daylight: 1,
   sunColor: new THREE.Color('#fff4e6'),
   sunIntensity: 3,
   ambient: new THREE.Color('#9fb8d8'),

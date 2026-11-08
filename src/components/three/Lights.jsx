@@ -6,6 +6,10 @@ import * as THREE from 'three'
 import { env } from './env'
 import { SHADOW_LAYER } from './Terrain'
 
+// light thrown back up from the ground: warm rock by day, almost nothing at night
+const GROUND_DAY = new THREE.Color('#4a3a30')
+const GROUND_NIGHT = new THREE.Color('#14161d')
+
 // Sun + sky light for the mountain act, retinted every frame by the Director.
 // The shadow map is only re-rendered when the sun actually moves, so a page
 // that is sitting still costs nothing extra.
@@ -53,6 +57,7 @@ export default function Lights() {
     if (hemi.current) {
       hemi.current.visible = on
       hemi.current.color.copy(env.ambient)
+      hemi.current.groundColor.lerpColors(GROUND_NIGHT, GROUND_DAY, env.daylight)
       hemi.current.intensity = env.ambientIntensity
     }
   })
@@ -60,7 +65,7 @@ export default function Lights() {
   return (
     <>
       <directionalLight ref={sunLight} castShadow userData={{ act: 'mountain' }} />
-      <hemisphereLight ref={hemi} groundColor="#4a3a30" userData={{ act: 'mountain' }} />
+      <hemisphereLight ref={hemi} userData={{ act: 'mountain' }} />
     </>
   )
 }

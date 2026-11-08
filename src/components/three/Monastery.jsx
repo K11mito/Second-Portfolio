@@ -5,8 +5,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { env, HALL_ORIGIN } from './env'
-import { pinProgress, scrollState } from '@/lib/scroll'
-import { ringTurn } from '@/lib/ring'
+import { scrollState } from '@/lib/scroll'
+import { wheel } from '@/lib/wheel'
 import { experience } from '@/content/site'
 
 useGLTF.preload('/models/prayer_wheel.glb')
@@ -51,6 +51,8 @@ function Wheel({ envMap }) {
   const drumRef = useRef(null)
   const baseQ = useRef(new THREE.Quaternion())
   const angle = useRef(0)
+  const idle = useRef(0)
+  const idleRate = useRef(1)
   const spin = useMemo(() => new THREE.Quaternion(), [])
   const zAxis = useMemo(() => new THREE.Vector3(0, 0, 1), [])
 
@@ -91,13 +93,14 @@ function Wheel({ envMap }) {
     const d = drumRef.current
     if (!d || env.act !== 'monastery') return
     const dt = Math.min(delta, 1 / 20)
-    // Scroll turns the wheel clockwise (seen from above), in step with the card
-    // ring; a slow idle turn keeps it alive, as if someone just passed by.
-    // same detented mapping as the HTML card ring, so the two turn as one
-    const scrollTurn = -ringTurn(pinProgress('experience'), CARD_COUNT) * ((Math.PI * 2) / CARD_COUNT)
-    const idle = scrollState.reducedMotion ? 0 : -env.time * 0.12
-    const target = scrollTurn + idle
-    angle.current = scrollState.reducedMotion ? target : THREE.MathUtils.damp(angle.current, target, 4, dt)
+    // The drum turns with the card ring (clockwise seen from above, as prayer
+    // wheels are turned), following your hand closely. Left alone it keeps a
+    // slow drift, as if someone just passed by; the drift rests while you turn it.
+    const busy = wheel.held || wheel.glide ? 1 : 0
+    idleRate.current = THREE.MathUtils.damp(idleRate.current, busy ? 0 : 1, busy ? 6 : 0.6, dt)
+    if (!scrollState.reducedMotion) idle.current -= dt * 0.1 * idleRate.current
+    const target = -wheel.turn * ((Math.PI * 2) / CARD_COUNT) + idle.current
+    angle.current = scrollState.reducedMotion ? target : THREE.MathUtils.damp(angle.current, target, 18, dt)
     env.wheelAngle = angle.current
     spin.setFromAxisAngle(zAxis, angle.current)
     d.quaternion.copy(baseQ.current).multiply(spin)

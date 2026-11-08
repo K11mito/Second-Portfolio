@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Knot from './Knot'
 import SoundToggle from './SoundToggle'
+import SkyClock from './SkyClock'
 import { nav, person } from '@/content/site'
 import { scrollState } from '@/lib/scroll'
 
@@ -97,6 +98,9 @@ export default function Nav() {
                 </li>
               ))}
               <li className="ml-1">
+                <SkyClock />
+              </li>
+              <li>
                 <SoundToggle />
               </li>
               <li className="ml-2">
@@ -110,8 +114,8 @@ export default function Nav() {
             </ul>
           </nav>
 
-          <div className="-mr-2 flex items-center gap-1 md:hidden">
-            <SoundToggle />
+          <div className="-mr-2 flex items-center md:hidden">
+            <SkyClock />
             <button
               type="button"
               className="rounded-full px-3 py-2 text-[0.875rem] text-snow"
@@ -150,10 +154,11 @@ export default function Nav() {
             </a>
           ))}
         </nav>
-        <div className="shell pb-10">
+        <div className="shell flex items-center justify-between gap-4 pb-10">
           <a href={`mailto:${person.email}`} tabIndex={open ? 0 : -1} className="text-snow/70 underline-offset-4 hover:underline">
             {person.email}
           </a>
+          <SoundToggle className="-mr-3 [&>span:last-child]:!inline" />
         </div>
       </div>
     </>

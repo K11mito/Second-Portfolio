@@ -34,11 +34,204 @@ export const about = {
   ],
 }
 
+// Every project, newest first. Those with `featured` (1, 2, 3...) are the ones on
+// the home page, in that order; all of them hang on the scroll at /projects.
+// New ones go at the top. `when` is 'YYYY-MM' (only the year is shown).
+// `private: true` marks a private repository: no source link is shown.
 // Each project can also take `video: '/videos/projects/name.mp4'` for a looping
-// preview (muted, plays while on screen); `image` is then used as its poster.
+// preview on the home page (muted, plays while on screen); `image` is its poster.
 export const projects = [
   {
+    title: 'This site',
+    when: '2026-11',
+    kind: 'Website',
+    description:
+      'The site you’re on: a descent from a Himalayan summit into a candle-lit monastery, with cloth prayer flags that really blow in the wind, a prayer wheel you turn by hand, and a sky that follows the time in Bangkok.',
+    tags: ['Next.js', 'three.js', 'GLSL'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/Second-Portfolio' }],
+  },
+  {
+    title: 'ShipIt',
+    when: '2026-11',
+    kind: 'AI agent',
+    note: 'Marist Innovation Challenge',
+    description:
+      'Point at your website, say what to change, press Ship once. A bakery owner drops in a photo of their menu and ShipIt builds the site; click anything and say what should change, and it applies every note at once, then clicks through like a customer, finds what broke, fixes it and tests again.',
+    tags: ['React', 'Node.js', 'Playwright', 'LLMs'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/shipIt' }],
+  },
+  {
+    title: 'SEIZE',
+    when: '2026-11',
+    kind: 'Website',
+    description: 'The website for Seize Investment Group, the crypto trading group I founded.',
+    image: '/images/projects/seize.webp',
+    imageAlt: 'SEIZE Investment Group landing page: huge white letters over a pale blue sky',
+    tags: ['HTML', 'CSS', 'JavaScript'],
+    links: [{ label: 'Visit site', href: 'https://seize-silk.vercel.app' }],
+    private: true,
+  },
+  {
+    title: 'U-Reach',
+    when: '2026-10',
+    kind: 'AI agent',
+    note: 'U-Hackathon 2026',
+    description:
+      'A WhatsApp sales assistant that answers in its owner’s voice. A lead sends a message, and about ten seconds later gets a voice note in his cloned voice that greets them by name and answers their question. One Go binary runs WhatsApp, the speech → Claude → ElevenLabs pipeline and a live dashboard that rates every lead cold, warm or hot.',
+    tags: ['Go', 'React', 'Claude', 'ElevenLabs'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/u-reach' }],
+  },
+  {
+    title: 'Vellum',
+    when: '2026-09',
+    kind: 'Accounting software',
+    note: 'In progress',
+    description: 'Making accounting easier, sturdier and hassle-free.',
+    tags: ['Python'],
+    links: [],
+    private: true,
+  },
+  {
+    title: 'Recall',
+    when: '2026-09',
+    kind: 'Memory app',
+    note: 'In progress',
+    description:
+      'A personal memory system: record or upload audio and it becomes structured, searchable memories. Today, audio goes in and a timestamped transcript comes out, transcribed on the device. Next: people, topics, actions, and asking your own memories questions.',
+    tags: ['Python', 'Whisper', 'PostgreSQL'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/recall' }],
+  },
+  {
+    title: 'Munch',
+    when: '2026-08',
+    kind: 'Marketing agent',
+    note: 'Internship',
+    description:
+      'An internal tool from my internship: a full-stack marketing agent that runs competitor analysis on winning ads, then creates its own versions.',
+    tags: ['Python', 'AI agents'],
+    links: [],
+    private: true,
+  },
+  {
+    title: 'Tintin’s Journey',
+    when: '2026-08',
+    kind: 'Archive',
+    description:
+      'A preserved archive of the travelogue of Tintin, who cycles across Tibet: 16 journeys, 891 posts and 3,201 full-resolution photos, some rescued from the Wayback Machine, rebuilt as a browsable site so it outlives the original.',
+    tags: ['Python', 'WordPress API', 'HTML'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/Tintin-Journey' }],
+  },
+  {
+    title: 'Startup funding speed',
+    when: '2026-07',
+    kind: 'Research',
+    description:
+      'Does how quickly a startup lands its first funding round predict whether it goes on to raise a Series B? A statistics study: data cleaning, sampling and a logistic regression.',
+    tags: ['Python', 'Statistics'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/BusStatProject---Startup-funding-speed.' }],
+  },
+  {
+    title: 'Recurly',
+    when: '2026-07',
+    kind: 'Mobile app',
+    description: 'A subscription manager for your phone: every recurring charge in one place.',
+    tags: ['React Native', 'Expo', 'TypeScript'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/recurly' }],
+  },
+  {
+    title: 'DriveSafe',
+    when: '2026-06',
+    kind: 'Machine learning',
+    note: 'In progress',
+    description:
+      'Reverse-engineering how insurers score your driving, like Progressive Snapshot and GEICO DriveEasy. Upload a dashcam clip and get a safety score with timestamped events: hard braking, sharp lane changes, tailgating.',
+    tags: ['React', 'Express', 'FastAPI'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/driveSafe' }],
+  },
+  {
+    title: 'My Builds',
+    when: '2026-06',
+    kind: 'Website',
+    description:
+      'A logbook of my hardware builds, written so anyone can follow along over a weekend: specs, parts, wiring diagrams and a page-flip instruction manual, starting with a face-tracking turret.',
+    image: '/images/projects/arybuilds.webp',
+    imageAlt: 'My Builds: a cream logbook page with a red serif title and a cardboard turret in progress',
+    tags: ['HTML', 'CSS', 'GSAP'],
+    links: [
+      { label: 'Visit site', href: 'https://arybuilds.vercel.app' },
+      { label: 'Source', href: 'https://github.com/K11mito/AryBuilds' },
+    ],
+  },
+  {
+    title: 'ODTS',
+    when: '2026-06',
+    kind: 'Hardware · vision',
+    description:
+      'A closed-loop tracking turret. A webcam feeds YOLOv8, a controller turns each detection into pan and tilt angles, and an Arduino steers the servos to keep the target on the crosshair, with a live HUD. Never finished, always improving.',
+    tags: ['Python', 'YOLOv8', 'Arduino', 'Electron'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/ODTS' }],
+  },
+  {
+    title: 'Legacy',
+    when: '2026-05',
+    kind: 'Landing page',
+    description: 'The landing page for Legacy, estate-planning software built for Louisiana attorneys.',
+    image: '/images/projects/legacy.webp',
+    imageAlt: 'Legacy landing page: “Modern estate planning for Louisiana attorneys” beside a family under live oaks',
+    tags: ['React', 'Tailwind', 'Framer Motion'],
+    links: [
+      { label: 'Visit site', href: 'https://legacy-landing-page-ten.vercel.app' },
+      { label: 'Source', href: 'https://github.com/AryaShrestha05/legacyLandingPage' },
+    ],
+  },
+  {
+    title: 'Bangkok Silicon, reimagined',
+    when: '2026-04',
+    kind: 'Redesign concept',
+    description: 'An unsolicited redesign of Bangkok Silicon’s website: more modern, cleaner, with a little 3D.',
+    tags: ['React', 'Three.js', 'GSAP', 'TypeScript'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/Bangkok-Silicon-NEW-SITE-CONCEPT' }],
+  },
+  {
+    title: 'applyAI',
+    when: '2026-04',
+    kind: 'AI agent',
+    description:
+      'A job-search agent that tracks applications and writes an ATS-friendly LaTeX résumé matched to each job’s description and requirements.',
+    tags: ['JavaScript', 'LaTeX', 'LLMs'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/applyAI' }],
+  },
+  {
+    title: 'Project Manager',
+    when: '2026-04',
+    kind: 'Desktop app',
+    description:
+      'A war room for my side projects: it reads every repo and file, tracks where each one stands and suggests what to do next. Also an excuse to try an Evangelion-style interface.',
+    tags: ['Electron', 'React', 'SQLite', 'Claude'],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/Project-Manager' }],
+  },
+  {
+    title: 'Majordomo',
+    when: '2026-03',
+    kind: 'AI assistant',
+    description: 'An AI assistant for Airbnb and Booking.com hosts.',
+    tags: ['Python'],
+    links: [],
+    private: true,
+  },
+  {
+    title: 'MCP Chat',
+    when: '2026-03',
+    kind: 'Command-line tool',
+    description:
+      'A chat client built on the Model Context Protocol, with document retrieval and command prompts, running local models through Ollama. Built while working through Anthropic’s MCP course.',
+    tags: ['Python', 'MCP', 'Ollama'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/mcpGithubChatBot' }],
+  },
+  {
     title: 'Vessel',
+    when: '2026-02',
+    featured: 1,
     kind: 'Desktop app',
     description:
       'A home for multi-agent work. Run many agentic terminals side by side, then manage and create agents in one place with hero-mode or grid-view.',
@@ -52,7 +245,36 @@ export const projects = [
     ],
   },
   {
+    title: 'WhatsApp chatbot',
+    when: '2026-02',
+    kind: 'Chatbot',
+    description: 'A chatbot that handles guest requests on WhatsApp, with a two-layer memory system.',
+    tags: ['TypeScript'],
+    links: [],
+    private: true,
+  },
+  {
+    title: 'RentGrid',
+    when: '2026-01',
+    kind: 'Marketplace',
+    note: 'Concept',
+    description:
+      'An AI-powered marketplace for commercial real estate, so finding an office, warehouse or shop goes from overwhelming to effortless.',
+    tags: ['Supabase'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/rentGrids' }],
+  },
+  {
+    title: 'Rate limiter',
+    when: '2026-01',
+    kind: 'Backend',
+    description: 'A distributed rate limiter that meters each user’s API calls with tokens.',
+    tags: ['Node.js', 'Docker'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/rateLimiter' }],
+  },
+  {
     title: 'Get Shit Done',
+    when: '2025-12',
+    featured: 2,
     kind: 'Productivity app',
     description:
       'Daily goal-setting that breaks big goals into everyday tasks, with a daily protocol, progress tracking and a chat assistant.',
@@ -63,7 +285,20 @@ export const projects = [
     links: [{ label: 'Source', href: 'https://github.com/K11mito/Goal-tracking-and-daily-routine-app' }],
   },
   {
+    title: 'Window into 3D',
+    when: '2025-11',
+    kind: 'Experiment',
+    description: 'Tracks your head through the webcam so the screen behaves like a window into a 3D space behind it.',
+    image: '/images/projects/illusion.webp',
+    imageAlt: 'A glassy sphere inside a wireframe, floating in a starfield between the words Observe and Parallax',
+    tags: ['TypeScript', 'WebGL', 'Face tracking'],
+    links: [],
+    private: true,
+  },
+  {
     title: 'Food & Macro Tracker',
+    when: '2025-11',
+    featured: 3,
     kind: 'Computer vision',
     description:
       'Track calories and macros by simply taking a photo of your food. Real-time object detection finds the food and logs the nutrition.',
@@ -71,9 +306,21 @@ export const projects = [
     imageAlt: 'Food and macro tracker detecting a water bottle in a live camera feed',
     focus: '50% 55%',
     tags: ['YOLOv8', 'React', 'Vite'],
-    links: [{ label: 'GitHub', href: 'https://github.com/K11mito' }],
+    links: [{ label: 'Source', href: 'https://github.com/K11mito/Realtime-food-macro-tracking' }],
+  },
+  {
+    title: 'Posturize',
+    when: '2025-11',
+    kind: 'Computer vision',
+    note: 'HackPrinceton',
+    description: 'Real-time posture tracking with MediaPipe and OpenCV, with live feedback and data collection.',
+    tags: ['Python', 'MediaPipe', 'OpenCV'],
+    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/posturize' }],
   },
 ]
+
+/** The home page's few, in their chosen order. */
+export const featuredProjects = projects.filter((p) => p.featured).sort((a, b) => a.featured - b.featured)
 
 export const experience = [
   {

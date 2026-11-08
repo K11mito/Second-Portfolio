@@ -1,7 +1,23 @@
 import Image from 'next/image'
-import { projects } from '@/content/site'
+import Link from 'next/link'
+import { featuredProjects, projects } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
 import ProjectVideo from './ProjectVideo'
+
+// A rolled thangka on its rod: the way into the full archive
+function ScrollGlyph() {
+  return (
+    <span className="grid h-11 w-11 place-items-center rounded-full bg-saffron/[0.12] text-saffron transition-colors duration-500 group-hover/all:bg-saffron/20" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]">
+        <path d="M3 6.5h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M6 6.5v9.5c0 .8.6 1.5 1.4 1.5h9.2c.8 0 1.4-.7 1.4-1.5V6.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M4.5 19h15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M9 10h6M9 12.6h4.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity=".7" />
+        <path d="M12 3.2 9.6 6.5M12 3.2l2.4 3.3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity=".7" />
+      </svg>
+    </span>
+  )
+}
 
 function ProjectCard({ project, index, total }) {
   const flip = index % 2 === 1
@@ -80,15 +96,29 @@ export default function Work() {
             </h2>
           </div>
           <p className="max-w-[22rem] text-[1.0313rem] leading-[1.65] text-snow/75 md:pb-3">
-            A few side projects, from computer vision to desktop tools for working with AI agents.
+            The three I&rsquo;m proudest of. Everything else I&rsquo;ve made hangs on the scroll.
           </p>
         </header>
 
         <ol className="flex flex-col gap-7 md:gap-10">
-          {projects.map((p, i) => (
-            <ProjectCard key={p.title} project={p} index={i} total={projects.length} />
+          {featuredProjects.map((p, i) => (
+            <ProjectCard key={p.title} project={p} index={i} total={featuredProjects.length} />
           ))}
         </ol>
+
+        <div className="mt-12 flex justify-center md:mt-16" data-reveal>
+          <Link
+            href="/projects"
+            className="group/all glass relative inline-flex items-center gap-4 rounded-full py-2.5 pl-2.5 pr-6 text-snow transition-[border-color,background-color] duration-500 hover:border-saffron/40"
+          >
+            <ScrollGlyph />
+            <span className="flex flex-col leading-tight">
+              <span className="text-[1rem] font-medium">View all {projects.length} projects</span>
+              <span className="eyebrow mt-1 text-snow/55">Unroll the scroll</span>
+            </span>
+            <ArrowIcon className="ml-1 h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-y-0.5 group-hover/all:translate-x-0.5" />
+          </Link>
+        </div>
       </div>
     </section>
   )

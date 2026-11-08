@@ -32,6 +32,18 @@ export const metadata = {
   twitter: { card: 'summary_large_image', title: person.name, description },
 }
 
+// The time of day in Bangkok (or the one asked for with ?sky=), in four broad
+// bands that match the posters. Close enough for a still shown for a second or two.
+const skyScript = `(function(){try{
+var d=document.documentElement,m=/[?&]sky=(dawn|day|sunset|night|local)\\b/.exec(location.search),n=new Date(),h;
+function band(x){return x<5.75||x>=19.1?'night':x<7.4?'dawn':x<16.8?'day':'sunset'}
+if(m&&m[1]!=='local')d.dataset.tod=m[1];
+else{h=m?n.getHours()+n.getMinutes()/60:(n.getTime()/36e5+7)%24;d.dataset.tod=band(h)}
+if(location.pathname!=='/')return;
+var l=document.createElement('link');l.rel='preload';l.as='image';l.setAttribute('fetchpriority','high');
+l.href='/images/posters/'+d.dataset.tod+'-'+(matchMedia('(max-aspect-ratio: 1/1)').matches?'tall':'wide')+'.webp';
+document.head.appendChild(l)}catch(e){}})()`
+
 export const viewport = {
   themeColor: '#0b1f3d',
   colorScheme: 'dark',
@@ -43,6 +55,8 @@ export default function RootLayout({ children }) {
       <head>
         {/* Marks JS as available before first paint, so reveal animations never hide content without it */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Picks the loading poster for the hour the live sky will show, and starts fetching it */}
+        <script dangerouslySetInnerHTML={{ __html: skyScript }} />
       </head>
       <body>
         {children}

@@ -9,7 +9,7 @@ export default function NotFound() {
   return (
     <main className="relative grid min-h-[100svh] place-items-center overflow-hidden px-6 text-center">
       <Image
-        src="/images/poster-wide.webp"
+        src="/images/posters/sunset-wide.webp"
         alt=""
         fill
         priority

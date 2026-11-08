@@ -4,19 +4,21 @@
 // download). Off by default; started only by an explicit click.
 //  - on the mountain: gusting wind that eases as you descend, swells as you sink
 //    into the cloud sea, and hushes in the white-out
-//  - in the monastery: a low drone, and a singing bowl each time the prayer
-//    wheel turns to a new card
+//  - in the monastery: a low drone, a singing bowl each time the prayer wheel
+//    comes to rest on a new card, and the little bell on its frame, struck
+//    once per revolution, as on a real wheel
 
 import { pinProgress, scrollState, timelinePosition } from './scroll'
-import { ringTurn } from './ring'
-import { experience } from '@/content/site'
+import { onWheel } from './wheel'
 
 const listeners = new Set()
 let ctx = null
 let nodes = null
 let on = false
 let raf = 0
-let lastCard = -1
+let lastRest = 0
+let lastBell = 0
+let restCard = 0
 
 // A minor pentatonic, one bowl per card: consonant with the drone on A.
 const BOWLS = [220, 261.63, 293.66, 329.63, 392]
@@ -134,19 +136,47 @@ function tick() {
   nodes.rumble.gain.setTargetAtTime(w * 0.9, now, 0.4)
   nodes.windBand.frequency.setTargetAtTime(360 + gust * 460, now, 0.6)
 
-  // the hall: a drone, and a bowl each time the wheel turns to a new card
+  // the hall: a low drone under everything
   const hall = t >= 4 ? 1 : inHall ? smooth(0.78, 1, p) : 0
   nodes.drone.gain.setTargetAtTime(hall * 0.07, now, 0.9)
-  const exp = scrollState.sections.experience
-  const inRing = exp && scrollState.y >= exp.top - scrollState.vh * 0.2 && scrollState.y <= exp.top + exp.height - scrollState.vh * 0.6
-  if (inRing) {
-    const card = Math.round(ringTurn(pinProgress('experience'), experience.length))
-    if (lastCard !== -1 && card !== lastCard) bowl(BOWLS[card % BOWLS.length])
-    lastCard = card
-  } else {
-    lastCard = -1
+}
+
+// A small brass bell: bright, short, with a quick shimmer.
+function bell(level = 0.06) {
+  if (!ctx) return
+  const t = ctx.currentTime
+  for (const [f, amp, decay] of [
+    [1318.5, 1, 1.6],
+    [3164, 0.35, 0.7],
+    [5933, 0.12, 0.35],
+  ]) {
+    const o = ctx.createOscillator()
+    o.frequency.value = f
+    const g = ctx.createGain()
+    g.gain.setValueAtTime(0.0001, t)
+    g.gain.exponentialRampToValueAtTime(amp * level, t + 0.004)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + decay)
+    o.connect(g).connect(nodes.master)
+    o.start(t)
+    o.stop(t + decay + 0.05)
   }
 }
+
+onWheel((type, value) => {
+  const now = performance.now()
+  if (type === 'rest') {
+    // only when it settles on a different card, not when it swings back
+    const changed = value !== restCard
+    restCard = value
+    if (!on || !ctx || !changed || now - lastRest < 250) return
+    lastRest = now
+    bowl(BOWLS[value % BOWLS.length])
+  } else if (type === 'revolution') {
+    if (!on || !ctx || now - lastBell < 300) return
+    lastBell = now
+    bell()
+  }
+})
 
 export function isSoundOn() {
   return on

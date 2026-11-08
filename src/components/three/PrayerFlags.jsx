@@ -9,6 +9,10 @@ import { scrollState } from '@/lib/scroll'
 import { startCloth } from './flags/clothClient'
 import { flagsThatFit } from './flags/cloth'
 
+// light bounced up off the mountain onto the cloth: warm by day, dark at night
+const FLAG_GROUND_DAY = new THREE.Color('#7a6152')
+const FLAG_GROUND_NIGHT = new THREE.Color('#1b1d26')
+
 // Strings of lung-ta across the opening shot. The cloth is simulated (rope and
 // flags as one Verlet system, see flags/cloth.js) in a worker; the prints come
 // from a baked atlas: the wind horse carrying the flaming jewel, the six
@@ -465,7 +469,9 @@ export default function PrayerFlags() {
     u.uSunCol.value.copy(env.sunColor)
     u.uSunI.value = env.sunIntensity / 3.2
     u.uSky.value.copy(env.ambient)
-    u.uAmb.value = (env.ambientIntensity / 0.62) * 0.86
+    u.uGround.value.lerpColors(FLAG_GROUND_NIGHT, FLAG_GROUND_DAY, env.daylight)
+    // after dark the cloth would go black; thin cotton keeps a little of the sky's glow
+    u.uAmb.value = (env.ambientIntensity / 0.62) * 0.86 + (1 - env.daylight) * 0.42
     u.uFogCol.value.copy(env.fogColor)
 
     if (scrollState.reducedMotion) return
