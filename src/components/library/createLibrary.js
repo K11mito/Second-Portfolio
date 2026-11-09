@@ -502,6 +502,20 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     x.fillRect(0, 0, 64, 64)
     return c
   }
+  // a butter lamp's flame: a soft, tall glow, white at the wick
+  function flameTex() {
+    const [c, x] = mk(64, 160)
+    x.translate(32, 96)
+    x.scale(1, 2.2)
+    const g = x.createRadialGradient(0, 0, 0, 0, 0, 24)
+    g.addColorStop(0, 'rgba(255,250,232,1)')
+    g.addColorStop(0.3, 'rgba(255,212,128,0.95)')
+    g.addColorStop(0.64, 'rgba(255,126,30,0.4)')
+    g.addColorStop(1, 'rgba(255,80,0,0)')
+    x.fillStyle = g
+    x.fillRect(-32, -44, 64, 88)
+    return c
+  }
   function shaftTex() {
     const [c, x] = mk(128, 512)
     const g = x.createLinearGradient(0, 0, 128, 0)
@@ -583,9 +597,9 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
   scene.fog = new THREE.Fog(lin(0x0a0504), 6, 14)
   const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.05, 40)
 
-  // the room's light, a touch lower than the prototype's; the hover glow is not
-  // part of it and keeps its strength
-  const ROOM = 0.86
+  // the room's light, lower than the prototype's: the butter lamps (below) do
+  // more of the lighting. The hover glow is not part of it and keeps its strength.
+  const ROOM = 0.6
   scene.add(new THREE.HemisphereLight(lin(0x8a5a3a), lin(0x120804), 0.38 * PI * ROOM))
   const key = new THREE.DirectionalLight(lin(0xffc488), 3.05 * PI * ROOM)
   key.position.set(-3.6, 3.4, 4.6)
@@ -930,8 +944,8 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
   )
   scene.add(dust)
   for (const [x, w, a, o] of [
-    [-0.9, 1.3, 0.52, 0.07],
-    [0.5, 0.8, 0.5, 0.05],
+    [-0.9, 1.3, 0.52, 0.056],
+    [0.5, 0.8, 0.5, 0.04],
   ]) {
     const s = new THREE.Mesh(
       new THREE.PlaneGeometry(w, 5),
@@ -941,6 +955,75 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     s.rotation.z = a
     scene.add(s)
   }
+  // ================================================================== butter lamps
+  // A row of butter lamps on the floor before the bookcase: brass cups with
+  // flickering flames, whose warm light pools on the floor and the lowest
+  // shelves and fades as it climbs. One light for each third of the row.
+  const floorY = -CH / 2
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(16, 7),
+    painted(new THREE.MeshStandardMaterial({ map: texOf(woodTex({ w: 512, h: 512, seed: 78, base: [46, 32, 24] }), 9, 4), roughness: 0.9 })),
+  )
+  floor.rotation.x = -PI / 2
+  floor.position.set(0, floorY - 0.001, -D / 2 + 3.5)
+  floor.receiveShadow = true
+  scene.add(floor)
+  const brass = new THREE.MeshStandardMaterial({ color: lin(0x6e4a1c), metalness: 0.7, roughness: 0.32, side: THREE.DoubleSide })
+  const lampGeo = new THREE.LatheGeometry(
+    [
+      [0, 0],
+      [0.026, 0],
+      [0.026, 0.005],
+      [0.011, 0.013],
+      [0.008, 0.027],
+      [0.012, 0.033],
+      [0.031, 0.045],
+      [0.034, 0.056],
+      [0.03, 0.057],
+      [0, 0.051],
+    ].map(([r, y]) => new THREE.Vector2(r, y)),
+    20,
+  )
+  const flameMat = new THREE.SpriteMaterial({ map: texOf(flameTex(), 1, 1, true), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })
+  const haloMat = new THREE.SpriteMaterial({
+    map: tex.dot,
+    color: lin(0xff9a4a),
+    transparent: true,
+    opacity: 0.7,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  })
+  const flames = []
+  const lr = Rnd(23)
+  for (let x = -CW / 2 + 0.14; x < CW / 2 - 0.1; x += 0.27 + lr() * 0.12) {
+    const lx = x + (lr() - 0.5) * 0.05
+    const lz = D / 2 + 0.13 + lr() * 0.09
+    const cup = new THREE.Mesh(lampGeo, brass)
+    cup.position.set(lx, floorY, lz)
+    cup.scale.setScalar(0.9 + lr() * 0.25)
+    cup.castShadow = cup.receiveShadow = true
+    scene.add(cup)
+    const top = floorY + 0.053 * cup.scale.y
+    const fh = 0.064 + lr() * 0.016
+    const flame = new THREE.Sprite(flameMat)
+    flame.center.set(0.5, 0.1) // the wick sits on the butter
+    flame.position.set(lx, top, lz)
+    flame.scale.set(fh * 0.42, fh, 1)
+    const halo = new THREE.Sprite(haloMat)
+    halo.position.set(lx, top + fh * 0.35, lz)
+    halo.scale.setScalar(0.2 + lr() * 0.06)
+    scene.add(flame, halo)
+    flames.push({ flame, halo, x: lx, fh, hs: halo.scale.x, phase: lr() * 100 })
+  }
+  const CANDLE = 0.6
+  const candles = [-1.3, 0, 1.3].map((x, i) => {
+    const l = new THREE.PointLight(lin(0xff9640), CANDLE, 2, 1.7)
+    l.position.set(x, floorY + 0.14, D / 2 + 0.3)
+    scene.add(l)
+    return { l, phase: i * 17.3 }
+  })
+
   // a dark curtain that falls between you and the shelf while you read
   const curtainMat = new THREE.MeshBasicMaterial({ color: lin(0x040201), transparent: true, opacity: 0, depthWrite: false })
   const curtain = new THREE.Mesh(new THREE.PlaneGeometry(40, 30), curtainMat)
@@ -1444,6 +1527,16 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
       }
       dustGeo.attributes.position.needsUpdate = true
       lamp.intensity = LAMP * ((0.62 + Math.sin(now / 310) * 0.04 + Math.sin(now / 1270) * 0.05) / 0.7)
+      // the butter lamps: each flame and each pool of light flickers on its own
+      const t = now / 1000
+      for (const c of candles) {
+        c.l.intensity = CANDLE * (0.86 + 0.07 * Math.sin(t * 7.1 + c.phase) + 0.05 * Math.sin(t * 13.7 + c.phase * 1.7) + 0.03 * Math.sin(t * 23.3 + c.phase * 0.6))
+      }
+      for (const f of flames) {
+        f.flame.scale.y = f.fh * (0.9 + 0.08 * Math.sin(t * 9.3 + f.phase) + 0.05 * Math.sin(t * 17.1 + f.phase * 1.3))
+        f.flame.position.x = f.x + Math.sin(t * 2.1 + f.phase) * 0.0016
+        f.halo.scale.setScalar(f.hs * (0.94 + 0.06 * Math.sin(t * 6.3 + f.phase)))
+      }
     }
     renderer.render(scene, camera)
   }

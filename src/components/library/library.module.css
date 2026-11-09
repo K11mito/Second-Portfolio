@@ -68,21 +68,22 @@
   transition: color 0.3s;
 }
 .back:hover { color: rgb(var(--snow)); }
+/* the page's name: the Tibetan word in gold, then the English in a pen-drawn
+   face (Amita, set on the page) */
 .eyebrow {
   grid-column: 2;
   margin: 0;
   display: flex;
-  align-items: center;
-  gap: 0.8em;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.7rem;
+  align-items: baseline;
+  gap: 0.6em;
+  font-size: 1.06rem;
   font-weight: 400;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--mist);
+  color: rgb(var(--snow) / 0.84);
 }
-.eyebrow .tib { font-size: 1.1rem; color: var(--gold); }
+.eyebrow .tib { font-size: 1.45em; color: var(--gold); }
 
 .caption {
   position: absolute;

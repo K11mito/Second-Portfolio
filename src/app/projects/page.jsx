@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Amita } from 'next/font/google'
 import Library from '@/components/library/Library'
 import { tib } from '@/components/library/pecha'
 import { person, projects } from '@/content/site'
@@ -13,11 +14,16 @@ export const viewport = {
   themeColor: '#0a0504',
 }
 
+// The heading's letters: a Latin drawn with an ink pen in the Devanagari
+// calligraphic tradition, the closest openly licensed match for the Tibetan
+// word it sits beside (no open font draws Latin in Tibetan's own style).
+const pen = Amita({ weight: '400', subsets: ['latin'], display: 'swap' })
+
 // The library: every project wrapped as a pecha on a monastery bookcase. The
 // header and the plain list below are rendered here, on the server; the list
 // is what search engines, screen readers and browsers without WebGL get.
 export default function ProjectsPage() {
-  // the way home on the left; the page's name, small, in the top middle
+  // the way home on the left; the page's name in the top middle
   const intro = (
     <header className={s.intro}>
       <Link href="/" className={s.back}>
@@ -28,7 +34,7 @@ export default function ProjectsPage() {
         <span className={s.tib} lang="bo" aria-hidden="true">
           དཔེ་ཆ།
         </span>
-        Projects · {projects.length} texts
+        <span className={pen.className}>Projects · {projects.length} texts</span>
       </h1>
     </header>
   )
