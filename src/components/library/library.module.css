@@ -1,0 +1,384 @@
+/* The projects library: a 3D monastery bookcase of wrapped texts (pecha).
+   See Library.jsx and createLibrary.js. */
+
+@font-face {
+  font-family: 'Jomolhari Library';
+  src: url('/fonts/jomolhari-library.woff2') format('woff2');
+  font-display: swap;
+  /* only the few Tibetan words, numerals and marks the library uses */
+  unicode-range: U+0F00-0FFF;
+}
+
+.page {
+  --tib: 'Jomolhari Library', 'Noto Serif Tibetan', 'Microsoft Himalaya', serif;
+  --ink: #2a1a10;
+  --vermilion: #b5311d;
+  --gold: #dcb25a;
+  --gold-deep: #a97a2c;
+  --mist: rgb(243 238 228 / 0.66);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0a0504;
+  color: rgb(var(--snow));
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.tib { font-family: var(--tib); letter-spacing: 0; text-transform: none; }
+
+.canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.canvas[data-pointing='true'] { cursor: pointer; }
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 95% at 50% 55%, transparent 52%, rgb(0 0 0 / 0.62)),
+    linear-gradient(180deg, rgb(10 5 4 / 0.82), transparent 22%, transparent 80%, rgb(10 5 4 / 0.7));
+}
+
+/* along the top: the way home on the left, the page's name in the middle */
+.intro {
+  --top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 2.8vh, 26px));
+  position: absolute;
+  top: var(--top);
+  left: max(18px, env(safe-area-inset-left, 0px));
+  right: max(18px, env(safe-area-inset-right, 0px));
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px 16px;
+  pointer-events: none;
+}
+.intro a { pointer-events: auto; }
+.back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin: -0.5em;
+  padding: 0.5em;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mist);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.back:hover { color: rgb(var(--snow)); }
+/* the page's name: the Tibetan word in gold, then the English in the site's
+   pen-drawn display face */
+.eyebrow {
+  grid-column: 2;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  font-family: var(--font-serif), serif;
+  font-size: 1.22rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: rgb(var(--snow) / 0.86);
+}
+.eyebrow .tib { font-size: 1.3em; color: var(--gold); }
+
+.caption {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left, 0px));
+  right: max(18px, env(safe-area-inset-right, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 3vh, 28px));
+  z-index: 2;
+  margin: 0;
+  min-height: 1.5em;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+  pointer-events: none;
+  text-wrap: balance;
+}
+.caption b { color: rgb(var(--snow)); font-weight: 500; }
+.caption .tib { color: var(--gold); margin-right: 0.6em; font-size: 1.05rem; }
+.aboutToggle {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(10px, 2.4vh, 22px));
+  z-index: 3;
+  padding: 0.55em 0.9em;
+  border-radius: 999px;
+  border: 1px solid rgb(243 238 228 / 0.16);
+  background: rgb(20 10 6 / 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mist);
+  cursor: pointer;
+}
+.aboutToggle:hover, .aboutToggle[aria-expanded='true'] { color: rgb(var(--snow)); border-color: rgb(255 190 110 / 0.45); }
+.about {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(56px, 8vh, 72px));
+  z-index: 3;
+  width: min(22rem, calc(100vw - 32px));
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgb(243 238 228 / 0.12);
+  background: rgb(18 9 6 / 0.88);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  display: grid;
+  gap: 10px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--mist);
+}
+.about[hidden], .room[hidden] { display: none; }
+.about dt { font-family: var(--font-serif), Georgia, serif; font-size: 1.15rem; color: rgb(var(--snow)); }
+.about dt .tib { color: var(--gold); font-size: 0.92rem; margin-left: 0.45em; }
+.about dd { margin: 1px 0 0; }
+.panHint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(40px, 7vh, 60px));
+  z-index: 2;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mist);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.loading {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mist);
+  background: #0a0504;
+  transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.loading[data-done='true'] { opacity: 0; pointer-events: none; }
+
+/* while a text is out being read, the edges go quiet (and the reading room's
+   own hint takes the top middle) */
+.intro, .caption, .aboutToggle, .about, .panHint { transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.page:not([data-room='closed']) :is(.intro, .caption, .aboutToggle, .about, .panHint) { opacity: 0; }
+
+/* without JS or WebGL there is no shelf: only the header and the plain list */
+.loading, .caption, .aboutToggle, .panHint { display: none; }
+:global(.js) .loading { display: grid; }
+:global(.js) :is(.caption, .aboutToggle) { display: block; }
+:global(.js) .panHint:not([hidden]) { display: block; }
+.page[data-webgl='no'] :is(.canvas, .caption, .aboutToggle, .about, .panHint) { display: none; }
+@media (max-width: 720px) {
+  /* two rows: home (with the glossary across from it), then the page's name */
+  .intro { grid-template-columns: 1fr; }
+  .eyebrow { grid-column: 1; justify-self: center; }
+  .aboutToggle { top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 2.8vh, 26px) - 0.4rem); bottom: auto; left: auto; right: max(16px, env(safe-area-inset-right, 0px)); }
+  .about { top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 2.8vh, 26px) + 1.9rem); bottom: auto; left: auto; right: max(16px, env(safe-area-inset-right, 0px)); }
+  /* above the caption, which takes two lines here */
+  .panHint { bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(14px, 3vh, 28px) + 44px); }
+}
+
+/* the keyboard's way in: one button per text, shown only when focused */
+.keys { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: hidden; margin: 0; padding: 0; list-style: none; }
+.keys button { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.keys button:focus {
+  position: fixed;
+  left: 50%;
+  top: 18px;
+  width: auto;
+  height: auto;
+  clip: auto;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  z-index: 9;
+  background: rgb(20 10 6 / 0.9);
+  border: 1px solid rgb(255 190 110 / 0.5);
+  border-radius: 999px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--snow));
+}
+
+/* ------------------------------------------------------------ without WebGL (or JS): every project, as a plain list */
+.index {
+  --head: calc(env(safe-area-inset-top, 0px) + 84px);
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: var(--head) max(18px, env(safe-area-inset-right, 0px)) 60px max(18px, env(safe-area-inset-left, 0px));
+  /* the list scrolls away under the header */
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--head) - 30px), #000 var(--head));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--head) - 30px), #000 var(--head));
+}
+@media (max-width: 720px) {
+  .index { --head: calc(env(safe-area-inset-top, 0px) + 104px); }
+}
+.index ol { list-style: none; margin: 0 auto; padding: 0; max-width: 980px; display: grid; gap: 14px; }
+.index li { padding: 18px 20px; border-radius: 12px; border: 1px solid rgb(231 164 60 / 0.25); background: linear-gradient(180deg, rgb(70 24 10 / 0.6), rgb(30 12 6 / 0.6)); }
+.index h2 { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: 1.6rem; }
+.index p { margin: 6px 0 0; color: var(--mist); font-size: 0.92rem; line-height: 1.55; }
+.index .indexMeta { font-family: var(--font-mono), monospace; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.index .indexMeta .tib { color: var(--gold); font-size: 0.95rem; }
+.index .indexLinks { display: flex; flex-wrap: wrap; gap: 0.4em 1.4em; margin-top: 10px; font-family: var(--font-mono), monospace; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.index a { color: var(--gold); text-underline-offset: 0.3em; }
+/* once JS runs, the shelf takes over and the list stays for screen readers;
+   if keyboard focus reaches it, it shows itself over the shelf */
+:global(.js) .page:not([data-webgl='no']) .index:focus-within { background: rgb(10 5 4 / 0.96); }
+:global(.js) .page:not([data-webgl='no']) .index:not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ the reading room */
+.room { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.backdrop { position: absolute; inset: 0; pointer-events: auto; }
+.leaf { position: fixed; z-index: 2; perspective: 2400px; pointer-events: auto; opacity: 0; transform-origin: 50% 50%; }
+.inner { position: absolute; inset: 0; transform-style: preserve-3d; }
+.face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(140% 120% at 50% 50%, transparent 60%, rgb(120 84 40 / 0.28)),
+    linear-gradient(180deg, #f2e5c7, #e9d9b6);
+  box-shadow: 0 2.4em 4em -1.6em rgb(0 0 0 / 0.85), 0 0 0 1px rgb(90 60 20 / 0.25);
+}
+.faceBack { transform: rotateX(180deg); }
+.shade { position: absolute; inset: 0; background: rgb(20 10 4); opacity: 0; pointer-events: none; z-index: 5; }
+.precious .face {
+  color: var(--gold);
+  background:
+    radial-gradient(140% 120% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.45)),
+    radial-gradient(1px 1px at 20% 30%, rgb(220 178 90 / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 70% 80%, rgb(220 178 90 / 0.4), transparent 60%),
+    linear-gradient(180deg, #161c40, #0e1330);
+  background-size: auto, 37px 41px, 53px 47px, auto;
+}
+.margin { position: absolute; left: 0; top: 0; bottom: 0; width: 3.2rem; display: grid; place-items: center; color: var(--vermilion); font-family: var(--tib); font-size: 1.05rem; }
+.margin span { transform: rotate(-90deg); white-space: nowrap; }
+.precious .margin { color: var(--gold); }
+.frame { position: absolute; inset: 1.3rem 1.4rem 1.3rem 3.2rem; border: 1.5px solid var(--rule); outline: 1px solid var(--rule); outline-offset: 4px; --rule: rgb(181 49 29 / 0.85); }
+.precious .frame { --rule: rgb(220 178 90 / 0.75); }
+.frontBody { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 0.6rem; padding: 2rem 3.6rem 2rem 4.6rem; text-align: center; }
+.headmark { margin: 0; font-family: var(--tib); color: var(--vermilion); font-size: 1.3rem; line-height: 1; }
+.precious .headmark { color: var(--gold); }
+.frontTitle { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 0.95; letter-spacing: 0; text-wrap: balance; }
+.frontSub { margin: 0; font-family: var(--font-mono), monospace; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
+.frontNum { position: absolute; right: 2.6rem; bottom: 1.6rem; font-family: var(--tib); font-size: 2.6rem; opacity: 0.16; }
+.backBody { position: absolute; inset: 1.3rem 1.4rem 1.3rem 3.2rem; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.55fr) 7.2rem; gap: 1.6rem; padding: 1.25rem 1.4rem; }
+.mini { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+.miniFrame { position: relative; flex: 1; min-height: 0; border: 3px solid #8e2416; outline: 2px solid var(--gold-deep); outline-offset: -7px; background: #2a1408; overflow: hidden; }
+.miniFrame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.miniFrame svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mini figcaption { font-family: var(--font-mono), monospace; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7; }
+.text { display: flex; flex-direction: column; min-width: 0; overflow: auto; scrollbar-width: thin; }
+.text .headmark { font-size: 1.05rem; }
+.leafTitle { margin: 0.35rem 0 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(1.9rem, 3.2vw, 2.7rem); line-height: 0.98; letter-spacing: 0; text-wrap: balance; }
+.meta { margin: 0.55rem 0 0; font-family: var(--font-mono), monospace; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.72; }
+.meta .tib { font-size: 0.9rem; margin-left: 0.4em; }
+.note { margin: 0.6rem 0 0; font-family: var(--font-serif), Georgia, serif; font-size: 1.12rem; color: var(--vermilion); }
+.precious .note { color: #f0cf7a; }
+.desc { margin: 0.65rem 0 0; font-size: 0.93rem; line-height: 1.66; max-width: 60ch; text-wrap: pretty; }
+.tags { margin: auto 0 0; padding-top: 0.8rem; font-family: var(--font-mono), monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; }
+.seals { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.9rem; }
+.seal {
+  display: grid;
+  place-items: center;
+  width: 5.6rem;
+  height: 5.6rem;
+  padding: 0.5rem;
+  text-align: center;
+  text-decoration: none;
+  color: #fbe9dd;
+  background: radial-gradient(circle at 40% 35%, #c94128, #a1281a 70%);
+  box-shadow: inset 0 0 0 3px #a1281a, inset 0 0 0 4.5px rgb(251 233 221 / 0.85), 0 2px 0 rgb(0 0 0 / 0.15);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  transform: rotate(var(--seal-tilt, -4deg));
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.seal:hover { transform: rotate(0deg) scale(1.05); filter: brightness(1.08); }
+.sealQuiet { color: var(--ink); background: none; box-shadow: inset 0 0 0 1.5px currentColor, inset 0 0 0 3.5px transparent, inset 0 0 0 4.5px currentColor; opacity: 0.6; }
+.precious .sealQuiet { color: var(--gold); }
+.arrow { display: block; font-size: 0.9rem; margin-top: 0.15rem; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.roomClose { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 6; pointer-events: auto; }
+.roomBar { position: absolute; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; white-space: nowrap; pointer-events: auto; }
+.roomUi { opacity: 0; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.room[data-reading='true'] .roomUi { opacity: 1; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  height: 2.6rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid rgb(243 238 228 / 0.16);
+  background: rgb(20 10 6 / 0.7);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: rgb(var(--snow));
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+.chip:hover { border-color: rgb(255 190 110 / 0.5); background: rgb(40 18 8 / 0.8); }
+.chipRound { width: 2.6rem; padding: 0; justify-content: center; font-size: 1rem; letter-spacing: 0; }
+.counter { min-width: 7.5em; text-align: center; font-family: var(--font-mono), monospace; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); }
+.counter .tib { color: var(--gold); font-size: 0.95rem; margin-right: 0.4em; }
+.roomHint { position: absolute; left: 50%; top: calc(18px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); margin: 0; font-family: var(--font-mono), monospace; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mist); white-space: nowrap; }
+@media (max-width: 720px) {
+  .margin { width: 100%; height: 2.2rem; bottom: auto; }
+  .margin span { transform: none; }
+  .frame { inset: 2.2rem 0.9rem 0.9rem; }
+  .frontBody { padding: 3rem 1.6rem 2rem; }
+  .frontNum { right: 1.6rem; bottom: 1.2rem; }
+  .backBody { inset: 2.2rem 0.9rem 0.9rem; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 0.9rem; padding: 0.9rem; }
+  .miniFrame { flex: none; aspect-ratio: 2.2 / 1; }
+  .mini figcaption { display: none; }
+  .seals { flex-direction: row; justify-content: flex-start; gap: 0.7rem; }
+  .seal { width: 3.9rem; height: 3.9rem; padding: 0.35rem; font-size: 0.52rem; }
+  .desc { font-size: 0.9rem; line-height: 1.6; }
+  .leafTitle { font-size: 1.9rem; }
+  .roomHint { display: none; }
+  .counter { min-width: 5.5em; }
+  .chipLabel { display: none; }
+}
