@@ -77,9 +77,12 @@ export default function Journey({ start = null, projects, index }) {
   }, [])
 
   // loaded at a destination's address: start out there, with the mountain's
-  // "Where to now?" waiting behind it for the way back
+  // "Where to now?" waiting behind it for the way back. (A page that is simply
+  // loaded keeps focus where browsers put it: at the top.)
+  const quietArrival = useRef(false)
   useEffect(() => {
     if (!start) return
+    quietArrival.current = true
     const sec = document.getElementById('destinations')
     if (sec) {
       const y = sec.getBoundingClientRect().top + window.scrollY
@@ -113,6 +116,10 @@ export default function Journey({ start = null, projects, index }) {
   useEffect(() => {
     if (j.state === 'going') cameFrom.current = j.to
     if (j.state === 'inside') {
+      if (quietArrival.current) {
+        quietArrival.current = false
+        return
+      }
       // the way back may mount a frame late (the library loads on demand) or sit
       // in a stage that is still hidden: keep trying for a couple of seconds
       const sel = j.to === 'library' ? '.journey-library header button' : '#experience .journey-back'
