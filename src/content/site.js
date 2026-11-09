@@ -88,7 +88,7 @@ export const projects = [
     kind: 'AI content platform',
     note: 'Internship at Jagota',
     description:
-      'An AI content platform I built as an intern at Jagota. It studies the competitor reels and memes that win, briefs an AI director, makes the posts and schedules them, and an agent runs the whole pipeline from one chat: just ask for five memes by Friday.',
+      'An AI content platform I built as an intern at Jagota. It studies the reels and memes that win, makes its own versions and schedules them, all from one chat.',
     image: '/images/projects/munch.webp',
     imageAlt: 'Munch’s home screen: a chat box for asking the agent to make something, above the Extractor, Factory and Gen Content stages',
     focus: '0% 0%',
@@ -130,7 +130,7 @@ export const projects = [
     featured: 2,
     kind: 'Hardware · vision',
     description:
-      'A face-tracking turret made of cardboard, two servos and a webcam. YOLOv8 spots the target, a controller turns each detection into pan and tilt, and an Arduino keeps it on the crosshair, with a live HUD. Its build log walks anyone through making one over a weekend.',
+      'A face-tracking turret made of cardboard, two servos and a webcam: YOLOv8 spots the target and an Arduino keeps it on the crosshair. The build log shows anyone how to make one.',
     image: '/images/projects/odts.webp',
     imageAlt: 'ODTS v0.5: a cardboard turret with a webcam strapped on by a rubber band, a doodled face, and its name written on the box below',
     focus: '50% 45%',

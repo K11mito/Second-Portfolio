@@ -20,13 +20,16 @@ function ScrollGlyph() {
   )
 }
 
+// Compact, and staggered left and right with each image on the outer edge, so
+// the mountain behind shows beside and between them.
 function ProjectCard({ project, index, total }) {
   const flip = index % 2 === 1
   return (
-    <li data-reveal className="glass orn-host group relative grid overflow-hidden rounded-[1.5rem] md:grid-cols-12">
-      <div
-        className={`relative aspect-[16/10] overflow-hidden md:col-span-7 md:aspect-auto md:min-h-[27rem] ${flip ? 'md:order-2' : ''}`}
-      >
+    <li
+      data-reveal
+      className={`glass orn-host group relative grid w-full overflow-hidden rounded-[1.35rem] md:w-[min(100%,56rem)] md:grid-cols-2 ${flip ? 'md:self-end' : 'md:self-start'}`}
+    >
+      <div className={`relative aspect-[16/9] overflow-hidden md:aspect-auto md:min-h-[20rem] ${flip ? 'md:order-2' : ''}`}>
         {project.video ? (
           <ProjectVideo src={project.video} poster={project.image} label={project.imageAlt} />
         ) : (
@@ -34,7 +37,7 @@ function ProjectCard({ project, index, total }) {
             src={project.image}
             alt={project.imageAlt}
             fill
-            sizes="(min-width: 768px) 55vw, 100vw"
+            sizes="(min-width: 768px) 28rem, 100vw"
             className="object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.035]"
             style={{ objectPosition: project.focus || 'center' }}
           />
@@ -42,27 +45,28 @@ function ProjectCard({ project, index, total }) {
         <div aria-hidden="true" className="absolute inset-0 ring-1 ring-inset ring-white/[0.06]" />
       </div>
 
-      <div className="flex flex-col justify-between gap-10 p-7 pb-10 sm:p-9 sm:pb-10 md:col-span-5 lg:p-11">
+      {/* padding clears the border's corner knots */}
+      <div className="flex flex-col justify-between gap-7 px-7 pb-10 pt-8 sm:px-9 sm:pt-9">
         <div>
-          <div className="eyebrow flex items-center justify-between text-snow/60">
+          <div className="eyebrow flex items-center justify-between gap-4 text-snow/60">
             <span>
               <span className="text-snow/85">{String(index + 1).padStart(2, '0')}</span> / {String(total).padStart(2, '0')}
             </span>
-            <span>{project.kind}</span>
+            <span className="text-right">{project.kind}</span>
           </div>
-          <h3 className="title mt-7 text-[clamp(2.25rem,3.6vw,3.5rem)] text-snow">{project.title}</h3>
-          <p className="mt-4 max-w-[34rem] text-[1.0313rem] leading-[1.7] text-snow/75">{project.description}</p>
+          <h3 className="title mt-5 text-[clamp(1.9rem,2.6vw,2.6rem)] text-snow">{project.title}</h3>
+          <p className="mt-3 max-w-[30rem] text-[0.94rem] leading-[1.62] text-snow/75">{project.description}</p>
         </div>
 
         <div>
-          <ul className="flex flex-wrap gap-2" aria-label="Built with">
+          <ul className="flex flex-wrap gap-1.5" aria-label="Built with">
             {project.tags.map((t) => (
-              <li key={t} className="rounded-full border border-white/[0.12] px-3 py-1 text-[0.8125rem] text-snow/70">
+              <li key={t} className="rounded-full border border-white/[0.12] px-2.5 py-0.5 text-[0.75rem] text-snow/70">
                 {t}
               </li>
             ))}
           </ul>
-          <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3">
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
             {project.links.length === 0 && project.private && (
               <p className="eyebrow flex items-center gap-2 text-snow/55">
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden="true">
@@ -78,7 +82,7 @@ function ProjectCard({ project, index, total }) {
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group/link inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-snow"
+                className="group/link inline-flex items-center gap-1.5 text-[0.875rem] font-medium text-snow"
               >
                 <span className="link-draw">{l.label}</span>
                 <ArrowIcon className="h-3 w-3 transition-transform duration-300 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
@@ -111,7 +115,7 @@ export default function Work() {
           </p>
         </header>
 
-        <ol className="flex flex-col gap-7 md:gap-10">
+        <ol className="flex flex-col gap-10 md:gap-16">
           {featuredProjects.map((p, i) => (
             <ProjectCard key={p.title} project={p} index={i} total={featuredProjects.length} />
           ))}
