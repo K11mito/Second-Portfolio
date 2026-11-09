@@ -77,14 +77,13 @@
   align-items: baseline;
   gap: 0.6em;
   font-family: var(--font-serif), serif;
-  font-size: 1.06rem;
+  font-size: 1.22rem;
   font-weight: 400;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   white-space: nowrap;
-  color: rgb(var(--snow) / 0.84);
+  color: rgb(var(--snow) / 0.86);
 }
-.eyebrow .tib { font-size: 1.45em; color: var(--gold); }
+.eyebrow .tib { font-size: 1.3em; color: var(--gold); }
 
 .caption {
   position: absolute;
