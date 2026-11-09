@@ -583,8 +583,11 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
   scene.fog = new THREE.Fog(lin(0x0a0504), 6, 14)
   const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.05, 40)
 
-  scene.add(new THREE.HemisphereLight(lin(0x8a5a3a), lin(0x120804), 0.38 * PI))
-  const key = new THREE.DirectionalLight(lin(0xffc488), 3.05 * PI)
+  // the room's light, a touch lower than the prototype's; the hover glow is not
+  // part of it and keeps its strength
+  const ROOM = 0.86
+  scene.add(new THREE.HemisphereLight(lin(0x8a5a3a), lin(0x120804), 0.38 * PI * ROOM))
+  const key = new THREE.DirectionalLight(lin(0xffc488), 3.05 * PI * ROOM)
   key.position.set(-3.6, 3.4, 4.6)
   key.castShadow = true
   key.shadow.mapSize.set(2048, 2048)
@@ -592,10 +595,10 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
   key.shadow.bias = -0.0006
   key.shadow.normalBias = 0.015
   scene.add(key)
-  const fillLight = new THREE.DirectionalLight(lin(0x7d8cb8), 0.2 * PI)
+  const fillLight = new THREE.DirectionalLight(lin(0x7d8cb8), 0.2 * PI * ROOM)
   fillLight.position.set(4, 0.6, 3)
   scene.add(fillLight)
-  const LAMP = 0.7 * PI
+  const LAMP = 0.7 * PI * ROOM
   const lamp = new THREE.PointLight(lin(0xff9a50), LAMP, 7, 1)
   lamp.position.set(0.4, -1.6, 2.4)
   scene.add(lamp)

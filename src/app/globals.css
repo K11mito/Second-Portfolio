@@ -472,6 +472,28 @@ html.lenis body {
 .js .exp[data-mode='scroll'] .exp-arrow {
   display: none;
 }
+/* From tablets up the ring sits in the middle of the screen, around the drum,
+   or just below the heading where that reaches across it (Experience.jsx
+   measures that as --ring-min-top). Phones keep it low, under the heading. */
+@media (min-width: 768px) {
+  .js .exp-viewport {
+    --ring-top: max(var(--ring-min-top, 0px), calc((100svh - var(--ch)) / 2));
+    align-items: flex-start;
+    padding-bottom: 0;
+  }
+  .js .exp-ring {
+    margin-top: var(--ring-top);
+  }
+  .js .exp-arrow {
+    top: calc(var(--ring-top) + var(--ch) * 0.5 - 1.5rem);
+    bottom: auto;
+  }
+  /* two even lines, which end before the ring's side cards begin */
+  .js .exp-lede {
+    max-width: 19rem;
+    text-wrap: balance;
+  }
+}
 .exp-hint {
   transition: opacity 0.8s var(--ease-out);
 }

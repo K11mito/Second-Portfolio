@@ -118,6 +118,24 @@ export default function Experience() {
       if (tallest > 0) vp.style.setProperty('--ch', `${Math.ceil(tallest)}px`)
       const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
       geo.cw = el.offsetWidth || 320
+      // From tablets up the ring is centred on the screen (see globals.css),
+      // but never under the heading: it stays below any line of it that
+      // reaches across the front card and its arrows.
+      const head = sec.querySelector('.exp-header')
+      let minTop = 0
+      if (head && window.matchMedia('(min-width: 768px)').matches) {
+        const box = vp.getBoundingClientRect()
+        const mid = box.left + box.width / 2
+        const reach = geo.cw / 2 + 4.75 * rem
+        for (const line of head.children) {
+          const range = document.createRange()
+          range.selectNodeContents(line)
+          const text = range.getBoundingClientRect() // the words, not the full-width box
+          if (!text.width || text.right < mid - reach || text.left > mid + reach) continue
+          minTop = Math.max(minTop, head.offsetTop + line.offsetTop + line.offsetHeight + 1.5 * rem)
+        }
+      }
+      vp.style.setProperty('--ring-min-top', `${Math.ceil(minTop)}px`)
       geo.r = (geo.cw * 0.69 + 2.5 * rem) * RK
       geo.xc = el.offsetLeft + geo.cw / 2
       geo.yc = el.offsetTop + el.offsetHeight / 2

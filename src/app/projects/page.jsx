@@ -17,27 +17,19 @@ export const viewport = {
 // header and the plain list below are rendered here, on the server; the list
 // is what search engines, screen readers and browsers without WebGL get.
 export default function ProjectsPage() {
+  // the way home on the left; the page's name, small, in the top middle
   const intro = (
     <header className={s.intro}>
-      <div>
-        <p className={s.eyebrow}>
-          <Link href="/" className={s.back}>
-            <span aria-hidden="true">←</span>
-            Home
-          </Link>
-          <span className={s.tib} lang="bo" aria-hidden="true">
-            དཔེ་ཆ།
-          </span>
-          Projects · {projects.length} texts
-        </p>
-        <h1 className={s.title}>
-          The <em>library</em>
-        </h1>
-      </div>
-      <p className={s.lede}>
-        Every project I’ve made, wrapped like a pecha and shelved newest first. Rest your cursor on one and it warms; open it,
-        and it’s carried out to be unwrapped and read.
-      </p>
+      <Link href="/" className={s.back}>
+        <span aria-hidden="true">←</span>
+        Home
+      </Link>
+      <h1 className={s.eyebrow}>
+        <span className={s.tib} lang="bo" aria-hidden="true">
+          དཔེ་ཆ།
+        </span>
+        Projects · {projects.length} texts
+      </h1>
     </header>
   )
 
