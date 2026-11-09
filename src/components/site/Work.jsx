@@ -42,7 +42,7 @@ function ProjectCard({ project, index, total }) {
         <div aria-hidden="true" className="absolute inset-0 ring-1 ring-inset ring-white/[0.06]" />
       </div>
 
-      <div className="flex flex-col justify-between gap-10 p-7 sm:p-9 md:col-span-5 lg:p-11">
+      <div className="flex flex-col justify-between gap-10 p-7 pb-10 sm:p-9 sm:pb-10 md:col-span-5 lg:p-11">
         <div>
           <div className="eyebrow flex items-center justify-between text-snow/60">
             <span>

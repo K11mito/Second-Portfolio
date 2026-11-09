@@ -47,6 +47,17 @@ function Chevron({ flip = false }) {
   )
 }
 
+// For a card's highlight (a prize): a small cup
+function Trophy() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 4h8v5a4 4 0 0 1-8 0V4z" />
+      <path d="M8 6H5.6a2.4 2.4 0 0 0 2.6 3.5M16 6h2.4a2.4 2.4 0 0 1-2.6 3.5" />
+      <path d="M12 13v3.2M9.4 20h5.2M10.4 16.2h3.2l.6 3.8h-4.4z" />
+    </svg>
+  )
+}
+
 // A clockwise turn: how prayer wheels are spun
 function TurnIcon() {
   return (
@@ -94,6 +105,17 @@ export default function Experience() {
     const measure = () => {
       const el = ring.current
       if (!el) return
+      // The ring is exactly as tall as its tallest card, so cards stay compact
+      // and none ever clips its text, whatever the copy or the screen.
+      let tallest = 0
+      for (const card of cards.current) {
+        const article = card?.firstElementChild
+        if (!article) continue
+        article.style.height = 'auto'
+        tallest = Math.max(tallest, article.offsetHeight)
+        article.style.height = ''
+      }
+      if (tallest > 0) vp.style.setProperty('--ch', `${Math.ceil(tallest)}px`)
       const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
       geo.cw = el.offsetWidth || 320
       geo.r = (geo.cw * 0.69 + 2.5 * rem) * RK
@@ -105,6 +127,8 @@ export default function Experience() {
     }
     const ro = new ResizeObserver(measure)
     ro.observe(vp)
+    // the web fonts change line breaks, and so the cards' heights
+    document.fonts?.ready.then(() => ring.current && measure())
 
     // One card's worth of drum surface, in pixels: dragging the front card
     // keeps the same spot of it under your finger, like a real drum.
@@ -291,9 +315,10 @@ export default function Experience() {
         if (!card) return
         const a = mod(i * STEP + rot + 180, 360) - 180
         const facing = Math.cos((a * Math.PI) / 180)
-        // neighbours stay faintly visible so the ring reads as a ring
-        const o = Math.max(0, (facing + 0.08) / 1.08)
-        card.style.opacity = (Math.pow(o, 1.6) * alpha).toFixed(3)
+        // The card facing you is solid; its neighbours are ghosts (about a
+        // third) so the ring still reads as a ring and the wheel shows through.
+        const o = Math.pow(Math.max(0, facing), 2.4)
+        card.style.opacity = (o * alpha).toFixed(3)
         // the side cards can be clicked to bring them round
         card.style.pointerEvents = ready && Math.abs(a) < 100 ? 'auto' : 'none'
         const isFront = i === front
@@ -432,28 +457,36 @@ export default function Experience() {
                 aria-roledescription="slide"
                 aria-label={`${i + 1} of ${N}`}
               >
-                <article className="glass-warm orn-host relative flex h-full flex-col overflow-hidden rounded-[1.25rem]">
-                  <div className="relative aspect-[2/1] shrink-0 overflow-hidden bg-black/40 md:aspect-[16/10]">
+                <article className="glass-warm orn-host relative flex h-full flex-col overflow-hidden rounded-[1.1rem]">
+                  <div className="relative aspect-[12/5] shrink-0 overflow-hidden bg-black/40">
                     <Image
                       src={item.image}
                       alt={item.imageAlt}
                       fill
                       draggable={false}
-                      sizes="(min-width: 768px) 26rem, 80vw"
+                      sizes="(min-width: 768px) 20rem, 70vw"
                       className="object-cover"
+                      style={item.focus ? { objectPosition: item.focus } : undefined}
                     />
                     <div aria-hidden="true" className="absolute inset-0 ring-1 ring-inset ring-white/[0.07]" />
                   </div>
-                  <div className="flex flex-1 flex-col p-6 sm:p-7">
-                    <div className="eyebrow flex items-center justify-between text-snow/60">
+                  {/* the bottom padding keeps the tags clear of the border's corner knots */}
+                  <div className="flex flex-1 flex-col px-5 pb-9 pt-4">
+                    <div className="eyebrow flex items-center justify-between gap-3 !text-[0.625rem] text-snow/60">
                       <span>{item.role}</span>
                       <span>{pad(i + 1)}</span>
                     </div>
-                    <h3 className="title mt-4 text-[clamp(1.75rem,2.4vw,2.25rem)] text-snow">{item.org}</h3>
-                    <p className="mt-3 text-[0.92rem] leading-[1.55] text-snow/75 md:text-[0.96rem] md:leading-[1.62]">{item.description}</p>
-                    <ul className="mt-auto flex flex-wrap gap-2 pt-4 md:pt-5" aria-label="Focus">
+                    <h3 className="title mt-3 text-[1.7rem] text-snow">{item.org}</h3>
+                    {item.highlight && (
+                      <p className="exp-prize mt-2.5 inline-flex items-center gap-1.5 self-start rounded-full py-1 pl-2 pr-2.5 text-[0.8125rem] font-medium leading-none">
+                        <Trophy />
+                        {item.highlight}
+                      </p>
+                    )}
+                    <p className="mt-2.5 text-[0.84rem] leading-[1.52] text-snow/75">{item.description}</p>
+                    <ul className="mt-auto flex flex-wrap gap-1.5 pt-3.5" aria-label="Focus">
                       {item.tags.map((t) => (
-                        <li key={t} className="rounded-full border border-saffron/25 px-2.5 py-0.5 text-[0.75rem] text-saffron/90">
+                        <li key={t} className="rounded-full border border-saffron/25 px-2 py-0.5 text-[0.7rem] text-saffron/90">
                           {t}
                         </li>
                       ))}

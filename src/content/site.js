@@ -65,7 +65,7 @@ export const projects = [
     title: 'U-Reach',
     when: '2026-10',
     kind: 'AI agent',
-    note: 'Won U-Hackathon 2026',
+    note: 'Won U-Hackathon 2026 · 750K baht',
     description:
       'A WhatsApp sales assistant that answers in its owner’s voice. A lead sends a message, and about ten seconds later gets a voice note in his cloned voice that greets them by name and answers their question. One Go binary runs WhatsApp, the speech → Claude → ElevenLabs pipeline and a live dashboard that rates every lead cold, warm or hot.',
     tags: ['Go', 'React', 'Claude', 'ElevenLabs'],
@@ -236,7 +236,7 @@ export const experience = [
     org: 'Jagota',
     role: 'AI Agent Engineer Intern',
     description:
-      'Built Munch, an AI content platform that studies what wins on short-form video, then plans, makes and schedules posts, all run by an agent you can just ask.',
+      'Built Munch, an AI agent that studies what wins on short-form video, then makes and schedules the posts.',
     image: '/images/logos/jagota.webp',
     imageAlt: 'Jagota logo',
     tags: ['AI agents', 'Python', 'Content'],
@@ -244,8 +244,10 @@ export const experience = [
   {
     org: 'U-Hackathon',
     role: 'Winner, 2026',
+    // shown as a badge on the card
+    highlight: 'Won 750K baht',
     description:
-      'Won with U-Reach, a WhatsApp sales assistant that answers every lead with a voice note in its owner’s cloned voice, about ten seconds after they write.',
+      'Built U-Reach: a WhatsApp sales agent that answers every lead with a voice note in its owner’s cloned voice.',
     image: '/images/logos/u-hackathon.webp',
     imageAlt: 'The U-Reach logo inside a laurel wreath',
     tags: ['Go', 'Claude', 'ElevenLabs'],
@@ -272,7 +274,7 @@ export const experience = [
     org: 'Sajilo Deals',
     role: 'Co-founder',
     description:
-      'An online store for buying and selling furniture, built for people moving in and out of homes. Partnered with companies like ArtMaya to widen the range.',
+      'An online store for buying and selling furniture, built for people moving home. Partnered with companies like ArtMaya.',
     image: '/images/logos/Sajilo.png',
     imageAlt: 'Sajilo Deals logo: two hands shaking',
     tags: ['Marketplace', 'Partnerships'],
