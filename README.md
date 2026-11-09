@@ -106,6 +106,7 @@ src/components/three/    the WebGL scene
 | `public/images/posters/*.webp` | the summit at dawn, day, sunset and night, rendered from the live scene (loading poster and fallback, picked by the hour) |
 | `public/images/poster-hall.webp` | the monastery, for the fallback without WebGL |
 | `public/images/projects/*` | project screenshots |
+| `src/app/fonts/amita-display.woff2` | the big type: Amita (OFL) with Kurale's capital A, cut down to Latin; see `src/app/fonts/OFL.txt` |
 | `public/fonts/jomolhari-library.woff2` | Jomolhari (OFL), cut down to the Tibetan numerals, marks and words the library uses |
 
 `assets/source/` keeps the original, uncompressed models and the script that

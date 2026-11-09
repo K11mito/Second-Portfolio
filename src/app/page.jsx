@@ -28,7 +28,7 @@ export default function Home() {
     <>
       <a
         href="#about"
-        className="sr-only z-[100] rounded-full bg-snow px-4 py-2 text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-[100] rounded-full bg-snow px-4 py-2 text-ink focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4"
       >
         Skip to content
       </a>

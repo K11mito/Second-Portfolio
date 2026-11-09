@@ -21,7 +21,10 @@ export const socials = [
 ]
 
 export const about = {
-  statement: ['I’m a ', 'techno-optimist', ' and ', 'entrepreneur', ' who loves to ', 'build', '.'],
+  // The big line, then the rest of the sentence in smaller type. In each list
+  // the second, fourth… entries are the emphasised words (in saffron).
+  statement: ['I’m a ', 'techno-optimist'],
+  statementMore: ['and ', 'entrepreneur', ' who loves to ', 'build', '.'],
   body: [
     'I’m Aryendra — a creative entrepreneur and technologist, driven by curiosity across disciplines and a constant drive to learn.',
     'I’ve founded and co-founded small businesses, built AI agents at Jagota and Fusemachines, and I’m always working on something new.',

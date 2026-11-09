@@ -3,6 +3,9 @@ import { about, person, socials } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
 import Ornament from './Ornament'
 
+// Every other part is an emphasised word
+const emphasise = (parts) => parts.map((part, i) => (i % 2 === 1 ? <em key={i}>{part}</em> : <span key={i}>{part}</span>))
+
 export default function About() {
   const links = [...socials, { label: 'Email', href: `mailto:${person.email}` }]
   return (
@@ -13,16 +16,9 @@ export default function About() {
             <p className="eyebrow text-snow/70">
               <span className="text-snow">01</span> — About
             </p>
-            <h2 id="about-title" className="title mt-6 text-[clamp(2.75rem,6.6vw,6.25rem)] text-snow [text-shadow:0_2px_40px_rgb(0_10_30/0.35)]">
-              {about.statement.map((part, i) =>
-                i % 2 === 1 ? (
-                  <em key={i} className="italic text-snow">
-                    {part}
-                  </em>
-                ) : (
-                  <span key={i}>{part}</span>
-                )
-              )}
+            <h2 id="about-title" className="title mt-6 text-[clamp(2.2rem,5.6vw,5.25rem)] text-snow [text-shadow:0_2px_40px_rgb(0_10_30/0.35)]">
+              <span className="block">{emphasise(about.statement)}</span>{' '}
+              <span className="mt-[0.35em] block text-[0.52em] leading-[1.1] text-snow/90">{emphasise(about.statementMore)}</span>
             </h2>
           </header>
 

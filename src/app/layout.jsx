@@ -1,12 +1,15 @@
-import { Inter, Amita, DM_Mono } from 'next/font/google'
+import { Inter, DM_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { person } from '@/content/site'
 import './globals.css'
 
 const sans = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
 // The big type: Amita, a Latin drawn with an ink pen in the Devanagari
-// calligraphic tradition, which sits well beside Tibetan. It has no italic.
-const serif = Amita({ subsets: ['latin'], weight: '400', variable: '--font-serif', display: 'swap' })
+// calligraphic tradition, which sits well beside Tibetan. Its own capital A is a
+// cursive form that reads as a small a, so this copy carries the A from Kurale
+// (same designer, same pen) instead; see fonts/OFL.txt. It has no italic.
+const serif = localFont({ src: './fonts/amita-display.woff2', weight: '400', style: 'normal', variable: '--font-serif', display: 'swap' })
 const mono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono', display: 'swap' })
 
 const description =
