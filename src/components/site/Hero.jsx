@@ -4,10 +4,13 @@ import SceneStatus from './SceneStatus'
 export default function Hero() {
   return (
     <section id="top" data-scene="hero" className="relative h-[100svh] min-h-[620px]" aria-labelledby="hero-title">
-      {/* legibility: a low, soft darkening behind the type — reads as atmosphere, not a box */}
+      {/* legibility: a low, soft darkening behind the type — reads as atmosphere, not a box.
+          With JS it is pinned to the screen and fades as you scroll (see Atmosphere), so
+          its darkest edge never scrolls into view as a hard line. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        data-hero-shade
+        className="hero-shade pointer-events-none absolute inset-0"
         style={{
           background:
             'linear-gradient(to bottom, rgb(4 12 34 / 0.5), transparent 9rem), linear-gradient(to top, rgb(5 9 22 / 0.62) 0%, rgb(5 9 22 / 0.28) 34%, transparent 62%), radial-gradient(70% 60% at 12% 78%, rgb(5 9 22 / 0.42), transparent 70%)',
@@ -25,13 +28,13 @@ export default function Hero() {
             className="display mt-5 text-[clamp(4.5rem,min(11.2vw,16.5vh),10.75rem)] text-snow md:mt-7 [@media(max-height:760px)]:md:mt-4"
           >
             <span className="line-mask">
-              <span className="hero-line" style={{ '--d': '250ms' }}>
-                {person.firstName}
+              <span className="hero-line pl-[0.08em] text-[0.4em] italic leading-[1.1] text-snow/90" style={{ '--d': '250ms' }}>
+                Yo, I&rsquo;m
               </span>
             </span>
-            <span className="line-mask -mt-[0.06em]">
-              <span className="hero-line pl-[0.55em] italic" style={{ '--d': '380ms' }}>
-                {person.lastName}
+            <span className="line-mask -mt-[0.04em]">
+              <span className="hero-line" style={{ '--d': '380ms' }}>
+                {person.firstName}.
               </span>
             </span>
           </h1>

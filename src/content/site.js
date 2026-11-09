@@ -21,14 +21,14 @@ export const socials = [
 ]
 
 export const about = {
-  statement: ['I study ', 'finance', ', build ', 'software', ', and start ', 'ventures', '.'],
+  statement: ['I’m a ', 'techno-optimist', ' and ', 'entrepreneur', ' who loves to ', 'build', '.'],
   body: [
     'I’m Aryendra — a creative entrepreneur and technologist, driven by curiosity across disciplines and a constant drive to learn.',
-    'I’ve founded and co-founded small businesses, interned in data intelligence at Fusemachines, and I’m always working on something new.',
+    'I’ve founded and co-founded small businesses, built AI agents at Jagota and Fusemachines, and I’m always working on something new.',
   ],
   facts: [
     { term: 'Studying', detail: 'Finance, Mahidol University' },
-    { term: 'Previously', detail: 'Data Intelligence Intern, Fusemachines' },
+    { term: 'Previously', detail: 'AI Agent Engineer, Jagota' },
     { term: 'Ventures', detail: 'Esports Garage, Sajilo Deals, Seize' },
     { term: 'Off the clock', detail: 'Basketball, mountains, markets' },
   ],
@@ -65,7 +65,7 @@ export const projects = [
     title: 'U-Reach',
     when: '2026-10',
     kind: 'AI agent',
-    note: 'U-Hackathon 2026',
+    note: 'Won U-Hackathon 2026',
     description:
       'A WhatsApp sales assistant that answers in its owner’s voice. A lead sends a message, and about ten seconds later gets a voice note in his cloned voice that greets them by name and answers their question. One Go binary runs WhatsApp, the speech → Claude → ElevenLabs pipeline and a live dashboard that rates every lead cold, warm or hot.',
     tags: ['Go', 'React', 'Claude', 'ElevenLabs'],
@@ -84,11 +84,15 @@ export const projects = [
   {
     title: 'Munch',
     when: '2026-08',
-    kind: 'Marketing agent',
-    note: 'Internship',
+    featured: 3,
+    kind: 'AI content platform',
+    note: 'Internship at Jagota',
     description:
-      'An internal tool from my internship: a full-stack marketing agent that runs competitor analysis on winning ads, then creates its own versions.',
-    tags: ['Python', 'AI agents'],
+      'An AI content platform I built as an intern at Jagota. It studies the competitor reels and memes that win, briefs an AI director, makes the posts and schedules them, and an agent runs the whole pipeline from one chat: just ask for five memes by Friday.',
+    image: '/images/projects/munch.webp',
+    imageAlt: 'Munch’s home screen: a chat box for asking the agent to make something, above the Extractor, Factory and Gen Content stages',
+    focus: '0% 0%',
+    tags: ['Python', 'FastAPI', 'Gemini', 'AI agents'],
     links: [],
     private: true,
   },
@@ -121,27 +125,20 @@ export const projects = [
     links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/driveSafe' }],
   },
   {
-    title: 'My Builds',
-    when: '2026-06',
-    kind: 'Website',
-    description:
-      'A logbook of my hardware builds, written so anyone can follow along over a weekend: specs, parts, wiring diagrams and a page-flip instruction manual, starting with a face-tracking turret.',
-    image: '/images/projects/arybuilds.webp',
-    imageAlt: 'My Builds: a cream logbook page with a red serif title and a cardboard turret in progress',
-    tags: ['HTML', 'CSS', 'GSAP'],
-    links: [
-      { label: 'Visit site', href: 'https://arybuilds.vercel.app' },
-      { label: 'Source', href: 'https://github.com/K11mito/AryBuilds' },
-    ],
-  },
-  {
     title: 'ODTS',
     when: '2026-06',
+    featured: 2,
     kind: 'Hardware · vision',
     description:
-      'A closed-loop tracking turret. A webcam feeds YOLOv8, a controller turns each detection into pan and tilt angles, and an Arduino steers the servos to keep the target on the crosshair, with a live HUD. Never finished, always improving.',
+      'A face-tracking turret made of cardboard, two servos and a webcam. YOLOv8 spots the target, a controller turns each detection into pan and tilt, and an Arduino keeps it on the crosshair, with a live HUD. Its build log walks anyone through making one over a weekend.',
+    image: '/images/projects/odts.webp',
+    imageAlt: 'ODTS v0.5: a cardboard turret with a webcam strapped on by a rubber band, a doodled face, and its name written on the box below',
+    focus: '50% 45%',
     tags: ['Python', 'YOLOv8', 'Arduino', 'Electron'],
-    links: [{ label: 'Source', href: 'https://github.com/K11mito/ODTS' }],
+    links: [
+      { label: 'Build log', href: 'https://arybuilds.vercel.app' },
+      { label: 'Source', href: 'https://github.com/K11mito/ODTS' },
+    ],
   },
   {
     title: 'Bangkok Silicon, reimagined',
@@ -197,7 +194,6 @@ export const projects = [
   {
     title: 'Get Shit Done',
     when: '2025-12',
-    featured: 2,
     kind: 'Productivity app',
     description:
       'Daily goal-setting that breaks big goals into everyday tasks, with a daily protocol, progress tracking and a chat assistant.',
@@ -221,7 +217,6 @@ export const projects = [
   {
     title: 'Food & Macro Tracker',
     when: '2025-11',
-    featured: 3,
     kind: 'Computer vision',
     description:
       'Track calories and macros by simply taking a photo of your food. Real-time object detection finds the food and logs the nutrition.',
@@ -237,6 +232,24 @@ export const projects = [
 export const featuredProjects = projects.filter((p) => p.featured).sort((a, b) => a.featured - b.featured)
 
 export const experience = [
+  {
+    org: 'Jagota',
+    role: 'AI Agent Engineer Intern',
+    description:
+      'Built Munch, an AI content platform that studies what wins on short-form video, then plans, makes and schedules posts, all run by an agent you can just ask.',
+    image: '/images/logos/jagota.webp',
+    imageAlt: 'Jagota logo',
+    tags: ['AI agents', 'Python', 'Content'],
+  },
+  {
+    org: 'U-Hackathon',
+    role: 'Winner, 2026',
+    description:
+      'Won with U-Reach, a WhatsApp sales assistant that answers every lead with a voice note in its owner’s cloned voice, about ten seconds after they write.',
+    image: '/images/logos/u-hackathon.webp',
+    imageAlt: 'The U-Reach logo inside a laurel wreath',
+    tags: ['Go', 'Claude', 'ElevenLabs'],
+  },
   {
     org: 'Fusemachines',
     role: 'Data Intelligence Intern',

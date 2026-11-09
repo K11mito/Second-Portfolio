@@ -3,8 +3,9 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { experience } from '@/content/site'
-import { pinProgress, scrollState } from '@/lib/scroll'
+import { scrollState } from '@/lib/scroll'
 import { ringTurn } from '@/lib/ring'
+import Ornament from './Ornament'
 import {
   bringToFront,
   frontCard,
@@ -24,6 +25,19 @@ import {
 const N = experience.length
 const STEP = 360 / N
 const pad = (n) => String(n).padStart(2, '0')
+// The ring widens with the number of cards so neighbours keep the spacing they
+// had at five, rather than crowding into each other.
+const RK = Math.sin(Math.PI / 5) / Math.sin(Math.PI / Math.max(3, N))
+// How far you scroll (in screen heights) while the cards come out of the wheel.
+const EMERGE = 0.7
+const PERSPECTIVE = 1800 // as on .exp-viewport
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
+const smooth = (a, b, x) => {
+  const t = clamp01((x - a) / (b - a))
+  return t * t * (3 - 2 * t)
+}
+const easeOut = (x, p = 3) => 1 - Math.pow(1 - clamp01(x), p)
 
 function Chevron({ flip = false }) {
   return (
@@ -43,17 +57,20 @@ function TurnIcon() {
   )
 }
 
-// "Turning the wheel": the experience cards ride a drum in front of the
-// monastery's prayer wheel, and you turn it by hand, as you would a real one:
-// drag or swipe it (it spins on with some weight and settles facing a card),
-// use the arrows or arrow keys, or click a card at the side. Scrolling only
-// carries you past. Cards are real HTML (crisp, selectable by screen readers),
-// arranged with CSS 3D; without JavaScript they fall back to a swipeable list.
-// `?wheel=scroll` restores the old scroll-driven turning, for comparison.
+// The experience cards ride a drum in front of the monastery's prayer wheel.
+// As the hall is revealed the stage is already in place, and scrolling on draws
+// the cards out of the wheel itself: they unspool from the drum's axis as it
+// turns, grow and settle into a ring, and the heading arrives with them. Then
+// you turn it by hand, as you would a real one: drag or swipe it (it spins on
+// with some weight and settles facing a card), use the arrows or arrow keys, or
+// click a card at the side. Cards are real HTML (crisp, readable by screen
+// readers), arranged with CSS 3D; without JavaScript they fall back to a
+// swipeable list. `?wheel=scroll` restores the old scroll-driven turning.
 export default function Experience() {
   const section = useRef(null)
   const viewport = useRef(null)
   const ring = useRef(null)
+  const glow = useRef(null)
   const counter = useRef(null)
   const hint = useRef(null)
   const hintLabel = useRef(null)
@@ -71,19 +88,41 @@ export default function Experience() {
     setCount(N)
     if (window.matchMedia('(pointer: coarse)').matches && hintLabel.current) hintLabel.current.textContent = 'Swipe to turn'
 
+    // Layout numbers the animation needs, read once per resize rather than
+    // every frame: the ring's width, radius and resting centre on the stage.
+    const geo = { cw: 320, r: 260, xc: 0, yc: 0, W: 1, H: 1 }
+    const measure = () => {
+      const el = ring.current
+      if (!el) return
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+      geo.cw = el.offsetWidth || 320
+      geo.r = (geo.cw * 0.69 + 2.5 * rem) * RK
+      geo.xc = el.offsetLeft + geo.cw / 2
+      geo.yc = el.offsetTop + el.offsetHeight / 2
+      geo.W = vp.clientWidth || 1
+      geo.H = vp.clientHeight || 1
+      lastE = -1 // redraw
+    }
+    const ro = new ResizeObserver(measure)
+    ro.observe(vp)
+
     // One card's worth of drum surface, in pixels: dragging the front card
     // keeps the same spot of it under your finger, like a real drum.
-    const pxPerCard = () => {
-      const cw = ring.current?.offsetWidth || 320
-      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-      return (cw * 0.69 + 2.5 * rem) * ((2 * Math.PI) / N)
+    const pxPerCard = () => geo.r * ((2 * Math.PI) / N)
+
+    // How far the cards have come out of the wheel: 0 still inside it (the
+    // stage pins as the hall is revealed), 1 in their ring.
+    const emergence = () => {
+      const s = scrollState.sections.experience
+      if (!scrollState.measured || !s) return 0
+      return clamp01((scrollState.y - s.top) / (EMERGE * scrollState.vh))
     }
 
     const inView = () => {
       const s = scrollState.sections.experience
       if (!s) return false
       const y = scrollState.y
-      return y >= s.top - scrollState.vh * 0.35 && y <= s.top + s.height - scrollState.vh * 0.65
+      return emergence() > 0.9 && y <= s.top + s.height - scrollState.vh * 0.65
     }
 
     // ---- drag and swipe
@@ -215,12 +254,38 @@ export default function Experience() {
     // ---- draw
     let raf
     let lastTurn = NaN
+    let lastE = -1
     let lastTime = performance.now()
     let seenAt = 0
     let nudges = 0
-    const render = () => {
-      const rot = -wheel.turn * STEP
-      ring.current.style.transform = `translateZ(calc(var(--r) * -1)) rotateY(${rot.toFixed(3)}deg)`
+    const render = (e) => {
+      const el = ring.current
+      const reduced = scrollState.reducedMotion
+      // u: the cards' journey out of the drum, eased so they slow as they settle
+      const u = reduced ? 1 : easeOut(e / 0.92, 3)
+      const rot = -(wheel.turn + wheel.spin) * STEP
+
+      // Start with the ring's axis on the drum's: project the drum's screen
+      // position back through the stage's perspective to the depth of the axis.
+      let dx = 0
+      let dy = 0
+      const d = wheel.drum
+      const ox = geo.W * 0.5
+      const oy = geo.H * 0.35 // perspective-origin
+      const tx = d ? d.x : ox
+      const ty = d ? d.y : geo.H * 0.45
+      if (u < 1) {
+        const g = (PERSPECTIVE + geo.r) / PERSPECTIVE
+        dx = (ox + (tx - ox) * g - geo.xc) * (1 - u)
+        dy = (oy + (ty - oy) * g - geo.yc) * (1 - u)
+      }
+      const k = 0.1 + 0.9 * u // radius: from the axis out to the ring
+      const s = 0.4 + 0.6 * u // and size
+      el.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) translateZ(calc(var(--r) * -1)) scale3d(${s.toFixed(4)}, ${s.toFixed(4)}, ${s.toFixed(4)}) rotateY(${rot.toFixed(3)}deg)`
+      el.style.setProperty('--k', k.toFixed(4))
+
+      const alpha = reduced ? smooth(0, 0.3, e) : smooth(0.02, 0.42, e)
+      const ready = e > 0.9
       const front = frontCard()
       cards.current.forEach((card, i) => {
         if (!card) return
@@ -228,9 +293,9 @@ export default function Experience() {
         const facing = Math.cos((a * Math.PI) / 180)
         // neighbours stay faintly visible so the ring reads as a ring
         const o = Math.max(0, (facing + 0.08) / 1.08)
-        card.style.opacity = Math.pow(o, 1.6).toFixed(3)
+        card.style.opacity = (Math.pow(o, 1.6) * alpha).toFixed(3)
         // the side cards can be clicked to bring them round
-        card.style.pointerEvents = Math.abs(a) < 100 ? 'auto' : 'none'
+        card.style.pointerEvents = ready && Math.abs(a) < 100 ? 'auto' : 'none'
         const isFront = i === front
         if (card.dataset.front !== String(isFront)) {
           card.dataset.front = String(isFront)
@@ -238,6 +303,20 @@ export default function Experience() {
         }
       })
       if (counter.current) counter.current.textContent = pad(front + 1)
+
+      // the heading arrives with the cards; the controls once they've settled
+      sec.style.setProperty('--head', (reduced ? smooth(0, 0.3, e) : smooth(0.3, 0.8, e)).toFixed(3))
+      sec.style.setProperty('--meta', smooth(0.72, 0.98, e).toFixed(3))
+      const stage = e <= 0 ? '0' : e >= 1 ? '1' : 'mid'
+      if (sec.dataset.emerge !== stage) sec.dataset.emerge = stage
+      if (sec.dataset.ready !== String(ready)) sec.dataset.ready = String(ready)
+
+      // lamplight spilling out of the drum as the cards leave it
+      if (glow.current) {
+        const gl = reduced ? 0 : Math.sin(Math.PI * Math.min(1, u * 1.15)) * smooth(0, 0.12, e)
+        glow.current.style.opacity = gl.toFixed(3)
+        if (gl > 0.001) glow.current.style.transform = `translate3d(${(tx - geo.W / 2).toFixed(1)}px, ${(ty - geo.H / 2).toFixed(1)}px, 0) scale(${(0.7 + u * 0.6).toFixed(3)})`
+      }
     }
     const tick = (now) => {
       raf = requestAnimationFrame(tick)
@@ -245,8 +324,15 @@ export default function Experience() {
       const dt = Math.min(0.25, Math.max(0, (now - lastTime) / 1000))
       lastTime = now
       if (!ring.current) return
+      const e = emergence()
+      // as they come out the drum unspools them: a little extra turn, gone once they're out
+      wheel.spin = scrollState.reducedMotion ? 0 : -(1 - easeOut(e, 4)) * 1.4
       if (scrollMode) {
-        if (scrollState.measured) setTurn(ringTurn(pinProgress('experience'), N))
+        const s = scrollState.sections.experience
+        if (scrollState.measured && s) {
+          const span = Math.max(1, s.height - scrollState.vh * (1 + EMERGE))
+          setTurn(ringTurn(clamp01((scrollState.y - s.top - EMERGE * scrollState.vh) / span), N))
+        }
       } else {
         update(dt)
         // the first time you arrive, the drum gives a small swing: "this turns"
@@ -261,15 +347,22 @@ export default function Experience() {
           } else seenAt = 0
         }
       }
-      if (Math.abs(wheel.turn - lastTurn) < 1e-5) return
+      // redraw when the drum turns or the cards move (and every frame while
+      // they're coming out, as they track the drum through the camera's drift)
+      const moving = e > 0 && e < 1
+      if (!moving && Math.abs(wheel.turn - lastTurn) < 1e-5 && Math.abs(e - lastE) < 1e-5) return
       lastTurn = wheel.turn
-      render()
+      lastE = e
+      render(e)
     }
+    measure()
     raf = requestAnimationFrame(tick)
 
     return () => {
       cancelAnimationFrame(raf)
       clearTimeout(wheelTimer)
+      ro.disconnect()
+      wheel.spin = 0
       off()
       vp.removeEventListener('pointerdown', onDown)
       vp.removeEventListener('pointermove', onMove)
@@ -285,22 +378,23 @@ export default function Experience() {
   return (
     <section
       ref={section}
-      id="experience"
       data-scene="experience"
       className="exp relative"
-      style={{ '--n': N }}
+      style={{ '--n': N, '--rk': RK.toFixed(4) }}
       aria-labelledby="experience-title"
     >
+      {/* links to #experience land with the cards already out of the wheel */}
+      <span id="experience" className="exp-anchor" aria-hidden="true" />
       <div className="exp-stage">
         <header className="shell exp-header">
           <p className="eyebrow text-snow/70">
             <span className="text-snow">03</span> — Experience
           </p>
           <h2 id="experience-title" className="title mt-5 text-[clamp(2.5rem,min(5.6vw,9.5vh),5.25rem)] text-snow">
-            Turning the <em className="italic">wheel</em>
+            Some stuff I&rsquo;ve <em className="italic">done</em>
           </h2>
           <p className="exp-lede mt-4 max-w-[24rem] text-[0.98rem] leading-[1.65] text-snow/70">
-            Ventures, roles and teams I&rsquo;ve been part of. Each turn of the wheel, another chapter.
+            Things I&rsquo;ve started, teams I&rsquo;ve worked with, and a few wins along the way.
           </p>
           <div className="exp-meta eyebrow mt-6 flex items-center gap-5 text-snow/65" aria-hidden="true">
             <span>
@@ -323,6 +417,7 @@ export default function Experience() {
           aria-roledescription="carousel"
           aria-label="Experience. Use the arrow buttons or the left and right arrow keys to turn the wheel."
         >
+          <div ref={glow} className="exp-glow" aria-hidden="true" />
           <button type="button" className="exp-arrow exp-arrow--prev" aria-label="Previous chapter" onClick={() => stepBy(-1)}>
             <Chevron />
           </button>
@@ -337,7 +432,7 @@ export default function Experience() {
                 aria-roledescription="slide"
                 aria-label={`${i + 1} of ${N}`}
               >
-                <article className="glass-warm flex h-full flex-col overflow-hidden rounded-[1.25rem]">
+                <article className="glass-warm orn-host relative flex h-full flex-col overflow-hidden rounded-[1.25rem]">
                   <div className="relative aspect-[2/1] shrink-0 overflow-hidden bg-black/40 md:aspect-[16/10]">
                     <Image
                       src={item.image}
@@ -364,6 +459,7 @@ export default function Experience() {
                       ))}
                     </ul>
                   </div>
+                  <Ornament tone="brass" />
                 </article>
               </li>
             ))}

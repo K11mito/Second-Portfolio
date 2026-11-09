@@ -24,11 +24,24 @@ export default function Atmosphere() {
     let raf
     let last = -1
     let lastDim = -1
+    let lastShade = -1
     const line = document.querySelector('[data-interlude]')
+    const shade = document.querySelector('[data-hero-shade]')
     const tick = () => {
       raf = requestAnimationFrame(tick)
       if (!scrollState.measured || !veil.current) return
       const { sections, y, vh } = scrollState
+
+      // The hero's legibility shade is fixed to the screen and dissolves as the
+      // hero leaves, handing over to the reading dim below: no edge to see.
+      if (shade) {
+        const s = 1 - smooth(0, 0.85 * vh, y)
+        if (Math.abs(s - lastShade) > 1e-3) {
+          lastShade = s
+          shade.style.opacity = s.toFixed(3)
+          shade.style.visibility = s > 0.001 ? 'visible' : 'hidden'
+        }
+      }
 
       // Reading light: dim the scene behind the text-heavy sections, and lift it
       // again for the cinematic moments (the summit and the descent).

@@ -13,7 +13,12 @@ export default function Contact() {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(to right, rgb(6 4 6 / 0.72) 0%, rgb(6 4 6 / 0.35) 45%, transparent 75%)' }}
+        style={{
+          background: 'linear-gradient(to right, rgb(6 4 6 / 0.72) 0%, rgb(6 4 6 / 0.35) 45%, transparent 75%)',
+          // feathered at the top, so it never scrolls in with a hard edge
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, #000 40%)',
+          maskImage: 'linear-gradient(to bottom, transparent, #000 40%)',
+        }}
       />
       <div className="shell relative flex flex-1 flex-col justify-center pb-16 pt-28 md:pt-36">
         <div data-reveal>
@@ -21,9 +26,7 @@ export default function Contact() {
             <span className="text-snow">04</span> — Contact
           </p>
           <h2 id="contact-title" className="display mt-7 text-[clamp(3.5rem,10vw,9.75rem)] text-snow">
-            Let&rsquo;s build
-            <br />
-            <em className="italic">something.</em>
+            Hit me <em className="italic">up.</em>
           </h2>
           <p className="prose-lede mt-8 max-w-[27rem] text-snow/75">
             Have an idea, an opportunity, or just want to talk? My inbox is always open.

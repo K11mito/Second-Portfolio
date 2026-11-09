@@ -55,6 +55,8 @@ function Wheel({ envMap }) {
   const idleRate = useRef(1)
   const spin = useMemo(() => new THREE.Quaternion(), [])
   const zAxis = useMemo(() => new THREE.Vector3(0, 0, 1), [])
+  const drumAt = useRef(null) // the drum's centre and half-height, in world space
+  const tmp = useMemo(() => ({ v: new THREE.Vector3(), w: new THREE.Vector3(), box: new THREE.Box3() }), [])
 
   const root = useMemo(() => {
     const r = scene.clone(true)
@@ -89,7 +91,7 @@ function Wheel({ envMap }) {
     return r
   }, [scene, envMap])
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const d = drumRef.current
     if (!d || env.act !== 'monastery') return
     const dt = Math.min(delta, 1 / 20)
@@ -99,11 +101,32 @@ function Wheel({ envMap }) {
     const busy = wheel.held || wheel.glide ? 1 : 0
     idleRate.current = THREE.MathUtils.damp(idleRate.current, busy ? 0 : 1, busy ? 6 : 0.6, dt)
     if (!scrollState.reducedMotion) idle.current -= dt * 0.1 * idleRate.current
-    const target = -wheel.turn * ((Math.PI * 2) / CARD_COUNT) + idle.current
+    // (plus the extra quarter-turn or so that unspools the cards as they come out)
+    const target = -(wheel.turn + wheel.spin) * ((Math.PI * 2) / CARD_COUNT) + idle.current
     angle.current = scrollState.reducedMotion ? target : THREE.MathUtils.damp(angle.current, target, 18, dt)
     env.wheelAngle = angle.current
     spin.setFromAxisAngle(zAxis, angle.current)
     d.quaternion.copy(baseQ.current).multiply(spin)
+
+    // Tell the page where the drum is on screen, so the cards can come out of it.
+    // It turns about its own axis, so its bounds never move: measure them once.
+    if (!drumAt.current) {
+      d.updateWorldMatrix(true, false)
+      tmp.box.setFromObject(d)
+      if (tmp.box.isEmpty()) return
+      drumAt.current = { c: tmp.box.getCenter(new THREE.Vector3()), half: (tmp.box.max.y - tmp.box.min.y) / 2 }
+    }
+    const { c, half } = drumAt.current
+    const { width, height } = state.size
+    tmp.v.copy(c).project(state.camera)
+    tmp.w.set(c.x, c.y + half, c.z).project(state.camera)
+    const x = (tmp.v.x + 1) * 0.5 * width
+    const y = (1 - tmp.v.y) * 0.5 * height
+    const top = (1 - tmp.w.y) * 0.5 * height
+    const r = wheel.drum || (wheel.drum = { x: 0, y: 0, h: 0 })
+    r.x = x
+    r.y = y
+    r.h = Math.abs(y - top) * 2
   })
 
   return <primitive object={root} scale={WHEEL_SCALE} position={[0.16, 0, 0]} />

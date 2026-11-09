@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { about, person, socials } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
+import Ornament from './Ornament'
 
 export default function About() {
   const links = [...socials, { label: 'Email', href: `mailto:${person.email}` }]
@@ -51,7 +52,8 @@ export default function About() {
           </figure>
 
           <div className="col-span-12 md:col-span-7 lg:col-span-6 lg:col-start-7" data-reveal style={{ '--d': '220ms' }}>
-            <div className="glass rounded-[1.25rem] p-7 sm:p-9 lg:p-11">
+            <div className="glass orn-host relative rounded-[1.25rem] p-7 sm:p-9 lg:p-11">
+              <Ornament />
               <div className="space-y-5 text-[1.0625rem] leading-[1.7] text-snow/85">
                 {about.body.map((p) => (
                   <p key={p}>{p}</p>

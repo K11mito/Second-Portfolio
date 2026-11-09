@@ -13,6 +13,12 @@ export const wheel = {
   held: false, // a hand (pointer, finger or trackpad) is on it
   glide: null, // the motion after letting go
   touched: false, // the visitor has turned it at least once
+  // While the cards come out of the drum (scrolling in), the drum turns a
+  // little extra to unspool them: an offset in cards, back to 0 once they're out.
+  spin: 0,
+  // Where the 3D drum sits on screen (CSS px), reported by the scene each frame
+  // so the HTML cards can come out of it: { x, y, h } or null.
+  drum: null,
 }
 
 // A flick projects the drum this far ahead (seconds of travel at release speed)

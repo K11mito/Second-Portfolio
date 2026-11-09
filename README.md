@@ -31,7 +31,8 @@ src/content/site.js      everything you'd want to edit
 src/lib/scroll.js        scroll store shared by the DOM and the 3D scene
 src/lib/wheel.js         the hand-turned prayer wheel: drag, flick, detents
 src/lib/sky.js           where the sun and moon are over Bangkok, and the sky's clock
-src/components/site/     HTML sections (server-rendered, readable without JS)
+src/components/site/     HTML sections (server-rendered, readable without JS),
+                         and Ornament.jsx, the Tibetan card border
 src/components/archive/  the /projects thangka scroll
 src/components/three/    the WebGL scene
   Director.jsx           scroll -> camera path, act switch
@@ -59,11 +60,19 @@ src/components/three/    the WebGL scene
   moonlit (or moonless) night. The clock in the top right switches to the
   visitor's own hour or to dawn, day, sunset or night, as a short time-lapse.
   `?sky=night` (or `dawn`, `day`, `sunset`, `local`) opens on that sky.
-- **A wheel you turn by hand.** Drag or swipe the prayer wheel and it spins on
-  with some weight, then settles facing a card; the arrows, arrow keys or a
-  click on a side card turn it too. It turns clockwise, as prayer wheels do,
-  and with sound on, the bell on its frame rings once a revolution.
-  `?wheel=scroll` brings back the scroll-driven version for comparison.
+- **A wheel you turn by hand.** As the hall is revealed, scrolling on draws the
+  experience cards out of the prayer wheel itself: they unspool from the
+  drum's axis as it turns and settle into a ring (the 3D scene reports where
+  the drum is on screen, so they leave from the right spot on any device).
+  Then drag or swipe the wheel and it spins on with some weight, settling
+  facing a card; the arrows, arrow keys or a click on a side card turn it too.
+  It turns clockwise, as prayer wheels do, and with sound on, the bell on its
+  frame rings once a revolution. `?wheel=scroll` brings back the scroll-driven
+  version for comparison.
+- **Tibetan borders.** The cards wear a vector border after the original
+  site's corner pieces: interlaced square links where a double rule turns,
+  with cloud-collar scallops (`Ornament.jsx`). Hover one and it glows white,
+  and its rules reach along each edge until they meet at a jewel.
 - **The scroll.** `/projects` hangs every project on a thangka: cotton in silk
   brocade with red and gold strips, a rolled veil and ribbons at the top. The
   heavy rod at the bottom stays on screen as you scroll, so the cloth unrolls

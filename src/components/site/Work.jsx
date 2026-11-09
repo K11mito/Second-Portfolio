@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { featuredProjects, projects } from '@/content/site'
 import ArrowIcon from './ArrowIcon'
+import Ornament from './Ornament'
 import ProjectVideo from './ProjectVideo'
 
 // A rolled thangka on its rod: the way into the full archive
@@ -22,7 +23,7 @@ function ScrollGlyph() {
 function ProjectCard({ project, index, total }) {
   const flip = index % 2 === 1
   return (
-    <li data-reveal className="glass group grid overflow-hidden rounded-[1.5rem] md:grid-cols-12">
+    <li data-reveal className="glass orn-host group relative grid overflow-hidden rounded-[1.5rem] md:grid-cols-12">
       <div
         className={`relative aspect-[16/10] overflow-hidden md:col-span-7 md:aspect-auto md:min-h-[27rem] ${flip ? 'md:order-2' : ''}`}
       >
@@ -62,6 +63,15 @@ function ProjectCard({ project, index, total }) {
             ))}
           </ul>
           <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3">
+            {project.links.length === 0 && project.private && (
+              <p className="eyebrow flex items-center gap-2 text-snow/55">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden="true">
+                  <rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+                Private{project.note ? ` · ${project.note}` : ''}
+              </p>
+            )}
             {project.links.map((l) => (
               <a
                 key={l.href}
@@ -78,6 +88,7 @@ function ProjectCard({ project, index, total }) {
           </div>
         </div>
       </div>
+      <Ornament />
     </li>
   )
 }
