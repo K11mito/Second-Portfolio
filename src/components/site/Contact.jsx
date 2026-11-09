@@ -36,7 +36,7 @@ export default function Contact() {
         <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-5" data-reveal style={{ '--d': '120ms' }}>
           <a
             href={`mailto:${person.email}`}
-            className="title link-draw break-all text-[clamp(1.6rem,3.6vw,3rem)] text-snow sm:break-normal"
+            className="link-draw break-all font-sans text-[clamp(1.5rem,3.2vw,2.6rem)] font-light leading-[1.15] tracking-[-0.015em] text-snow sm:break-normal"
           >
             {person.email}
           </a>

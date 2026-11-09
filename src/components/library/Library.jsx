@@ -11,7 +11,7 @@ function canvasFonts() {
   const css = getComputedStyle(document.documentElement)
   const v = (name, fallback) => css.getPropertyValue(name).trim() || fallback
   return {
-    serif: `${v('--font-serif', "'Instrument Serif'")}, Georgia, serif`,
+    serif: `${v('--font-serif', "'Amita'")}, Georgia, serif`,
     mono: `${v('--font-mono', "'DM Mono'")}, ui-monospace, monospace`,
     tib: "'Jomolhari Library', 'Noto Serif Tibetan', serif",
   }
@@ -19,7 +19,6 @@ function canvasFonts() {
 function loadFonts(f) {
   return Promise.race([
     Promise.all([
-      document.fonts.load(`italic 52px ${f.serif}`),
       document.fonts.load(`52px ${f.serif}`),
       document.fonts.load(`500 20px ${f.mono}`),
       document.fonts.load(`40px ${f.tib}`, '༄༅ཀ༠༡༢'),

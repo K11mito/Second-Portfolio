@@ -15,6 +15,8 @@
 /* ------------------------------------------------------------------ base */
 @layer base {
   html {
+    /* never fake an italic or a bold: the fonts have only what they have */
+    font-synthesis: none;
     background: rgb(var(--night));
     -webkit-text-size-adjust: 100%;
   }
@@ -121,7 +123,7 @@ html.lenis body {
   .display {
     font-family: var(--font-serif), ui-serif, Georgia, serif;
     font-weight: 400;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
     line-height: 0.9;
     text-wrap: balance;
   }
@@ -129,9 +131,17 @@ html.lenis body {
   .title {
     font-family: var(--font-serif), ui-serif, Georgia, serif;
     font-weight: 400;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     line-height: 0.98;
     text-wrap: balance;
+  }
+
+  /* The display face has no italic, and a slanted copy of a pen-drawn face looks
+     wrong: the words a heading emphasises stay upright and take the saffron. */
+  .title em,
+  .display em {
+    font-style: normal;
+    color: rgb(var(--saffron));
   }
 
   .prose-lede {
@@ -477,7 +487,9 @@ html.lenis body {
    measures that as --ring-min-top). Phones keep it low, under the heading. */
 @media (min-width: 768px) {
   .js .exp-viewport {
-    --ring-top: max(var(--ring-min-top, 0px), calc((100svh - var(--ch)) / 2));
+    /* a little below the middle (5% of the screen), never under the heading,
+       and never closer than 1.5rem to the bottom */
+    --ring-top: max(var(--ring-min-top, 0px), min(calc((100svh - var(--ch)) / 2 + 5svh), calc(100svh - var(--ch) - 1.5rem)));
     align-items: flex-start;
     padding-bottom: 0;
   }

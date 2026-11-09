@@ -68,14 +68,15 @@
   transition: color 0.3s;
 }
 .back:hover { color: rgb(var(--snow)); }
-/* the page's name: the Tibetan word in gold, then the English in a pen-drawn
-   face (Amita, set on the page) */
+/* the page's name: the Tibetan word in gold, then the English in the site's
+   pen-drawn display face */
 .eyebrow {
   grid-column: 2;
   margin: 0;
   display: flex;
   align-items: baseline;
   gap: 0.6em;
+  font-family: var(--font-serif), serif;
   font-size: 1.06rem;
   font-weight: 400;
   letter-spacing: 0.07em;
@@ -294,7 +295,7 @@
 .frontBody { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 0.6rem; padding: 2rem 3.6rem 2rem 4.6rem; text-align: center; }
 .headmark { margin: 0; font-family: var(--tib); color: var(--vermilion); font-size: 1.3rem; line-height: 1; }
 .precious .headmark { color: var(--gold); }
-.frontTitle { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 0.95; letter-spacing: -0.015em; text-wrap: balance; }
+.frontTitle { margin: 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: 0.95; letter-spacing: 0; text-wrap: balance; }
 .frontSub { margin: 0; font-family: var(--font-mono), monospace; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
 .frontNum { position: absolute; right: 2.6rem; bottom: 1.6rem; font-family: var(--tib); font-size: 2.6rem; opacity: 0.16; }
 .backBody { position: absolute; inset: 1.3rem 1.4rem 1.3rem 3.2rem; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.55fr) 7.2rem; gap: 1.6rem; padding: 1.25rem 1.4rem; }
@@ -305,10 +306,10 @@
 .mini figcaption { font-family: var(--font-mono), monospace; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.7; }
 .text { display: flex; flex-direction: column; min-width: 0; overflow: auto; scrollbar-width: thin; }
 .text .headmark { font-size: 1.05rem; }
-.leafTitle { margin: 0.35rem 0 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(1.9rem, 3.2vw, 2.7rem); line-height: 0.98; letter-spacing: -0.015em; text-wrap: balance; }
+.leafTitle { margin: 0.35rem 0 0; font-family: var(--font-serif), Georgia, serif; font-weight: 400; font-size: clamp(1.9rem, 3.2vw, 2.7rem); line-height: 0.98; letter-spacing: 0; text-wrap: balance; }
 .meta { margin: 0.55rem 0 0; font-family: var(--font-mono), monospace; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.72; }
 .meta .tib { font-size: 0.9rem; margin-left: 0.4em; }
-.note { margin: 0.6rem 0 0; font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 1.12rem; color: var(--vermilion); }
+.note { margin: 0.6rem 0 0; font-family: var(--font-serif), Georgia, serif; font-size: 1.12rem; color: var(--vermilion); }
 .precious .note { color: #f0cf7a; }
 .desc { margin: 0.65rem 0 0; font-size: 0.93rem; line-height: 1.66; max-width: 60ch; text-wrap: pretty; }
 .tags { margin: auto 0 0; padding-top: 0.8rem; font-family: var(--font-mono), monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; }

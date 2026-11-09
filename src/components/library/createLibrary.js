@@ -385,7 +385,7 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     x.fillText(tib(it.n), W / 2, 92)
     // white gauze with the short title inked on: the shelf's call number
     const label = it.short || it.title
-    x.font = `italic 38px ${F.serif}`
+    x.font = `38px ${F.serif}`
     const tw = Math.min(W - 40, x.measureText(label).width + 48)
     const lx = (W - tw) / 2
     const ly = H - 112

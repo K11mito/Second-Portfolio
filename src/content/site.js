@@ -120,16 +120,6 @@ export const projects = [
     links: [{ label: 'Source', href: 'https://github.com/K11mito/BusStatProject---Startup-funding-speed.' }],
   },
   {
-    title: 'DriveSafe',
-    when: '2026-06',
-    kind: 'Machine learning',
-    note: 'In progress',
-    description:
-      'Reverse-engineering how insurers score your driving, like Progressive Snapshot and GEICO DriveEasy. Upload a dashcam clip and get a safety score with timestamped events: hard braking, sharp lane changes, tailgating.',
-    tags: ['React', 'Express', 'FastAPI'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/driveSafe' }],
-  },
-  {
     title: 'ODTS',
     when: '2026-06',
     featured: 2,
