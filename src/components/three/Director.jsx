@@ -31,11 +31,11 @@ const MOUNTAIN = [
   { t: 1, cam: V(-700, 300, 260), look: V(-125, 300, -190), fov: 37 },
   // where to now: the library's monastery at the mountain's foot, half in the
   // cloud, and the temple on its rock to the east; held while you choose
-  { t: 2, cam: V(40, 318, 800), look: V(45, 236, 300), fov: 37, pcam: V(40, 360, 1250), plook: V(75, 250, 310) },
-  { t: 2.34, cam: V(40, 312, 778), look: V(45, 236, 300), fov: 37, pcam: V(40, 356, 1228), plook: V(75, 250, 310) },
+  { t: 2, cam: V(110, 326, 930), look: V(-40, 226, 300), fov: 37, pcam: V(55, 365, 1330), plook: V(68, 248, 310) },
+  { t: 2.34, cam: V(104, 322, 906), look: V(-40, 226, 300), fov: 37, pcam: V(54, 361, 1308), plook: V(68, 248, 310) },
   // contact: low over the cloud sea, the whole range in view and sky for the type
-  { t: 3, cam: V(120, 250, 1100), look: V(-40, 320, 200), fov: 36, pcam: V(60, 262, 1300), plook: V(-20, 330, 200) },
-  { t: 4, cam: V(150, 244, 1160), look: V(-40, 328, 200), fov: 36, pcam: V(80, 256, 1360), plook: V(-20, 336, 200) },
+  { t: 3, cam: V(120, 250, 1100), look: V(-180, 320, 200), fov: 36, pcam: V(60, 262, 1300), plook: V(-20, 330, 200) },
+  { t: 4, cam: V(150, 244, 1160), look: V(-170, 328, 200), fov: 36, pcam: V(80, 256, 1360), plook: V(-20, 336, 200) },
 ]
 
 // Monastery act (local to HALL_ORIGIN): the prayer-wheel hall, the wheel

@@ -78,7 +78,7 @@ export default function Nav() {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-28 bg-gradient-to-b from-[rgb(6_9_18/0.55)] to-transparent opacity-0 transition-opacity duration-500 group-data-[scrolled=true]/nav:opacity-100"
+          className="pointer-events-none absolute inset-0 h-28 bg-gradient-to-b from-[rgb(6_9_18/0.55)] to-transparent opacity-0 transition-opacity duration-500 group-data-[scrolled=true]/nav:opacity-100 group-data-[hidden=true]/nav:opacity-0"
         />
         <div className="shell relative flex h-[4.5rem] items-center justify-between md:h-20">
           <a

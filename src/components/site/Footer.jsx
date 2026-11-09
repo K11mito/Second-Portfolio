@@ -8,7 +8,10 @@ export default function Footer() {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(to right, rgb(6 4 6 / 0.72) 0%, rgb(6 4 6 / 0.35) 45%, transparent 75%)' }}
+        style={{
+          background:
+            'linear-gradient(to top, rgb(6 9 18 / 0.5), transparent), linear-gradient(to right, rgb(6 4 6 / 0.72) 0%, rgb(6 4 6 / 0.35) 45%, transparent 75%)',
+        }}
       />
       <div className="shell relative pb-8">
         <div className="hairline" />

@@ -322,7 +322,14 @@ html.lenis body {
   height: 100svh;
   min-height: 0;
 }
-/* the low shade the type stands on, as at the summit */
+/* the low shade the type stands on, as at the summit. With JS it is pinned to
+   the screen and fades in and out with the view (see Atmosphere), so its dark
+   foot never slides across the screen as a hard edge. */
+.js .dest-shade {
+  position: fixed;
+  opacity: 0;
+  visibility: hidden;
+}
 .dest-shade {
   background:
     linear-gradient(to top, rgb(5 9 22 / 0.58) 0%, rgb(5 9 22 / 0.24) 30%, transparent 52%),
@@ -351,6 +358,10 @@ html.lenis body {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  padding: 0.45rem 1.1rem 0.45rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(var(--saffron) / 0.22);
 }
 .dest-pin {
   position: relative;
@@ -445,6 +456,10 @@ html[data-webgl='yes'] .dest-inner {
   bottom: 0;
   flex-direction: column;
   gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
   transform: translateX(-50%);
   animation: dest-bob 4.6s ease-in-out infinite;
 }
@@ -460,13 +475,29 @@ html[data-webgl='yes'] .dest-stem {
 html[data-webgl='yes'] .dest-label {
   position: absolute;
   top: 1.375rem;
-  left: calc(100% + 0.8rem);
+  left: calc(100% + 0.6rem);
   transform: translateY(-50%);
+  padding: 0.5rem 0.9rem 0.55rem;
+  border-radius: 0.85rem;
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(var(--saffron) / 0.22);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 14px 34px -18px rgb(0 0 0 / 0.85);
+  text-shadow: none;
+  transition:
+    border-color 0.4s var(--ease-out),
+    background-color 0.4s var(--ease-out);
 }
 html[data-webgl='yes'] .dest-marker[data-side='left'] .dest-label {
   left: auto;
-  right: calc(100% + 0.8rem);
+  right: calc(100% + 0.6rem);
   text-align: right;
+}
+html[data-webgl='yes'] .dest-marker:hover .dest-label,
+html[data-webgl='yes'] .dest-marker:focus-visible .dest-label {
+  border-color: rgb(var(--saffron) / 0.55);
+  background: rgb(22 15 11 / 0.72);
 }
 /* a slow ripple: these can be visited */
 html[data-webgl='yes'] .dest-pin::after {
@@ -518,10 +549,11 @@ html[data-webgl='yes'] .dest-marker[data-dest='temple'] .dest-pin::after {
   }
   html[data-webgl='yes'] .dest-label {
     top: 1.2rem;
-    left: calc(100% + 0.55rem);
+    left: calc(100% + 0.45rem);
+    padding: 0.4rem 0.7rem 0.45rem;
   }
   html[data-webgl='yes'] .dest-marker[data-side='left'] .dest-label {
-    right: calc(100% + 0.55rem);
+    right: calc(100% + 0.45rem);
   }
 }
 @media (prefers-reduced-motion: reduce) {

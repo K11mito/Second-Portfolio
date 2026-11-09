@@ -58,7 +58,9 @@ export default function Destinations() {
     if (e.currentTarget.dataset.on === 'true' || document.documentElement.dataset.webgl !== 'yes') return
     const s = section.current
     if (!s) return
-    const y = s.getBoundingClientRect().top + window.scrollY
+    const top = s.getBoundingClientRect().top
+    if (top <= 0 && top > -0.4 * window.innerHeight) return // already in view
+    const y = top + window.scrollY
     if (window.__lenis) window.__lenis.scrollTo(y, { duration: 1.2 })
     else window.scrollTo({ top: y, behavior: 'smooth' })
   }
@@ -66,13 +68,13 @@ export default function Destinations() {
   return (
     <section ref={section} id="destinations" data-scene="destinations" className="dest relative" aria-labelledby="dest-title">
       <div className="dest-stage">
-        <div className="dest-shade pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div data-dest-shade className="dest-shade pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="shell dest-copy relative">
           <div data-reveal>
             <p className="eyebrow text-snow/70">
               <span className="text-snow">02</span> — Choose your destination
             </p>
-            <h2 id="dest-title" className="display mt-5 text-[clamp(3.25rem,min(8vw,13vh),7.5rem)] text-snow md:mt-6">
+            <h2 id="dest-title" className="display mt-5 text-[clamp(3rem,min(6.6vw,11.5vh),6.25rem)] text-snow md:mt-6">
               Where to <em>now?</em>
             </h2>
             <p className="prose-lede mt-5 max-w-[27rem] text-snow/80 md:mt-6">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { advance, closeDestination, destinationAt, go, journey, leave, timeline, useJourney } from '@/lib/journey'
+import { dest } from '@/lib/destinations'
 import s from '@/components/library/library.module.css'
 
 // the library's bookcase loads only when you go to it
@@ -105,6 +106,26 @@ export default function Journey({ start = null, projects, index }) {
       window.__lenis?.start()
     }
   }, [away])
+
+  // Focus follows you: to the way back out when you arrive, and back to the
+  // destination's sign when you return (if it was left inside the destination)
+  const cameFrom = useRef(null)
+  useEffect(() => {
+    if (j.state === 'going') cameFrom.current = j.to
+    if (j.state === 'inside') {
+      const raf = requestAnimationFrame(() => {
+        const sel = j.to === 'library' ? '.journey-library header button' : '#experience .journey-back'
+        document.querySelector(sel)?.focus({ preventScroll: true })
+      })
+      return () => cancelAnimationFrame(raf)
+    }
+    if (j.state === 'idle' && cameFrom.current) {
+      const sign = dest.els[cameFrom.current]
+      cameFrom.current = null
+      const a = document.activeElement
+      if (sign && (!a || a === document.body || !document.body.contains(a) || a.closest('#experience'))) sign.focus({ preventScroll: true })
+    }
+  }, [j.state, j.to])
 
   // Escape: back out to the mountain (unless the library has a text open; it puts that away first)
   useEffect(() => {

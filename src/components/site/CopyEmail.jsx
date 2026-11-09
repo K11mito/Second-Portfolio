@@ -17,7 +17,7 @@ export default function CopyEmail({ email }) {
     <button
       type="button"
       onClick={copy}
-      className="eyebrow rounded-full border border-snow/20 px-4 py-2.5 text-snow/75 transition-colors duration-300 hover:border-snow/50 hover:text-snow"
+      className="eyebrow rounded-full border border-snow/25 bg-[rgb(6_9_18/0.35)] px-4 py-2.5 text-snow/80 backdrop-blur-sm transition-colors duration-300 hover:border-snow/50 hover:text-snow"
       aria-live="polite"
     >
       {copied ? 'Copied ✓' : 'Copy address'}

@@ -32,6 +32,8 @@ export default function Atmosphere() {
     let lastDim = -1
     let lastShade = -1
     const shade = document.querySelector('[data-hero-shade]')
+    const destShade = document.querySelector('[data-dest-shade]')
+    let lastDest = -1
     const tick = () => {
       raf = requestAnimationFrame(tick)
       if (!veil.current) return
@@ -46,6 +48,17 @@ export default function Atmosphere() {
             lastShade = s
             shade.style.opacity = s.toFixed(3)
             shade.style.visibility = s > 0.001 ? 'visible' : 'hidden'
+          }
+        }
+        // The "Where to now?" shade, the same way: it rises with the view and
+        // dissolves as the view gives way to Contact
+        const ds = sections.destinations
+        if (destShade && ds) {
+          const o = smooth(ds.top - 0.7 * vh, ds.top - 0.1 * vh, y) * (1 - smooth(ds.top + ds.height - 1.05 * vh, ds.top + ds.height - 0.45 * vh, y))
+          if (Math.abs(o - lastDest) > 1e-3) {
+            lastDest = o
+            destShade.style.opacity = o.toFixed(3)
+            destShade.style.visibility = o > 0.001 ? 'visible' : 'hidden'
           }
         }
         // Reading light: dim the scene behind About, and lift it again for the

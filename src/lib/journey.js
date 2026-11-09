@@ -8,6 +8,7 @@
 // frame never slows a flight down, and every reader sees the same moment.
 
 import { useSyncExternalStore } from 'react'
+import { scrollState } from './scroll'
 
 export const DESTINATIONS = ['library', 'temple']
 // where each destination lives in the address bar
@@ -37,13 +38,13 @@ function set(patch) {
 /** Set off for a destination. Returns false if already on the way somewhere. */
 export function go(to, { quick = false } = {}) {
   if (!DESTINATIONS.includes(to) || journey.state === 'going' || journey.state === 'inside') return false
-  set({ state: 'going', to, quick })
+  set({ state: 'going', to, quick: quick || scrollState.reducedMotion })
   return true
 }
 /** Head back out to the mountain. */
 export function leave({ quick = false } = {}) {
   if (journey.state !== 'going' && journey.state !== 'inside') return false
-  set({ state: 'leaving', quick })
+  set({ state: 'leaving', quick: quick || scrollState.reducedMotion })
   return true
 }
 /** Called by the page's ticker when a state's timeline has run its course. */
