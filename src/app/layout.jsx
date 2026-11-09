@@ -16,6 +16,8 @@ const description =
   'Aryendra Shrestha — creative entrepreneur and technologist. Finance at Mahidol University, founder of small ventures, builder of software.'
 
 export const metadata = {
+  // where the site lives: social cards and links resolve against it
+  metadataBase: new URL('https://aryendra.com'),
   title: { default: `${person.name} — ${person.role}`, template: `%s — ${person.name}` },
   description,
   applicationName: person.name,
