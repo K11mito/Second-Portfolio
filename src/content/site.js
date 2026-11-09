@@ -35,9 +35,12 @@ export const about = {
 }
 
 // Every project, newest first. Those with `featured` (1, 2, 3...) are the ones on
-// the home page, in that order; all of them hang on the scroll at /projects.
-// New ones go at the top. `when` is 'YYYY-MM' (only the year is shown).
+// the home page, in that order, and are wrapped in yellow silk in the library at
+// /projects, where all of them are shelved. New ones go at the top; the shelf
+// re-lays itself. `when` is 'YYYY-MM' (only the year is shown).
 // `private: true` marks a private repository: no source link is shown.
+// `short` is the title inked on the bundle's tag in the library, for titles too
+// long to fit; without it the full title is used.
 // Each project can also take `video: '/videos/projects/name.mp4'` for a looping
 // preview on the home page (muted, plays while on screen); `image` is its poster.
 export const projects = [
@@ -98,6 +101,7 @@ export const projects = [
   },
   {
     title: 'Tintin’s Journey',
+    short: 'Tintin',
     when: '2026-08',
     kind: 'Archive',
     description:
@@ -107,6 +111,7 @@ export const projects = [
   },
   {
     title: 'Startup funding speed',
+    short: 'Funding',
     when: '2026-07',
     kind: 'Research',
     description:
@@ -142,6 +147,7 @@ export const projects = [
   },
   {
     title: 'Bangkok Silicon, reimagined',
+    short: 'B. Silicon',
     when: '2026-04',
     kind: 'Redesign concept',
     description: 'An unsolicited redesign of Bangkok Silicon’s website: more modern, cleaner, with a little 3D.',
@@ -150,6 +156,7 @@ export const projects = [
   },
   {
     title: 'Project Manager',
+    short: 'Manager',
     when: '2026-04',
     kind: 'Desktop app',
     description:
@@ -184,6 +191,7 @@ export const projects = [
   },
   {
     title: 'WhatsApp chatbot',
+    short: 'WhatsApp',
     when: '2026-02',
     kind: 'Chatbot',
     description: 'A chatbot that handles guest requests on WhatsApp, with a two-layer memory system.',
@@ -193,6 +201,7 @@ export const projects = [
   },
   {
     title: 'Get Shit Done',
+    short: 'GSD',
     when: '2025-12',
     kind: 'Productivity app',
     description:
@@ -205,6 +214,7 @@ export const projects = [
   },
   {
     title: 'Window into 3D',
+    short: 'Window 3D',
     when: '2025-11',
     kind: 'Experiment',
     description: 'Tracks your head through the webcam so the screen behaves like a window into a 3D space behind it.',
@@ -216,6 +226,7 @@ export const projects = [
   },
   {
     title: 'Food & Macro Tracker',
+    short: 'Macros',
     when: '2025-11',
     kind: 'Computer vision',
     description:

@@ -3,8 +3,9 @@
 A scroll-driven descent from a Himalayan summit, down through a sea of clouds,
 into a candle-lit monastery with a prayer wheel you turn by hand. The sky is
 the real one over Bangkok right now: sunset when it's sunset there, stars and
-the moon in its true phase at night. Every project hangs on a thangka scroll at
-`/projects`. Built with Next.js 14, React Three Fiber and a little GLSL.
+the moon in its true phase at night. Every project is wrapped like a Tibetan
+book and shelved in a monastery library at `/projects`. Built with Next.js 14,
+React Three Fiber, three.js and a little GLSL.
 
 ```bash
 npm install
@@ -19,9 +20,12 @@ projects, experience cards and social links. Nothing else needs to change to
 add a project or an experience card (the card ring and the prayer wheel adapt
 to however many experience entries there are).
 
-Projects are listed newest first. Add a new one at the top and it appears at
-the top of the scroll. Give it `featured: 1` (2, 3…) to show it on the home
-page in that order; `private: true` hides the source link for a private repo.
+Projects are listed newest first. Add a new one at the top and it is shelved
+first in the library; the bookcase re-lays itself for any number of projects.
+Give it `featured: 1` (2, 3…) to show it on the home page in that order (it is
+wrapped in yellow silk in the library too); `private: true` hides the source
+link for a private repo; `short` is the title inked on its tag in the library,
+for titles too long to fit.
 
 ## How it fits together
 
@@ -33,7 +37,10 @@ src/lib/wheel.js         the hand-turned prayer wheel: drag, flick, detents
 src/lib/sky.js           where the sun and moon are over Bangkok, and the sky's clock
 src/components/site/     HTML sections (server-rendered, readable without JS),
                          and Ornament.jsx, the Tibetan card border
-src/components/archive/  the /projects thangka scroll
+src/components/library/  the /projects library
+  createLibrary.js       the bookcase and the wrapped texts, in plain three.js
+  Library.jsx            the page around it: caption, glossary, reading leaf
+  pecha.js               numbering, Tibetan numerals, how the shelf is laid out
 src/components/three/    the WebGL scene
   Director.jsx           scroll -> camera path, act switch
   skyLight.js            sun altitude -> light, sky, fog and cloud colour
@@ -73,10 +80,13 @@ src/components/three/    the WebGL scene
   site's corner pieces: interlaced square links where a double rule turns,
   with cloud-collar scallops (`Ornament.jsx`). Hover one and it glows white,
   and its rules reach along each edge until they meet at a jewel.
-- **The scroll.** `/projects` hangs every project on a thangka: cotton in silk
-  brocade with red and gold strips, a rolled veil and ribbons at the top. The
-  heavy rod at the bottom stays on screen as you scroll, so the cloth unrolls
-  out of it, and the roll thins as you near the end.
+- **The library.** `/projects` is one wall of a monastery library: a
+  weathered, red-painted bookcase of uneven pigeonholes, every project wrapped
+  as a pecha (loose leaves between wooden boards, in cloth, with a brocade face
+  and a gauze tag). Rest the cursor on one and it lifts and glows; open it and
+  it is carried out, unwrapped, and its top leaf rises to become the page you
+  read. The favourites are in yellow silk. Everything is painted in code: no
+  models, no textures to load. Without WebGL (or JS) the page is a plain list.
 - **Real cloth.** The prayer flags are a Verlet simulation: each flag's top
   row is part of the rope, so heavy flags sag the line and the line whips the
   flags, and the wind pushes hardest on cloth that faces it. It runs in a
@@ -96,7 +106,7 @@ src/components/three/    the WebGL scene
 | `public/images/posters/*.webp` | the summit at dawn, day, sunset and night, rendered from the live scene (loading poster and fallback, picked by the hour) |
 | `public/images/poster-hall.webp` | the monastery, for the fallback without WebGL |
 | `public/images/projects/*` | project screenshots |
-| `public/fonts/jomolhari-ornaments.woff2` | Jomolhari (OFL), cut down to Tibetan numerals and the mantra on the scroll |
+| `public/fonts/jomolhari-library.woff2` | Jomolhari (OFL), cut down to the Tibetan numerals, marks and words the library uses |
 
 `assets/source/` keeps the original, uncompressed models and the script that
 prints the flags. None of it is deployed.
