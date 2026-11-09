@@ -37,15 +37,13 @@ export const about = {
   ],
 }
 
-// Every project, newest first. Those with `featured` (1, 2, 3...) are the ones on
-// the home page, in that order, and are wrapped in yellow silk in the library at
-// /projects, where all of them are shelved. New ones go at the top; the shelf
+// Every project, newest first, shelved in the library (/projects, and opened
+// over the mountain from its monastery). Those with `featured` (1, 2, 3...) are
+// the precious texts, wrapped in yellow silk. New ones go at the top; the shelf
 // re-lays itself. `when` is 'YYYY-MM' (only the year is shown).
 // `private: true` marks a private repository: no source link is shown.
 // `short` is the title inked on the bundle's tag in the library, for titles too
 // long to fit; without it the full title is used.
-// Each project can also take `video: '/videos/projects/name.mp4'` for a looping
-// preview on the home page (muted, plays while on screen); `image` is its poster.
 export const projects = [
   {
     title: 'This site',
@@ -232,9 +230,6 @@ export const projects = [
   },
 ]
 
-/** The home page's few, in their chosen order. */
-export const featuredProjects = projects.filter((p) => p.featured).sort((a, b) => a.featured - b.featured)
-
 export const experience = [
   {
     org: 'Jagota',
@@ -303,9 +298,10 @@ export const experience = [
   },
 ]
 
+// `dest`: a destination on the mountain; on the home page the camera flies there
 export const nav = [
   { label: 'About', href: '#about' },
-  { label: 'Work', href: '#work' },
-  { label: 'Experience', href: '#experience' },
+  { label: 'Projects', href: '/projects', dest: 'library' },
+  { label: 'Experience', href: '/experience', dest: 'temple' },
   { label: 'Contact', href: '#contact' },
 ]

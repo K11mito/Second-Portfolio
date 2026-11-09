@@ -1,13 +1,7 @@
 /* The projects library: a 3D monastery bookcase of wrapped texts (pecha).
    See Library.jsx and createLibrary.js. */
 
-@font-face {
-  font-family: 'Jomolhari Library';
-  src: url('/fonts/jomolhari-library.woff2') format('woff2');
-  font-display: swap;
-  /* only the few Tibetan words, numerals and marks the library uses */
-  unicode-range: U+0F00-0FFF;
-}
+/* The Tibetan font, 'Jomolhari Library', is declared in globals.css. */
 
 .page {
   --tib: 'Jomolhari Library', 'Noto Serif Tibetan', 'Microsoft Himalaya', serif;
@@ -68,6 +62,8 @@
   transition: color 0.3s;
 }
 .back:hover { color: rgb(var(--snow)); }
+/* the same, as a button (the library opened over the mountain) */
+.backButton { background: none; border: 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
 /* the page's name: the Tibetan word in gold, then the English in the site's
    pen-drawn display face */
 .eyebrow {

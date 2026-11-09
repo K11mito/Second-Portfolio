@@ -102,7 +102,6 @@ src/components/three/    the WebGL scene
 | `public/terrain/snow-mask.webp` | the model's snow/rock erosion mask, used by the snow shader |
 | `public/models/prayer_wheel.glb` | meshopt + WebP version of `assets/source/models/prayer_wheel.glb` |
 | `public/textures/prayer-flags.webp` | the five lung-ta, fresh and weathered, woodblock-printed (wind horse, mantras, the four dignities); baked by `assets/source/flags/bake-flags.js` |
-| `public/textures/cloud-puffs.webp` | soft cloud sprites |
 | `public/images/posters/*.webp` | the summit at dawn, day, sunset and night, rendered from the live scene (loading poster and fallback, picked by the hour) |
 | `public/images/poster-hall.webp` | the monastery, for the fallback without WebGL |
 | `public/images/projects/*` | project screenshots |

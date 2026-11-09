@@ -23,7 +23,7 @@ export default function Contact() {
       <div className="shell relative flex flex-1 flex-col justify-center pb-16 pt-28 md:pt-36">
         <div data-reveal>
           <p className="eyebrow text-snow/70">
-            <span className="text-snow">04</span> — Contact
+            <span className="text-snow">03</span> — Contact
           </p>
           <h2 id="contact-title" className="display mt-7 text-[clamp(3.5rem,10vw,9.75rem)] text-snow">
             Hit me <em className="italic">up.</em>

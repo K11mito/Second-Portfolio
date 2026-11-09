@@ -1,79 +1,79 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { scrollState, pinProgress } from '@/lib/scroll'
+import { scrollState } from '@/lib/scroll'
 import { sky } from '@/lib/sky'
+import { journey, timeline } from '@/lib/journey'
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
   return t * t * (3 - 2 * t)
 }
 
+// the dark at each destination's door: the library's lamplit brown, the hall's near-black
+const DARK = { library: [10, 5, 4], temple: [7, 6, 9] }
+
 // Screen-space layers between the 3D scene and the content:
 //  - a cinematic vignette,
-//  - the white-out when the camera sinks into the cloud sea (white by day, a
-//    dim blue-grey at night: the colour of the inside of a cloud right now),
-//    which then dips to black before the monastery is revealed. It reads the
-//    same scroll value as the 3D Director, so the act switch always happens
-//    behind the veil.
+//  - the reading light: the scene dims a little behind the About text,
+//  - the veil of a journey: as the camera reaches a destination it closes over
+//    the screen, through a drift of cloud (white by day, a dim blue-grey at
+//    night: the colour of the inside of a cloud right now) on the way to the
+//    temple, then the dark of the door; it lifts again on the way back out.
+//    It reads the same journey timeline as the 3D Director, so the switch from
+//    the mountain to a destination always happens behind it.
 export default function Atmosphere() {
   const veil = useRef()
   const dim = useRef()
 
   useEffect(() => {
     let raf
-    let last = -1
+    let lastVeil = ''
     let lastDim = -1
     let lastShade = -1
-    const line = document.querySelector('[data-interlude]')
     const shade = document.querySelector('[data-hero-shade]')
     const tick = () => {
       raf = requestAnimationFrame(tick)
-      if (!scrollState.measured || !veil.current) return
-      const { sections, y, vh } = scrollState
+      if (!veil.current) return
+      const { sections, y, vh, measured } = scrollState
 
-      // The hero's legibility shade is fixed to the screen and dissolves as the
-      // hero leaves, handing over to the reading dim below: no edge to see.
-      if (shade) {
-        const s = 1 - smooth(0, 0.85 * vh, y)
-        if (Math.abs(s - lastShade) > 1e-3) {
-          lastShade = s
-          shade.style.opacity = s.toFixed(3)
-          shade.style.visibility = s > 0.001 ? 'visible' : 'hidden'
+      if (measured) {
+        // The hero's legibility shade is fixed to the screen and dissolves as the
+        // hero leaves, handing over to the reading dim below: no edge to see.
+        if (shade) {
+          const s = 1 - smooth(0, 0.85 * vh, y)
+          if (Math.abs(s - lastShade) > 1e-3) {
+            lastShade = s
+            shade.style.opacity = s.toFixed(3)
+            shade.style.visibility = s > 0.001 ? 'visible' : 'hidden'
+          }
+        }
+        // Reading light: dim the scene behind About, and lift it again for the
+        // view of the destinations (the monasteries want to be seen).
+        if (sections.about && sections.destinations && dim.current) {
+          const a = sections.about.top
+          const d0 = sections.destinations.top
+          const d = smooth(a - 0.8 * vh, a - 0.05 * vh, y) * (1 - smooth(d0 - 0.95 * vh, d0 - 0.2 * vh, y)) * 0.4
+          if (Math.abs(d - lastDim) > 1e-3) {
+            lastDim = d
+            dim.current.style.opacity = d.toFixed(3)
+          }
         }
       }
 
-      // Reading light: dim the scene behind the text-heavy sections, and lift it
-      // again for the cinematic moments (the summit and the descent).
-      if (sections.about && sections.interlude && dim.current) {
-        const a = sections.about.top
-        const i = sections.interlude.top
-        const d = smooth(a - 0.8 * vh, a - 0.05 * vh, y) * (1 - smooth(i - 1.05 * vh, i - 0.3 * vh, y)) * 0.4
-        if (Math.abs(d - lastDim) > 1e-3) {
-          lastDim = d
-          dim.current.style.opacity = d.toFixed(3)
-        }
-      }
-
-      const sec = sections.interlude
-      if (sec && line) {
-        // q: viewport-heights scrolled past the section top (negative while it enters)
-        const q = (y - sec.top) / vh
-        const vis = smooth(-0.55, -0.05, q) * (1 - smooth(0.25, 0.5, q))
-        line.style.opacity = vis.toFixed(3)
-        line.style.transform = `translate3d(0, ${((1 - smooth(-0.55, -0.05, q)) * 24 - smooth(0.25, 0.5, q) * 24).toFixed(2)}px, 0) scale(${(1 + smooth(0.25, 0.5, q) * 0.04).toFixed(4)})`
-      }
-      const p = pinProgress('interlude')
+      const tl = timeline()
       const [vr, vg, vb] = sky.veil
-      const key = p + vr * 1e-3 + vg * 1e-6 + vb * 1e-9
-      if (Math.abs(key - last) < 1e-10) return
-      last = key
-      const opacity = smooth(0.24, 0.44, p) * (1 - smooth(0.84, 1.0, p))
-      const dark = smooth(0.6, 0.8, p)
-      const mix = (a, b) => Math.round(a * (1 - dark) + b * dark)
-      veil.current.style.opacity = opacity.toFixed(4)
-      veil.current.style.backgroundColor = `rgb(${mix(vr, 7)}, ${mix(vg, 6)}, ${mix(vb, 9)})`
-      veil.current.style.visibility = opacity > 0.001 ? 'visible' : 'hidden'
+      const [dr, dg, db] = DARK[journey.to] || DARK.temple
+      const m = tl.veil.mist
+      const mix = (a, b) => Math.round(a * m + b * (1 - m))
+      const color = `rgb(${mix(vr, dr)}, ${mix(vg, dg)}, ${mix(vb, db)})`
+      const a = tl.veil.a
+      const key = `${a.toFixed(4)}|${color}`
+      if (key === lastVeil) return
+      lastVeil = key
+      veil.current.style.opacity = a.toFixed(4)
+      veil.current.style.backgroundColor = color
+      veil.current.style.visibility = a > 0.001 ? 'visible' : 'hidden'
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)

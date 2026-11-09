@@ -6,6 +6,17 @@ import SoundToggle from './SoundToggle'
 import SkyClock from './SkyClock'
 import { nav, person } from '@/content/site'
 import { scrollState } from '@/lib/scroll'
+import { openDestination } from '@/lib/journey'
+
+// A destination in the nav: on the home page, with the scene running, the
+// camera flies there; otherwise (or for a new tab) it is an ordinary link.
+function fly(e, item) {
+  if (!item.dest || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false
+  if (document.documentElement.dataset.webgl !== 'yes' || !document.getElementById('destinations')) return false
+  e.preventDefault()
+  openDestination(item.dest)
+  return true
+}
 
 export default function Nav() {
   const header = useRef(null)
@@ -36,8 +47,7 @@ export default function Nav() {
         const s = scrollState.sections[id]
         if (s && mid >= s.top) current = id
       }
-      const map = { interlude: 'work' }
-      const active = map[current] || current
+      const active = current
       for (const a of links) a.dataset.active = a.dataset.navLink === active ? 'true' : 'false'
     }
     raf = requestAnimationFrame(tick)
@@ -86,6 +96,7 @@ export default function Nav() {
                 <li key={item.href}>
                   <a
                     href={item.href}
+                    onClick={(e) => fly(e, item)}
                     data-nav-link={item.href.slice(1)}
                     className="relative block rounded-full px-4 py-2 text-[0.875rem] text-snow/70 transition-colors duration-300 hover:text-snow data-[active=true]:text-snow"
                   >
@@ -141,7 +152,10 @@ export default function Nav() {
               key={item.href}
               href={item.href}
               tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
+              onClick={(e) => {
+                fly(e, item)
+                setOpen(false)
+              }}
               className="title flex items-baseline gap-4 py-1 text-[3.25rem] text-snow transition-[transform,opacity] duration-700 ease-out"
               style={{
                 transitionDelay: open ? `${80 + i * 60}ms` : '0ms',

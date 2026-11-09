@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { getImageProps } from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { setLoading, useLoading } from '@/lib/loading'
-import { pinProgress, scrollState } from '@/lib/scroll'
+import { timeline } from '@/lib/journey'
 import SceneBoundary from './SceneBoundary'
 
 const Stage = dynamic(() => import('./three/Stage'), { ssr: false })
@@ -26,47 +26,60 @@ function supportsWebGL() {
 const hall = getImageProps({ alt: '', sizes: '100vw', quality: 80, src: '/images/poster-hall.webp', width: 2400, height: 1000 }).props
 
 // The fixed background layer: the live WebGL scene, over a poster that paints
-// instantly and remains as the fallback when WebGL is unavailable.
-export default function SceneLayer() {
+// instantly and remains as the fallback when WebGL is unavailable. `start`:
+// the page opens at a destination (the prayer-wheel temple), so its hall is
+// the poster to load behind. <html data-webgl> tells the page whether the
+// mountain is live (its destinations' signs ride the scene) or a still.
+export default function SceneLayer({ start = null }) {
   const [canRender, setCanRender] = useState(false)
   const [fallback, setFallback] = useState(false)
   const { ready } = useLoading()
   const hallRef = useRef(null)
+  const liveRef = useRef(false)
 
   useEffect(() => {
-    if (supportsWebGL()) setCanRender(true)
-    else {
+    if (supportsWebGL()) {
+      setCanRender(true)
+      document.documentElement.dataset.webgl = 'yes'
+    } else {
       setFallback(true)
+      document.documentElement.dataset.webgl = 'no'
       setLoading({ unsupported: true, ready: true, progress: 1 })
     }
   }, [])
 
-  // Without WebGL, swap to the monastery still at the same moment the live
-  // scene would: behind the white-out of the cloud descent.
+  const live = ready && canRender && !fallback
+  liveRef.current = live
+
+  // The hall's still: the poster while a page that opens at the temple loads,
+  // and, without WebGL, the stand-in for the hall whenever you are inside it.
+  const hallStill = fallback || start === 'temple'
   useEffect(() => {
-    if (!fallback) return
+    if (!hallStill) return
     let raf
     const tick = () => {
       raf = requestAnimationFrame(tick)
-      if (hallRef.current && scrollState.measured) hallRef.current.style.opacity = pinProgress('interlude') >= 0.55 ? 1 : 0
+      const el = hallRef.current
+      if (!el) return
+      const o = fallback ? (timeline().act === 'monastery' ? '1' : '0') : liveRef.current ? '0' : '1'
+      if (el.style.opacity !== o) el.style.opacity = o
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [fallback])
-
-  const live = ready && canRender && !fallback
+  }, [hallStill, fallback])
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 bg-[#0b1f3d]" aria-hidden="true">
       <div className="scene-poster absolute inset-0 transition-opacity duration-[1400ms] ease-out" style={{ opacity: live ? 0 : 1 }} />
-      {fallback && (
+      {hallStill && (
         // eslint-disable-next-line @next/next/no-img-element -- optimised srcset from getImageProps
         <img
           ref={hallRef}
           {...hall}
           alt=""
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover opacity-0"
+          loading={start === 'temple' ? 'eager' : 'lazy'}
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out"
+          style={{ opacity: start === 'temple' ? 1 : 0 }}
         />
       )}
       {canRender && (
@@ -75,6 +88,7 @@ export default function SceneLayer() {
             onError={() => {
               setCanRender(false)
               setFallback(true)
+              document.documentElement.dataset.webgl = 'no'
               setLoading({ unsupported: true, ready: true, progress: 1 })
             }}
           >

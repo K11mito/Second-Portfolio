@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import World from './World'
 import { env } from './env'
 import { setLoading } from '@/lib/loading'
+import { useJourney } from '@/lib/journey'
 
 // Signals "ready" once the summit's assets have resolved, the prayer flags have
 // settled, and a few frames have been drawn (the first frame compiles the
@@ -50,12 +51,16 @@ function initialDpr() {
 export default function Stage() {
   const [dpr, setDpr] = useState(initialDpr)
   const ceiling = useRef(initialDpr())
+  // While the library is open over the page, the mountain behind it rests
+  const j = useJourney()
+  const resting = j.state === 'inside' && j.to === 'library'
 
   return (
     <>
       <ProgressBridge />
       <Canvas
         className="!fixed inset-0"
+        frameloop={resting ? 'never' : 'always'}
         shadows
         dpr={dpr}
         gl={{ antialias: true, powerPreference: 'high-performance', alpha: false, stencil: false }}
