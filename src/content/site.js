@@ -51,16 +51,6 @@ export const projects = [
     links: [{ label: 'Source', href: 'https://github.com/K11mito/Second-Portfolio' }],
   },
   {
-    title: 'ShipIt',
-    when: '2026-11',
-    kind: 'AI agent',
-    note: 'Marist Innovation Challenge',
-    description:
-      'Point at your website, say what to change, press Ship once. A bakery owner drops in a photo of their menu and ShipIt builds the site; click anything and say what should change, and it applies every note at once, then clicks through like a customer, finds what broke, fixes it and tests again.',
-    tags: ['React', 'Node.js', 'Playwright', 'LLMs'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/shipIt' }],
-  },
-  {
     title: 'SEIZE',
     when: '2026-11',
     kind: 'Website',
@@ -92,16 +82,6 @@ export const projects = [
     private: true,
   },
   {
-    title: 'Recall',
-    when: '2026-09',
-    kind: 'Memory app',
-    note: 'In progress',
-    description:
-      'A personal memory system: record or upload audio and it becomes structured, searchable memories. Today, audio goes in and a timestamped transcript comes out, transcribed on the device. Next: people, topics, actions, and asking your own memories questions.',
-    tags: ['Python', 'Whisper', 'PostgreSQL'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/recall' }],
-  },
-  {
     title: 'Munch',
     when: '2026-08',
     kind: 'Marketing agent',
@@ -129,14 +109,6 @@ export const projects = [
       'Does how quickly a startup lands its first funding round predict whether it goes on to raise a Series B? A statistics study: data cleaning, sampling and a logistic regression.',
     tags: ['Python', 'Statistics'],
     links: [{ label: 'Source', href: 'https://github.com/K11mito/BusStatProject---Startup-funding-speed.' }],
-  },
-  {
-    title: 'Recurly',
-    when: '2026-07',
-    kind: 'Mobile app',
-    description: 'A subscription manager for your phone: every recurring charge in one place.',
-    tags: ['React Native', 'Expo', 'TypeScript'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/recurly' }],
   },
   {
     title: 'DriveSafe',
@@ -172,34 +144,12 @@ export const projects = [
     links: [{ label: 'Source', href: 'https://github.com/K11mito/ODTS' }],
   },
   {
-    title: 'Legacy',
-    when: '2026-05',
-    kind: 'Landing page',
-    description: 'The landing page for Legacy, estate-planning software built for Louisiana attorneys.',
-    image: '/images/projects/legacy.webp',
-    imageAlt: 'Legacy landing page: “Modern estate planning for Louisiana attorneys” beside a family under live oaks',
-    tags: ['React', 'Tailwind', 'Framer Motion'],
-    links: [
-      { label: 'Visit site', href: 'https://legacy-landing-page-ten.vercel.app' },
-      { label: 'Source', href: 'https://github.com/AryaShrestha05/legacyLandingPage' },
-    ],
-  },
-  {
     title: 'Bangkok Silicon, reimagined',
     when: '2026-04',
     kind: 'Redesign concept',
     description: 'An unsolicited redesign of Bangkok Silicon’s website: more modern, cleaner, with a little 3D.',
     tags: ['React', 'Three.js', 'GSAP', 'TypeScript'],
     links: [{ label: 'Source', href: 'https://github.com/K11mito/Bangkok-Silicon-NEW-SITE-CONCEPT' }],
-  },
-  {
-    title: 'applyAI',
-    when: '2026-04',
-    kind: 'AI agent',
-    description:
-      'A job-search agent that tracks applications and writes an ATS-friendly LaTeX résumé matched to each job’s description and requirements.',
-    tags: ['JavaScript', 'LaTeX', 'LLMs'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/applyAI' }],
   },
   {
     title: 'Project Manager',
@@ -218,15 +168,6 @@ export const projects = [
     tags: ['Python'],
     links: [],
     private: true,
-  },
-  {
-    title: 'MCP Chat',
-    when: '2026-03',
-    kind: 'Command-line tool',
-    description:
-      'A chat client built on the Model Context Protocol, with document retrieval and command prompts, running local models through Ollama. Built while working through Anthropic’s MCP course.',
-    tags: ['Python', 'MCP', 'Ollama'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/mcpGithubChatBot' }],
   },
   {
     title: 'Vessel',
@@ -252,24 +193,6 @@ export const projects = [
     tags: ['TypeScript'],
     links: [],
     private: true,
-  },
-  {
-    title: 'RentGrid',
-    when: '2026-01',
-    kind: 'Marketplace',
-    note: 'Concept',
-    description:
-      'An AI-powered marketplace for commercial real estate, so finding an office, warehouse or shop goes from overwhelming to effortless.',
-    tags: ['Supabase'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/rentGrids' }],
-  },
-  {
-    title: 'Rate limiter',
-    when: '2026-01',
-    kind: 'Backend',
-    description: 'A distributed rate limiter that meters each user’s API calls with tokens.',
-    tags: ['Node.js', 'Docker'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/rateLimiter' }],
   },
   {
     title: 'Get Shit Done',
@@ -307,15 +230,6 @@ export const projects = [
     focus: '50% 55%',
     tags: ['YOLOv8', 'React', 'Vite'],
     links: [{ label: 'Source', href: 'https://github.com/K11mito/Realtime-food-macro-tracking' }],
-  },
-  {
-    title: 'Posturize',
-    when: '2025-11',
-    kind: 'Computer vision',
-    note: 'HackPrinceton',
-    description: 'Real-time posture tracking with MediaPipe and OpenCV, with live feedback and data collection.',
-    tags: ['Python', 'MediaPipe', 'OpenCV'],
-    links: [{ label: 'Source', href: 'https://github.com/AryaShrestha05/posturize' }],
   },
 ]
 
