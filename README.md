@@ -1,11 +1,14 @@
 # Aryendra Shrestha — portfolio
 
-A scroll-driven descent from a Himalayan summit, down through a sea of clouds,
-into a candle-lit monastery with a prayer wheel you turn by hand. The sky is
-the real one over Bangkok right now: sunset when it's sunset there, stars and
-the moon in its true phase at night. Every project is wrapped like a Tibetan
-book and shelved in a monastery library at `/projects`. Built with Next.js 14,
-React Three Fiber, three.js and a little GLSL.
+A Himalayan summit above a sea of clouds. Scroll down past who I am to
+"Where to now?": the mountain with its two destinations, a monastery at its
+foot, half in the cloud, whose library shelves every project as a Tibetan book
+(`/projects`), and a temple on a small peak of its own, where a prayer wheel you
+turn by hand holds my experience (`/experience`). Choose one and the camera
+flies to its door. The sky is the real one over Bangkok right now: sunset when
+it's sunset there, stars and the moon in its true phase at night, and the
+monasteries' lamps lit after dark. Built with Next.js 14, React Three Fiber,
+three.js and a little GLSL.
 
 ```bash
 npm install
@@ -22,27 +25,35 @@ to however many experience entries there are).
 
 Projects are listed newest first. Add a new one at the top and it is shelved
 first in the library; the bookcase re-lays itself for any number of projects.
-Give it `featured: 1` (2, 3…) to show it on the home page in that order (it is
-wrapped in yellow silk in the library too); `private: true` hides the source
+Give it `featured: 1` (2, 3…) to wrap it in yellow silk in the library, among
+the precious texts; `private: true` hides the source
 link for a private repo; `short` is the title inked on its tag in the library,
 for titles too long to fit.
 
 ## How it fits together
 
 ```
-src/app/                 layout (fonts, metadata), page, 404, icons, social card
+src/app/                 layout (fonts, metadata), pages (/, /projects, /experience), 404, icons, social card
 src/content/site.js      everything you'd want to edit
 src/lib/scroll.js        scroll store shared by the DOM and the 3D scene
+src/lib/journey.js       the way to a destination and back: one timeline for camera, veil and page
 src/lib/wheel.js         the hand-turned prayer wheel: drag, flick, detents
 src/lib/sky.js           where the sun and moon are over Bangkok, and the sky's clock
 src/components/site/     HTML sections (server-rendered, readable without JS),
                          and Ornament.jsx, the Tibetan card border
+  HomePage.jsx           the mountain: hero, about, where to now?, contact
+  Destinations.jsx       "Where to now?" and the signs over the monasteries
+  Journey.jsx            runs the journeys: history, the library over the page
+  Experience.jsx         the prayer-wheel temple's ring of cards
 src/components/library/  the /projects library
   createLibrary.js       the bookcase and the wrapped texts, in plain three.js
   Library.jsx            the page around it: caption, glossary, reading leaf
   pecha.js               numbering, Tibetan numerals, how the shelf is laid out
 src/components/three/    the WebGL scene
-  Director.jsx           scroll -> camera path, act switch
+  Director.jsx           scroll -> camera path; the flights to the doors; act switch
+  gompa.js               the monasteries, built in code from Tibetan parts
+  Gompas.jsx             puts them on the mountain, lights their lamps, pins the signs
+  terrainData.js         the shared heightmap, with the temple's peak raised in it
   skyLight.js            sun altitude -> light, sky, fog and cloud colour
   Terrain.jsx            mountain rebuilt from a heightmap, snow shader, AO
   CloudSea.jsx           three noise layers that part around the peaks
@@ -67,15 +78,29 @@ src/components/three/    the WebGL scene
   moonlit (or moonless) night. The clock in the top right switches to the
   visitor's own hour or to dawn, day, sunset or night, as a short time-lapse.
   `?sky=night` (or `dawn`, `day`, `sunset`, `local`) opens on that sky.
-- **A wheel you turn by hand.** As the hall is revealed, scrolling on draws the
-  experience cards out of the prayer wheel itself: they unspool from the
-  drum's axis as it turns and settle into a ring (the 3D scene reports where
-  the drum is on screen, so they leave from the right spot on any device).
-  Then drag or swipe the wheel and it spins on with some weight, settling
-  facing a card; the arrows, arrow keys or a click on a side card turn it too.
-  It turns clockwise, as prayer wheels do, and with sound on, the bell on its
-  frame rings once a revolution. `?wheel=scroll` brings back the scroll-driven
-  version for comparison.
+- **Where to now?** The mountain's two destinations wear small hovering signs,
+  plain links pinned over their roofs by the scene every frame. Choose one and
+  the camera flies to its door along a curve that arrives head-on: into the
+  dark of the library (which opens over the page, the mountain resting behind
+  it), or through a drift of cloud to the temple's prayer-wheel hall. The
+  address bar follows (`/projects`, `/experience`), so the browser's back
+  button, Escape or "← The mountain" fly you back out to the same view, and a
+  reload lands you inside. Without WebGL the signs are ordinary links.
+- **Monasteries built in code.** `gompa.js` assembles them from the real
+  vocabulary: battered whitewashed walls on foundations that step down to the
+  rock, the maroon pembé frieze with gilded discs, black trapezoid windows,
+  rabsel balconies, gilded roofs with curling eaves, victory banners, the
+  Dharma wheel between two deer, chortens and strings of prayer flags. Each
+  complex merges into about a dozen draw calls; after dusk its windows light
+  up and a warm haze hangs around it.
+- **A wheel you turn by hand.** When you reach the temple, the experience
+  cards come out of the prayer wheel itself: they unspool from the drum's axis
+  as it turns and settle into a ring (the 3D scene reports where the drum is
+  on screen, so they leave from the right spot on any device). Then drag or
+  swipe the wheel and it spins on with some weight, settling facing a card;
+  the arrows, arrow keys or a click on a side card turn it too. It turns
+  clockwise, as prayer wheels do, and with sound on, the bell on its frame
+  rings once a revolution.
 - **Tibetan borders.** The cards wear a vector border after the original
   site's corner pieces: interlaced square links where a double rule turns,
   with cloud-collar scallops (`Ornament.jsx`). Hover one and it glows white,
@@ -103,10 +128,10 @@ src/components/three/    the WebGL scene
 | `public/models/prayer_wheel.glb` | meshopt + WebP version of `assets/source/models/prayer_wheel.glb` |
 | `public/textures/prayer-flags.webp` | the five lung-ta, fresh and weathered, woodblock-printed (wind horse, mantras, the four dignities); baked by `assets/source/flags/bake-flags.js` |
 | `public/images/posters/*.webp` | the summit at dawn, day, sunset and night, rendered from the live scene (loading poster and fallback, picked by the hour) |
-| `public/images/poster-hall.webp` | the monastery, for the fallback without WebGL |
+| `public/images/poster-hall.webp` | the prayer-wheel hall: the loading poster at `/experience`, and the fallback without WebGL |
 | `public/images/projects/*` | project screenshots |
 | `src/app/fonts/amita-display.woff2` | the big type: Amita (OFL) with Kurale's capital A, cut down to Latin; see `src/app/fonts/OFL.txt` |
-| `public/fonts/jomolhari-library.woff2` | Jomolhari (OFL), cut down to the Tibetan numerals, marks and words the library uses |
+| `public/fonts/jomolhari-library.woff2` | Jomolhari (OFL), cut down to the Tibetan numerals, marks and words the site uses |
 
 `assets/source/` keeps the original, uncompressed models and the script that
 prints the flags. None of it is deployed.

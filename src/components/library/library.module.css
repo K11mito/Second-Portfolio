@@ -45,7 +45,7 @@
   gap: 12px 16px;
   pointer-events: none;
 }
-.intro a { pointer-events: auto; }
+.intro :is(a, button) { pointer-events: auto; }
 .back {
   justify-self: start;
   display: inline-flex;

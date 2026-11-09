@@ -80,7 +80,11 @@ export default function Journey({ start = null, projects, index }) {
   useEffect(() => {
     if (!start) return
     const sec = document.getElementById('destinations')
-    if (sec) window.scrollTo(0, sec.getBoundingClientRect().top + window.scrollY)
+    if (sec) {
+      const y = sec.getBoundingClientRect().top + window.scrollY
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true })
+      else window.scrollTo(0, y)
+    }
     go(start, { quick: true })
   }, [start])
 

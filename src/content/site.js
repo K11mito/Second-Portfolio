@@ -50,7 +50,7 @@ export const projects = [
     when: '2026-11',
     kind: 'Website',
     description:
-      'The site you’re on: a descent from a Himalayan summit into a candle-lit monastery, with cloth prayer flags that really blow in the wind, a prayer wheel you turn by hand, and a sky that follows the time in Bangkok.',
+      'The site you’re on: a Himalayan summit above a sea of clouds, with two monasteries built in code to fly to. One is a library where every project is a Tibetan book; the other is a temple with a prayer wheel you turn by hand. Cloth prayer flags really blow in the wind, and the sky follows the time in Bangkok.',
     tags: ['Next.js', 'three.js', 'GLSL'],
     links: [{ label: 'Source', href: 'https://github.com/K11mito/Second-Portfolio' }],
   },
