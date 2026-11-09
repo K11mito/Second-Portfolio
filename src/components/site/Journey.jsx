@@ -113,10 +113,18 @@ export default function Journey({ start = null, projects, index }) {
   useEffect(() => {
     if (j.state === 'going') cameFrom.current = j.to
     if (j.state === 'inside') {
-      const raf = requestAnimationFrame(() => {
-        const sel = j.to === 'library' ? '.journey-library header button' : '#experience .journey-back'
-        document.querySelector(sel)?.focus({ preventScroll: true })
-      })
+      // the way back may mount a frame late (the library loads on demand) or sit
+      // in a stage that is still hidden: keep trying for a couple of seconds
+      const sel = j.to === 'library' ? '.journey-library header button' : '#experience .journey-back'
+      const until = performance.now() + 2500
+      let raf
+      const tryFocus = () => {
+        const el = document.querySelector(sel)
+        el?.focus({ preventScroll: true })
+        if (el && document.activeElement === el) return
+        if (performance.now() < until) raf = requestAnimationFrame(tryFocus)
+      }
+      raf = requestAnimationFrame(tryFocus)
       return () => cancelAnimationFrame(raf)
     }
     if (j.state === 'idle' && cameFrom.current) {
