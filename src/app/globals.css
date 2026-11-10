@@ -1006,7 +1006,8 @@ html[data-journey='away'] footer {
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
-html:not([data-webgl='yes']) .summit-lever {
+html:not([data-webgl='yes']) .summit-lever,
+.summit-lever:not([data-placed]) {
   display: none;
 }
 .summit-lever[data-grabbing='true'] {

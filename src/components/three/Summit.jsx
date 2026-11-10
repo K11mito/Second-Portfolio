@@ -202,6 +202,7 @@ export default function Summit() {
     const x = (v.x * 0.5 + 0.5) * size.width
     const y = (-v.y * 0.5 + 0.5) * size.height
     el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
+    if (!el.dataset.placed) el.dataset.placed = 'true'
   })
 
   return (
