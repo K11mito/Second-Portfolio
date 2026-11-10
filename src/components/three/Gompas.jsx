@@ -71,10 +71,11 @@ function makeHalo(size) {
 const IDS = ['library', 'temple', 'summit']
 
 /**
- * The two destinations on the mountain: the library's monastery and the
- * prayer-wheel temple, with their lamps lit through the night. Every frame it
- * also pins each destination's marker (plain HTML, see site/Destinations) over
- * its roof, and fades the markers with the "Where to now?" view.
+ * The two monasteries on the mountain: the library and the prayer-wheel
+ * temple, with their lamps lit through the night. Every frame it also pins
+ * each destination's marker (plain HTML, see site/Destinations) over its roof
+ * (or, for the summit, its top), and fades the markers with the "Where to
+ * now?" view.
  */
 export default function Gompas() {
   const buffer = useLoader(THREE.FileLoader, '/terrain/height.bin', (l) => l.setResponseType('arraybuffer'))
@@ -134,6 +135,9 @@ export default function Gompas() {
         // the label goes on whichever side of the sign has the room
         const side = x > size.width * 0.6 ? 'left' : 'right'
         if (el.dataset.side !== side) el.dataset.side = side
+        // and near the top of the frame, the sign hangs below its place (clear of the nav)
+        const hang = y < Math.max(140, size.height * 0.2) ? 'below' : 'above'
+        if (el.dataset.hang !== hang) el.dataset.hang = hang
         prev.x = x
         prev.y = y
       }

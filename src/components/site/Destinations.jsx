@@ -30,16 +30,31 @@ function WheelGlyph() {
   )
 }
 
+// The peak with a flag flying from its top: the summit
+function PeakGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.6 20 9.7 8.3l2.9 4.5 2.2-3 6.6 10.2z" strokeWidth="1.5" />
+      <path d="M7.2 12.4l2.5 1.7 1.5-1.2" strokeWidth="1.05" opacity=".7" />
+      <path d="M9.7 8.3V2.8" strokeWidth="1.3" />
+      <path d="M9.7 3.1l4.4 1.4-4.4 1.5z" fill="currentColor" strokeWidth="1" />
+    </svg>
+  )
+}
+
 const MARKERS = [
   { id: 'library', kind: 'Projects', title: 'The library', note: `${projects.length} texts`, Glyph: PechaGlyph },
   { id: 'temple', kind: 'Experience', title: 'The prayer wheel', note: 'Turn it', Glyph: WheelGlyph },
+  { id: 'summit', kind: 'Guestbook', title: 'The summit', note: 'Pull the lever', Glyph: PeakGlyph },
 ]
 
 /**
- * Where to now? The mountain with its two destinations, each marked by a small
- * hovering sign the scene pins over its roof (three/Gompas). Choosing one flies
- * the camera to its door. They are real links underneath, so they still go to
- * /projects and /experience without the scene, and open in a new tab as usual.
+ * Where to now? The mountain with its three destinations, each marked by a
+ * small hovering sign the scene pins over it (three/Gompas): over the roofs of
+ * the two monasteries, and hanging just under the very top of the mountain.
+ * Choosing one flies the camera there. They are real links underneath, so they
+ * still go to /projects, /experience and /summit without the scene, and open
+ * in a new tab as usual.
  */
 export default function Destinations() {
   const section = useRef(null)
@@ -78,8 +93,8 @@ export default function Destinations() {
               Where to <em>now?</em>
             </h2>
             <p className="prose-lede mt-5 max-w-[27rem] text-snow/80 md:mt-6">
-              Two places on the mountain. The library keeps everything I&rsquo;ve built; at the temple, a prayer wheel turns
-              through where I&rsquo;ve been.
+              Three places on the mountain. The library keeps everything I&rsquo;ve built; at the temple, a prayer wheel turns
+              through where I&rsquo;ve been. And at the very top, a register to sign.
             </p>
           </div>
         </div>

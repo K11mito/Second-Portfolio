@@ -10,6 +10,7 @@ import { useSyncExternalStore } from 'react'
 export const register = {
   status: 'idle', // idle → loading → ready (open or closed)
   open: false, // a store is connected
+  sketch: false, // the store only keeps it in memory (development, previews)
   count: null,
   number: null, // this visitor's place, once counted
   notes: [],
@@ -40,31 +41,43 @@ export function loadRegister(fresh = false) {
   if (register.status === 'idle') emit({ status: 'loading' })
   loading = fetch('/api/summit', { cache: 'no-store' })
     .then((r) => r.json())
-    .then((s) => emit({ status: 'ready', open: !!s.open, count: s.count, number: s.number, notes: s.notes || [] }))
+    .then((s) => emit({ status: 'ready', open: !!s.open, sketch: !!s.sketch, count: s.count, number: s.number, notes: s.notes || [] }))
     .catch(() => emit({ status: 'ready', open: false }))
   return loading
 }
 
-/** Pull the lever: the count goes up by one, once per visitor. */
+// a request to the register's API: its answer, or { error } (also when the network fails)
+async function send(path, body) {
+  try {
+    const r = await fetch(path, {
+      method: 'POST',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    })
+    const out = await r.json().catch(() => ({}))
+    return r.ok ? out : { error: out.error || 'failed' }
+  } catch {
+    return { error: 'failed' }
+  }
+}
+
+/**
+ * Pull the lever: the count goes up by one, once per visitor (pulling again
+ * counts nothing). Returns { count, number, already }, or { error }.
+ */
 export async function pullLever() {
-  if (!register.open || register.number) return { already: !!register.number }
-  const r = await fetch('/api/summit/pull', { method: 'POST' })
-  const out = await r.json().catch(() => ({}))
-  if (!r.ok) return { error: out.error || 'failed' }
-  emit({ count: out.count, number: out.number })
+  if (!register.open) return { error: register.status === 'ready' ? 'closed' : 'failed' }
+  if (register.number) return { count: register.count, number: register.number, already: true }
+  const out = await send('/api/summit/pull')
+  if (!out.error) emit({ count: out.count, number: out.number })
   return out
 }
 
-/** Pin a note to the board. */
+/** Pin a note to the board. Returns { note }, or { error }. */
 export async function pinNote({ text, name, from, website }) {
-  const r = await fetch('/api/summit/notes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, name, from, website }),
-  })
-  const out = await r.json().catch(() => ({}))
-  if (!r.ok) return { error: out.error || 'failed' }
-  emit({ notes: [out.note, ...register.notes.filter((n) => n.id !== out.note.id)] })
+  if (!register.open) return { error: 'closed' }
+  const out = await send('/api/summit/notes', { text, name, from, website })
+  if (out.note) emit({ notes: [out.note, ...register.notes.filter((n) => n.id !== out.note.id)] })
   return out
 }
 

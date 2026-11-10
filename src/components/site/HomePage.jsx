@@ -10,6 +10,7 @@ import Destinations from './Destinations'
 import Contact from './Contact'
 import Footer from './Footer'
 import Experience from './Experience'
+import SummitRegister from './SummitRegister'
 import Journey from './Journey'
 import { person, projects, socials } from '@/content/site'
 
@@ -25,10 +26,11 @@ const personSchema = {
 }
 
 /**
- * The mountain: the summit, who I am, then "Where to now?", with its two
- * destinations (the library of projects and the prayer-wheel temple of
- * experience) and the way to get in touch. `start` opens a destination on
- * arrival: /experience is this same page, already at the temple.
+ * The mountain: the summit, who I am, then "Where to now?", with its three
+ * destinations (the library of projects, the prayer-wheel temple of
+ * experience, and the register at the very top) and the way to get in touch.
+ * `start` opens a destination on arrival: /experience is this same page,
+ * already at the temple, and /summit already at the top.
  */
 export default function HomePage({ start = null }) {
   return (
@@ -53,6 +55,8 @@ export default function HomePage({ start = null }) {
       </main>
       {/* the prayer-wheel temple opens over the page (without JavaScript it is a plain list here) */}
       <Experience />
+      {/* and the register at the summit */}
+      <SummitRegister />
       <Footer />
       <Journey start={start} projects={projects} index={<ProjectsIndex projects={projects} />} />
       <div className="grain" aria-hidden="true" />

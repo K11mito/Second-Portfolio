@@ -1,8 +1,9 @@
 // The summit register: how many have pulled the counter's lever, and the notes
 // pinned to the board. Kept in Redis (Upstash, through its REST API: the free
-// store Vercel connects in a couple of clicks). In development without one, it
-// lives in memory so the summit can be tried locally; in production without
-// one, the summit says the register is not open yet.
+// store Vercel connects in a couple of clicks). In development and in preview
+// deployments without one, it lives in memory so the summit can be tried (a
+// preview's memory is per server instance, and is forgotten now and then); on
+// the live site without one, the summit says the register is not open yet.
 //
 // Server only: it reads secrets from the environment.
 
@@ -95,7 +96,7 @@ function parse(raw) {
   }
 }
 
-// ---------------------------------------------------------------- in memory (development only)
+// ---------------------------------------------------------------- in memory (development and previews)
 const mem = globalThis.__summitMemory || (globalThis.__summitMemory = { count: 0, pulled: new Map(), notes: [], limits: new Map() })
 const bump = (key) => {
   const n = (mem.limits.get(key) || 0) + 1
@@ -130,9 +131,12 @@ const memory = {
   },
 }
 
-/** The register's store, or null when none is connected (production without Redis). */
+/** The register's store, or null when none is connected (the live site without Redis). */
 export function summitStore() {
   if (URL && TOKEN) return redis
-  if (process.env.NODE_ENV !== 'production') return memory
+  if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === 'preview') return memory
   return null
 }
+
+/** Whether the register is only kept in memory (a sketch: it forgets). */
+export const summitIsSketch = () => !(URL && TOKEN)

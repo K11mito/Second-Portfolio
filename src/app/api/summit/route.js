@@ -1,4 +1,4 @@
-import { summitStore } from '@/lib/summitStore'
+import { summitIsSketch, summitStore } from '@/lib/summitStore'
 import { json, remember, visitor } from '@/lib/summitRequest'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export async function GET() {
   if (!store) return remember(json({ open: false, count: null, number: null, notes: [] }), who)
   try {
     const s = await store.state(who.id)
-    return remember(json({ open: true, ...s }), who)
+    return remember(json({ open: true, sketch: summitIsSketch(), ...s }), who)
   } catch (err) {
     console.error(err)
     return remember(json({ open: false, count: null, number: null, notes: [] }), who)

@@ -6,7 +6,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { buildFlagLine } from './gompa'
+import { buildFlagLine, glowTexture } from './gompa'
 
 const DIGITS = 6
 
@@ -149,8 +149,10 @@ function digitStrip(fonts) {
 export function buildCounter(fonts) {
   const group = new THREE.Group()
   group.name = 'register'
-  const steel = new THREE.MeshStandardMaterial({ color: '#d7dbde', map: brushed(), metalness: 0.55, roughness: 0.38 })
-  const darkSteel = new THREE.MeshStandardMaterial({ color: '#7d858b', metalness: 0.6, roughness: 0.42 })
+  // (each takes a little warm emissive at night: the butter lamp at its foot, see light())
+  const brush = brushed()
+  const steel = new THREE.MeshStandardMaterial({ color: '#d7dbde', map: brush, metalness: 0.55, roughness: 0.38, emissive: '#ffb27a', emissiveMap: brush, emissiveIntensity: 0 })
+  const darkSteel = new THREE.MeshStandardMaterial({ color: '#7d858b', metalness: 0.6, roughness: 0.42, emissive: '#c99a78', emissiveIntensity: 0 })
 
   // the post, set in a collar in the snow, with a strap and a bolt or two
   const postH = 1.18
@@ -169,7 +171,9 @@ export function buildCounter(fonts) {
   group.add(box)
 
   // the plate on its face
-  const plate = new THREE.Mesh(new THREE.PlaneGeometry(bw - 0.03, (bw - 0.03) * (560 / 1024)), new THREE.MeshStandardMaterial({ map: plateTexture(fonts), metalness: 0.5, roughness: 0.4 }))
+  const plateTex = plateTexture(fonts)
+  const plateMat = new THREE.MeshStandardMaterial({ map: plateTex, metalness: 0.5, roughness: 0.4, emissive: '#ffd2a0', emissiveMap: plateTex, emissiveIntensity: 0 })
+  const plate = new THREE.Mesh(new THREE.PlaneGeometry(bw - 0.03, (bw - 0.03) * (560 / 1024)), plateMat)
   plate.position.set(0, by - 0.005, bd / 2 + 0.002)
   group.add(plate)
   const pw = bw - 0.03
@@ -181,6 +185,7 @@ export function buildCounter(fonts) {
   const strip = digitStrip(fonts)
   strip.wrapT = THREE.RepeatWrapping
   const wheels = []
+  const wheelMats = []
   const [wx0] = onPlate(160, 0)
   const [wx1] = onPlate(864, 0)
   const [, wy] = onPlate(0, 154)
@@ -190,10 +195,12 @@ export function buildCounter(fonts) {
     const tex = strip.clone()
     tex.needsUpdate = true
     tex.repeat.set(1, 1 / 11)
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(cw * 0.8, wh), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0.1 }))
+    const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0.1, emissive: '#fff1dc', emissiveMap: tex, emissiveIntensity: 0 })
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(cw * 0.8, wh), mat)
     m.position.set(wx0 + cw * (i + 0.5), wy, bd / 2 + 0.004)
     group.add(m)
     wheels.push(tex)
+    wheelMats.push(mat)
   }
   // glass over the window
   const glass = new THREE.Mesh(
@@ -271,6 +278,55 @@ export function buildCounter(fonts) {
     setLever(p) {
       lever.rotation.x = p * 1.75
     },
+    /** The lamp's light on it: 0 by day, 1 at full night. */
+    light(k) {
+      plateMat.emissiveIntensity = k * 0.42
+      for (const m of wheelMats) m.emissiveIntensity = k * 0.5
+      steel.emissiveIntensity = k * 0.2
+      darkSteel.emissiveIntensity = k * 0.045
+    },
+  }
+}
+
+/**
+ * A butter lamp in a glass chimney, left on a flat stone at the register's
+ * foot: a small flame by day, and by night the light the count is read by.
+ */
+export function buildButterLamp() {
+  const g = new THREE.Group()
+  g.name = 'butter-lamp'
+  const brass = new THREE.MeshStandardMaterial({ color: '#b98a3e', metalness: 0.75, roughness: 0.32, emissive: '#ff9a40', emissiveIntensity: 0 })
+  const rock = new THREE.MeshStandardMaterial({ color: '#7a6f64', roughness: 0.95, flatShading: true, emissive: '#ffae6a', emissiveIntensity: 0 })
+  const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0).scale(1.35, 0.32, 1.1), rock)
+  stone.position.y = 0.02
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.046, 0.02, 16).translate(0, 0.07, 0), brass)
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.05, 10).translate(0, 0.105, 0), brass)
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.03, 0.045, 18).translate(0, 0.15, 0), brass)
+  const glass = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.064, 0.072, 0.17, 20, 1, true).translate(0, 0.205, 0),
+    new THREE.MeshStandardMaterial({ color: '#fff4e2', transparent: true, opacity: 0.16, roughness: 0.08, metalness: 0.1, side: THREE.DoubleSide, depthWrite: false })
+  )
+  // the flame stands on the wick: it flickers from its foot
+  const flame = new THREE.Mesh(new THREE.SphereGeometry(0.011, 10, 8).scale(1, 2.4, 1).translate(0, 0.024, 0), new THREE.MeshBasicMaterial({ color: '#ffd38a' }))
+  flame.position.y = 0.17
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: '#ffb36a', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }))
+  glow.position.y = 0.2
+  glow.scale.setScalar(0.75)
+  glow.renderOrder = 3
+  stone.castShadow = stone.receiveShadow = true
+  g.add(stone, foot, stem, cup, glass, flame, glow)
+  return {
+    group: g,
+    /** Per frame: the flame flickers; by night its glow blooms and the brass takes it. */
+    update(time, night) {
+      const flick = 1 + Math.sin(time * 7.3) * 0.06 + Math.sin(time * 13.1 + 1.7) * 0.04
+      flame.scale.set(1, flick, 1)
+      glow.visible = night > 0.01
+      glow.material.opacity = night * 0.85 * flick
+      brass.emissiveIntensity = night * 0.45 * flick
+      rock.emissiveIntensity = night * 0.16 * flick
+      return flick
+    },
   }
 }
 
@@ -316,10 +372,37 @@ export function summitFlags(a, b, seed = 1) {
 }
 
 /**
- * A finer cap of snow over the summit, following the mountain within `size`
- * metres of its top, with drifts in it, and sinking under the rock at its edge.
+ * The snow's surface on the summit, from the rock under it: wind-smoothed (the
+ * rock's creases soften under the snow, but never poke through it), with drifts.
  */
-export function buildSnowCap(heightAt, cx, cz, size = 40, seg = 80) {
+export function snowSurface(heightAt) {
+  return (x, z) => {
+    const h = heightAt(x, z)
+    const soft = (4 * h + heightAt(x + 1.6, z) + heightAt(x - 1.6, z) + heightAt(x, z + 1.6) + heightAt(x, z - 1.6)) / 8
+    const drift = Math.sin(x * 0.9 + Math.cos(z * 0.7) * 1.3) * 0.06 + Math.sin(z * 1.7 - x * 0.4) * 0.04
+    return Math.max(soft + 0.22, h + 0.08) + drift
+  }
+}
+
+/** A square of something (a shadow, a pool of lamplight) laid on the snow, following it. */
+export function laidOnSnow(surface, cx, cz, size, material, lift = 0.015, seg = 10) {
+  const g = new THREE.PlaneGeometry(size, size, seg, seg).rotateX(-Math.PI / 2)
+  const p = g.attributes.position
+  for (let i = 0; i < p.count; i++) {
+    const x = cx + p.getX(i)
+    const z = cz + p.getZ(i)
+    p.setXYZ(i, x, surface(x, z) + lift, z)
+  }
+  const m = new THREE.Mesh(g, material)
+  m.renderOrder = 1
+  return m
+}
+
+/**
+ * A finer cap of snow over the summit, following the mountain within `size`
+ * metres of its top, and sinking under the rock at its edge.
+ */
+export function buildSnowCap(surface, cx, cz, size = 40, seg = 80) {
   const g = new THREE.PlaneGeometry(size, size, seg, seg).rotateX(-Math.PI / 2)
   const p = g.attributes.position
   for (let i = 0; i < p.count; i++) {
@@ -328,14 +411,8 @@ export function buildSnowCap(heightAt, cx, cz, size = 40, seg = 80) {
     const x = cx + lx
     const z = cz + lz
     const edge = Math.max(Math.abs(lx), Math.abs(lz)) / (size / 2)
-    const drift = Math.sin(x * 0.9 + Math.cos(z * 0.7) * 1.3) * 0.06 + Math.sin(z * 1.7 - x * 0.4) * 0.04
     const sink = edge > 0.7 ? ((edge - 0.7) / 0.3) * 1.6 : 0
-    // wind-smoothed: the rock's creases soften under the snow (but never poke through it)
-    const h = heightAt(x, z)
-    const soft = (4 * h + heightAt(x + 1.6, z) + heightAt(x - 1.6, z) + heightAt(x, z + 1.6) + heightAt(x, z - 1.6)) / 8
-    p.setY(i, Math.max(soft + 0.22, h + 0.08) + drift - sink)
-    p.setX(i, x)
-    p.setZ(i, z)
+    p.setXYZ(i, x, surface(x, z) - sink, z)
   }
   g.computeVertexNormals()
   // (no shadows: the mountain's shadow caster is coarser than this cap and would shade it from inside)

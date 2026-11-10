@@ -5,14 +5,19 @@ import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env } from './env'
 import { getHeights, heightAt } from './terrainData'
-import { buildCairn, buildCounter, buildSnowCap, summitFlags } from './summitKit'
-import { flutterFlags } from './gompa'
+import { buildButterLamp, buildCairn, buildCounter, buildSnowCap, laidOnSnow, snowSurface, summitFlags } from './summitKit'
+import { flutterFlags, glowTexture } from './gompa'
 import { dest } from '@/lib/destinations'
 import { register, loadRegister } from '@/lib/summitClient'
 import { journey } from '@/lib/journey'
 
 // The top of the mountain (its highest point), and how the register stands on it
 export const SUMMIT = { x: -37.5, z: 18, ry: 0.32 }
+
+const smooth = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
 
 function fonts() {
   const css = getComputedStyle(document.documentElement)
@@ -25,7 +30,7 @@ function fonts() {
 
 // a soft dark patch under something standing in the snow
 let blobTex = null
-function blob(size, strength = 0.45) {
+function shade(strength = 0.45) {
   if (!blobTex) {
     const c = document.createElement('canvas')
     c.width = c.height = 64
@@ -37,19 +42,15 @@ function blob(size, strength = 0.45) {
     x.fillRect(0, 0, 64, 64)
     blobTex = new THREE.CanvasTexture(c)
   }
-  const m = new THREE.Mesh(
-    new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ map: blobTex, transparent: true, opacity: strength, depthWrite: false })
-  )
-  m.renderOrder = 1
-  return m
+  return new THREE.MeshBasicMaterial({ map: blobTex, transparent: true, opacity: strength, depthWrite: false })
 }
 
 /**
  * The summit: the register (a counter with a lever, counting everyone who
- * reaches the top), a cairn flying prayer flags, and a finer cap of snow. It
- * rolls the counter to the register's count, swings the lever as it is pulled,
- * and gives the page the summit's sign and the camera's place to stand.
+ * reaches the top), a cairn flying prayer flags, a butter lamp to read it by
+ * at night, and a finer cap of snow. It rolls the counter to the register's
+ * count, swings the lever as it is pulled, and gives the page the summit's
+ * sign and the camera's place to stand.
  */
 export default function Summit() {
   const buffer = useLoader(THREE.FileLoader, '/terrain/height.bin', (l) => l.setResponseType('arraybuffer'))
@@ -61,7 +62,7 @@ export default function Summit() {
   useEffect(() => {
     let alive = true
     const heights = getHeights(buffer)
-    const ground = (x, z) => heightAt(heights, x, z)
+    const surface = snowSurface((x, z) => heightAt(heights, x, z))
     const f = fonts()
     // the plate's lettering is drawn into a texture: wait for the fonts first
     Promise.race([
@@ -73,28 +74,35 @@ export default function Summit() {
       .then(() => {
         if (!alive) return
         const { x: sx, z: sz, ry } = SUMMIT
-        const gy = ground(sx, sz)
         const root = new THREE.Group()
         root.name = 'summit'
         const c = Math.cos(ry)
         const s = Math.sin(ry)
+        // the register's own frame: x to its right, z out of its face
+        const at = (lx, lz) => [sx + lx * c + lz * s, sz - lx * s + lz * c]
         const place = (obj, lx, lz, sink = 0.04) => {
-          const wx = sx + lx * c + lz * s
-          const wz = sz - lx * s + lz * c
-          obj.position.set(wx, ground(wx, wz) + 0.12 - sink, wz)
+          const [wx, wz] = at(lx, lz)
+          obj.position.set(wx, surface(wx, wz) - sink, wz)
           return obj
         }
-        const cap = buildSnowCap(ground, sx, sz, 64, 120)
+        const laid = (lx, lz, size, material, lift) => laidOnSnow(surface, ...at(lx, lz), size, material, lift)
+
+        const cap = buildSnowCap(surface, sx, sz, 64, 120)
         root.add(cap)
         const counter = buildCounter(f)
         counter.group.rotation.y = ry
         place(counter.group, 0, 0, 0.1)
-        root.add(counter.group, place(blob(1.2, 0.35), 0, 0, -0.01))
         const cairn = buildCairn()
         cairn.group.rotation.y = ry + 0.6
         place(cairn.group, -1.9, -1.4, 0.08)
-        root.add(cairn.group, place(blob(2.2, 0.4), -1.9, -1.4, -0.01))
+        const lamp = buildButterLamp()
+        lamp.group.rotation.y = ry
+        place(lamp.group, -0.42, 0.34, 0.03)
+        const pool = laid(-0.42, 0.34, 3.4, new THREE.MeshBasicMaterial({ map: glowTexture(), color: '#ffb36a', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }), 0.02)
+        pool.visible = false
+        root.add(counter.group, cairn.group, lamp.group, pool, laid(0, 0, 1.2, shade(0.35)), laid(-1.9, -1.4, 2.2, shade(0.4)))
         root.updateMatrixWorld(true)
+
         // prayer flags from the cairn's pole: down to the snow, and across to the register
         const top = cairn.group.localToWorld(cairn.top.clone())
         const snowAt = (lx, lz, up = 0.35) => place(new THREE.Object3D(), lx, lz).position.clone().add(new THREE.Vector3(0, up, 0))
@@ -108,20 +116,25 @@ export default function Summit() {
         root.add(...flags)
         flags.forEach((m) => flutterFlags(m, 0))
 
-        // where the camera stands to sign the register, and what it looks at
-        const view = counter.group.localToWorld(new THREE.Vector3(0.5, 1.68, 3.7))
-        const look = counter.group.localToWorld(new THREE.Vector3(-0.15, 1.22, 0))
+        // where the camera stands to sign the register, and what it looks at:
+        // from a landscape screen, beside the panels the page puts on either side;
+        // from a portrait one, higher and further back, above the board's sheet
+        const local = (x, y, z) => counter.group.localToWorld(new THREE.Vector3(x, y, z))
+        const [gx, gz] = at(0, 0)
         dest.anchors.summit = {
-          marker: new THREE.Vector3(sx, gy + 1, sz),
-          center: new THREE.Vector3(sx, gy, sz),
+          marker: new THREE.Vector3(gx, surface(gx, gz) + 1, gz),
+          center: new THREE.Vector3(gx, surface(gx, gz), gz),
           facing: new THREE.Vector3(s, 0, c),
-          view,
-          look,
+          view: local(0.5, 1.68, 3.7),
+          look: local(-0.15, 1.22, 0),
           fov: 40,
+          pview: local(0.35, 1.9, 4.6),
+          plook: local(-0.05, 1.19, 0),
+          pfov: 46,
           span: 12,
         }
         if (new URLSearchParams(window.location.search).has('debug')) window.__summit = { root, counter }
-        setKit({ root, counter, flags, cap })
+        setKit({ root, counter, flags, cap, lamp, pool })
       })
     return () => {
       alive = false
@@ -141,7 +154,13 @@ export default function Summit() {
     // flags flutter only while you are up there (from below they are too small to see)
     const near = (journey.to === 'summit' && journey.state !== 'idle') || window.__cam
     if (near) kit.flags.forEach((m) => flutterFlags(m, env.time))
+    // by day the fresh snow glows with the light it scatters; by night the lamp is lit
     kit.cap.material.emissiveIntensity = 0.3 * env.daylight
+    const night = 1 - smooth(0.12, 0.72, env.daylight)
+    const flick = kit.lamp.update(env.time, night)
+    kit.counter.light(night * flick)
+    kit.pool.visible = night > 0.01
+    kit.pool.material.opacity = night * 0.5 * flick
     kit.counter.setLever(register.lever)
     // roll the wheels up to the count
     const n = register.count ?? 0
