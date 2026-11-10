@@ -171,6 +171,7 @@ The limits (note length, notes a day, pulls a day per network) are in
 | `public/images/poster-hall.webp` | the prayer-wheel hall: the loading poster at `/experience`, and the fallback without WebGL |
 | `public/images/projects/*` | project screenshots |
 | `src/app/fonts/amita-display.woff2` | the big type: Amita (OFL) with Kurale's capital A, cut down to Latin; see `src/app/fonts/OFL.txt` |
+| `src/app/fonts/caveat-latin.woff2` | the handwriting on the summit's board: Caveat (OFL), Latin, weights 400–700 |
 | `public/fonts/jomolhari-library.woff2` | Jomolhari (OFL), cut down to the Tibetan numerals, marks and words the site uses |
 
 `assets/source/` keeps the original, uncompressed models and the script that
