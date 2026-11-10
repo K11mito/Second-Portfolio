@@ -93,8 +93,7 @@ export default function Destinations() {
               Where to <em>now?</em>
             </h2>
             <p className="prose-lede mt-5 max-w-[27rem] text-snow/80 md:mt-6">
-              Three places on the mountain. The library keeps everything I&rsquo;ve built; at the temple, a prayer wheel turns
-              through where I&rsquo;ve been. And at the very top, a register to sign.
+              Go explore the places. You might find something cool.
             </p>
           </div>
         </div>

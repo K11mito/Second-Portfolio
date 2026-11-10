@@ -17,8 +17,10 @@ export default function About() {
               <span className="text-snow">01</span> — About
             </p>
             <h2 id="about-title" className="title mt-6 text-[clamp(2.2rem,5.6vw,5.25rem)] text-snow [text-shadow:0_2px_40px_rgb(0_10_30/0.35)]">
-              <span className="block">{emphasise(about.statement)}</span>{' '}
-              <span className="mt-[0.35em] block text-[0.52em] leading-[1.1] text-snow/90">{emphasise(about.statementMore)}</span>
+              <span className="block">{emphasise(about.statement)}</span>
+              {about.statementMore && (
+                <span className="mt-[0.35em] block text-[0.52em] leading-[1.1] text-snow/90">{emphasise(about.statementMore)}</span>
+              )}
             </h2>
           </header>
 

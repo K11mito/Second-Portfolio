@@ -13,7 +13,7 @@ const serif = localFont({ src: './fonts/amita-display.woff2', weight: '400', sty
 const mono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono', display: 'swap' })
 
 const description =
-  'Aryendra Shrestha — creative entrepreneur and technologist. Finance at Mahidol University, founder of small ventures, builder of software.'
+  'Aryendra Shrestha: techno-optimist and entrepreneur who likes making cool things. Finance at Mahidol University, founder of ventures, builder of software.'
 
 export const metadata = {
   // where the site lives: social cards and links resolve against it

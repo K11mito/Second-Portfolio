@@ -5,8 +5,8 @@ export const person = {
   name: 'Aryendra Shrestha',
   firstName: 'Aryendra',
   lastName: 'Shrestha',
-  role: 'Creative entrepreneur & technologist',
-  lede: 'A creative entrepreneur and technologist, driven by curiosity across disciplines and a constant drive to learn.',
+  role: 'Techno-optimist & entrepreneur',
+  lede: 'Techno-optimist, entrepreneur, forever curious. I build things, start things, and keep learning.',
   email: 'aryendrashrestha@gmail.com',
   photo: {
     src: '/images/profile/ary.JPG',
@@ -23,11 +23,10 @@ export const socials = [
 export const about = {
   // The big line, then the rest of the sentence in smaller type. In each list
   // the second, fourth… entries are the emphasised words (in saffron).
-  statement: ['I’m a ', 'techno-optimist'],
-  statementMore: ['and ', 'entrepreneur', ' who loves to ', 'build', '.'],
+  statement: ['I like making ', 'cool shit', '.'],
   body: [
-    'I’m Aryendra — a creative entrepreneur and technologist, driven by curiosity across disciplines and a constant drive to learn.',
-    'I’ve founded and co-founded small businesses, built AI agents at Jagota and Fusemachines, and I’m always working on something new.',
+    'Hey, I’m Aryendra. I’m a techno-optimist and an entrepreneur. I like making cool shit from time to time, and I’m always curious and always trying to learn new things.',
+    'I’ve founded many businesses and ventures, built AI agents at Jagota and Fusemachines, and I’m always working on something new.',
   ],
   facts: [
     { term: 'Studying', detail: 'Finance, Mahidol University' },

@@ -278,8 +278,7 @@ export default function SummitRegister() {
           You made <em>it.</em>
         </h2>
         <p className="summit-lede mt-3 text-[0.95rem] leading-[1.6] text-snow/75">
-          Everyone who climbs this far pulls the lever once. Add yourself to the count, then leave a note on the board for whoever
-          comes up next.
+          Pull the lever, and leave a note on the board. What&rsquo;s up?
         </p>
         <p className="summit-status mt-4 text-snow" aria-live="polite">
           {status}
@@ -367,7 +366,7 @@ export default function SummitRegister() {
             className="slip-text"
             rows={4}
             maxLength={NOTE.text}
-            placeholder="Say something to whoever comes up next…"
+            placeholder="What’s up?"
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
