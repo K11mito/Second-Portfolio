@@ -162,7 +162,8 @@ export default function Summit() {
     // Up close, the sky's light fills the shadows, as it does for anyone standing
     // there: with the sun low (or gone), the register would be a silhouette
     // against it. (An ambient light: adding it recompiles nothing.)
-    const lowSun = 1 - smooth(0.2, 0.6, env.skySunDir.y)
+    // (at dawn and dusk: by night the lamp is the light to read it by)
+    const lowSun = (1 - smooth(0.2, 0.6, env.skySunDir.y)) * env.daylight
     const close = 1 - smooth(40, 160, far)
     if (fill.current) {
       fill.current.color.copy(env.ambient)
