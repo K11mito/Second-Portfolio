@@ -6,7 +6,7 @@ export const person = {
   firstName: 'Aryendra',
   lastName: 'Shrestha',
   role: 'Techno-optimist & entrepreneur',
-  lede: 'Techno-optimist, entrepreneur, forever curious. I build things, start things, and keep learning.',
+  lede: 'Techno-optimist, entrepreneur, perpetually curious.',
   email: 'aryendrashrestha@gmail.com',
   photo: {
     src: '/images/profile/ary.JPG',
@@ -18,6 +18,7 @@ export const socials = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/aryendra-shrestha-199913303/' },
   { label: 'GitHub', href: 'https://github.com/K11mito' },
   { label: 'Instagram', href: 'https://www.instagram.com/aryendrashrestha/' },
+  { label: 'X', href: 'https://x.com/aryendrashrest5' },
 ]
 
 export const about = {
