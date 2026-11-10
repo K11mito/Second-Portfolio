@@ -123,7 +123,7 @@ function normalTexture(h, size, strength, repeat) {
   return t
 }
 
-function canvas(w, h, paint) {
+export function canvas(w, h, paint) {
   const c = document.createElement('canvas')
   c.width = w
   c.height = h
@@ -417,7 +417,7 @@ export function stoneGeometry(radius, seed, { squash = 0.6, detail = 3, lump = 0
 
 // ---------------------------------------------------------------- wood
 let woodMat = null
-function wood() {
+export function wood() {
   if (!woodMat) {
     const t = canvas(64, 256, (x, w, h) => {
       x.fillStyle = '#5a3d27'
