@@ -175,9 +175,10 @@
 .loading[data-done='true'] { opacity: 0; pointer-events: none; }
 
 /* while a text is out being read, the edges go quiet (and the reading room's
-   own hint takes the top middle) */
-.intro, .caption, .aboutToggle, .about, .panHint { transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.page:not([data-room='closed']) :is(.intro, .caption, .aboutToggle, .about, .panHint) { opacity: 0; }
+   own hint takes the top middle). They go at once, and come back only once the
+   room's own have gone, so the two never stand on top of each other. */
+.intro, .caption, .aboutToggle, .about, .panHint { transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s; }
+.page:not([data-room='closed']) :is(.intro, .caption, .aboutToggle, .about, .panHint) { opacity: 0; transition: opacity 0.2s ease-out; }
 
 /* without JS or WebGL there is no shelf: only the header and the plain list */
 .loading, .caption, .aboutToggle, .panHint { display: none; }
@@ -335,8 +336,11 @@
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .roomClose { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 6; pointer-events: auto; }
 .roomBar { position: absolute; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; white-space: nowrap; pointer-events: auto; }
-.roomUi { opacity: 0; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.room[data-reading='true'] .roomUi { opacity: 1; }
+/* The room's own controls come in once the shelf's have gone (an animation, not
+   a transition: the room was display: none a moment before), and go at once. */
+.roomUi { opacity: 0; transition: opacity 0.2s ease-out; }
+.room[data-reading='true'] .roomUi { opacity: 1; animation: room-ui-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both; }
+@keyframes room-ui-in { from { opacity: 0; } }
 .chip {
   display: inline-flex;
   align-items: center;

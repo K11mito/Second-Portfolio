@@ -1,11 +1,12 @@
 # Aryendra Shrestha — portfolio
 
 A Himalayan summit above a sea of clouds. Scroll down past who I am to
-"Where to now?": the mountain with its two destinations, a monastery at its
+"Where to now?": the mountain with its three destinations, a monastery at its
 foot, half in the cloud, whose library shelves every project as a Tibetan book
-(`/projects`), and a temple on a small peak of its own, where a prayer wheel you
-turn by hand holds my experience (`/experience`). Choose one and the camera
-flies to its door. The sky is the real one over Bangkok right now: sunset when
+(`/projects`), a temple on a peak of its own, where a prayer wheel you turn by
+hand holds my experience (`/experience`), and the very top, where visitors
+pull a register's lever to be counted and pin notes to a board (`/summit`).
+Choose one and the camera flies there. The sky is the real one over Bangkok right now: sunset when
 it's sunset there, stars and the moon in its true phase at night, and the
 monasteries' lamps lit after dark. Built with Next.js 14, React Three Fiber,
 three.js and a little GLSL.
@@ -33,18 +34,23 @@ for titles too long to fit.
 ## How it fits together
 
 ```
-src/app/                 layout (fonts, metadata), pages (/, /projects, /experience), 404, icons, social card
+src/app/                 layout (fonts, metadata), pages (/, /projects, /experience, /summit), 404, icons, social card
+src/app/api/summit/      the register's API: the count and notes, a pull, a note, and taking one down
+src/app/summit/admin/    the private page for taking a note down
 src/content/site.js      everything you'd want to edit
 src/lib/scroll.js        scroll store shared by the DOM and the 3D scene
 src/lib/journey.js       the way to a destination and back: one timeline for camera, veil and page
 src/lib/wheel.js         the hand-turned prayer wheel: drag, flick, detents
 src/lib/sky.js           where the sun and moon are over Bangkok, and the sky's clock
+src/lib/summitStore.js   the register's store: Redis (Upstash) over REST, or memory in development
+src/lib/summitClient.js  the register as the page and the scene see it
 src/components/site/     HTML sections (server-rendered, readable without JS),
                          and Ornament.jsx, the Tibetan card border
   HomePage.jsx           the mountain: hero, about, where to now?, contact
   Destinations.jsx       "Where to now?" and the signs over the monasteries
   Journey.jsx            runs the journeys: history, the library over the page
   Experience.jsx         the prayer-wheel temple's ring of cards
+  SummitRegister.jsx     the summit: the lever, the count, the board of notes
 src/components/library/  the /projects library
   createLibrary.js       the bookcase and the wrapped texts, in plain three.js
   Library.jsx            the page around it: caption, glossary, reading leaf
@@ -54,6 +60,7 @@ src/components/three/    the WebGL scene
   gompa.js               the monasteries, built in code from Tibetan parts
   Gompas.jsx             puts them on the mountain, lights their lamps, pins the signs
   terrainData.js         the shared heightmap, with the temple's peak raised in it
+  Summit.jsx, summitKit.js  the register on the top, its cairn, flags and butter lamp
   skyLight.js            sun altitude -> light, sky, fog and cloud colour
   Terrain.jsx            mountain rebuilt from a heightmap, snow shader, AO
   CloudSea.jsx           three noise layers that part around the peaks
@@ -78,14 +85,22 @@ src/components/three/    the WebGL scene
   moonlit (or moonless) night. The clock in the top right switches to the
   visitor's own hour or to dawn, day, sunset or night, as a short time-lapse.
   `?sky=night` (or `dawn`, `day`, `sunset`, `local`) opens on that sky.
-- **Where to now?** The mountain's two destinations wear small hovering signs,
-  plain links pinned over their roofs by the scene every frame. Choose one and
-  the camera flies to its door along a curve that arrives head-on: into the
-  dark of the library (which opens over the page, the mountain resting behind
-  it), or through a drift of cloud to the temple's prayer-wheel hall. The
-  address bar follows (`/projects`, `/experience`), so the browser's back
-  button, Escape or "← The mountain" fly you back out to the same view, and a
-  reload lands you inside. Without WebGL the signs are ordinary links.
+- **Where to now?** The mountain's three destinations wear small hovering
+  signs, plain links pinned over them by the scene every frame. Choose one and
+  the camera flies there along a curve that arrives head-on: into the dark of
+  the library (which opens over the page, the mountain resting behind it),
+  through a drift of cloud to the temple's prayer-wheel hall, or up to the
+  register on the summit. The address bar follows (`/projects`, `/experience`,
+  `/summit`), so the browser's back button, Escape or "← The mountain" fly you
+  back out to the same view, and a reload lands you there. Without WebGL the
+  signs are ordinary links.
+- **The summit register.** On the very top stands a counter like the ones on
+  real summits, with a lever on its side, beside a cairn flying prayer flags
+  (and, after dark, a butter lamp to read it by). Drag the lever down, or
+  press "Pull the lever": it counts each visitor once (by a cookie), and its
+  number wheels roll up. Beside it is a board of notes: write one on a slip of
+  paper and pin it up. Notes go up as written, as plain text, a few a day per
+  visitor and per network, and can be taken down at `/summit/admin`.
 - **Monasteries built in code.** `gompa.js` assembles them from the real
   vocabulary: battered whitewashed walls on foundations that step down to the
   rock, the maroon pembé frieze with gilded discs, black trapezoid windows,
@@ -118,6 +133,25 @@ src/components/three/    the WebGL scene
   worker (scrolling never waits on it), only while the summit is in view, and
   steps down its own quality if a device can't keep up. Your cursor stirs the
   air.
+
+## The summit's register
+
+The count and the notes are kept in Redis. Without one, development keeps
+them in memory (so the summit can be tried locally), preview deployments do
+the same (forgetting now and then), and the live site says the register opens
+soon. To open it:
+
+1. In Vercel, open the project's **Storage** tab (or the Marketplace), add
+   **Upstash for Redis** (the free plan is plenty) and connect it to this
+   project. That sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`
+   (`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` work too).
+2. Add `SUMMIT_ADMIN_KEY`, a long random string: the key for `/summit/admin`,
+   where a note can be taken down. Optionally add `SUMMIT_SALT`, any random
+   string, used to hash visitors' networks for the daily limits.
+3. Redeploy.
+
+The limits (note length, notes a day, pulls a day per network) are in
+`src/lib/summitRules.js`.
 
 ## Assets
 

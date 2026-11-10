@@ -71,6 +71,20 @@ export function heroView(aspect) {
 function approach(to, out) {
   const a = dest.anchors[to]
   if (!a) return null
+  // the summit says where to stand (and where, on a portrait screen)
+  if (a.view) {
+    out.pos.copy(a.view)
+    out.look.copy(a.look)
+    out.fov = a.fov || 38
+    const k = a.pview ? portraitness(env.aspect) : 0
+    if (k > 0) {
+      out.pos.lerp(a.pview, k)
+      out.look.lerp(a.plook, k)
+      out.fov = THREE.MathUtils.lerp(out.fov, a.pfov || out.fov, k)
+    }
+    out.dir.copy(a.facing)
+    return out
+  }
   const target = to === 'temple' && a.wheel ? a.wheel : a.door || a.center
   const back = to === 'temple' ? 21 : 27
   const up = to === 'temple' ? 4.5 : 9

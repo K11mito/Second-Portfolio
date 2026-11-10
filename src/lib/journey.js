@@ -10,13 +10,13 @@
 import { useSyncExternalStore } from 'react'
 import { scrollState } from './scroll'
 
-export const DESTINATIONS = ['library', 'temple']
+export const DESTINATIONS = ['library', 'temple', 'summit']
 // where each destination lives in the address bar
-export const PATHS = { library: '/projects', temple: '/experience' }
+export const PATHS = { library: '/projects', temple: '/experience', summit: '/summit' }
 export const destinationAt = (pathname) => DESTINATIONS.find((d) => PATHS[d] === pathname) || null
 
 // seconds
-const GOING = { library: 2.6, temple: 3.1 }
+const GOING = { library: 2.6, temple: 3.1, summit: 3.4 }
 const LEAVING = 2.5
 const QUICK = 0.55 // reduced motion, or a jump with the browser's back/forward buttons
 const CLOSE = 0.45 // the destination closing behind the dark, before the camera pulls back
@@ -113,7 +113,9 @@ export function timeline(now = performance.now()) {
     const d = quick ? QUICK : GOING[to]
     const p = clamp01(q / d)
     let veil
-    if (quick) veil = { a: smooth(0, 1, p), mist: 0 }
+    // the summit is out in the open: no door to go dark behind (with reduced motion, a fade through cloud)
+    if (to === 'summit') veil = { a: quick ? smooth(0, 1, p) : 0, mist: 1 }
+    else if (quick) veil = { a: smooth(0, 1, p), mist: 0 }
     // the library: through its door into the dark of the hall
     else if (to === 'library') veil = { a: smooth(0.58, 0.97, p), mist: 0 }
     // the temple: through a drift of cloud, then the dark before the hall
@@ -122,10 +124,23 @@ export function timeline(now = performance.now()) {
   }
 
   if (state === 'inside') {
+    if (to === 'summit') {
+      return { act: 'mountain', fly: { out: false, p: 1 }, veil: { a: quick ? 1 - smooth(0, 0.45, q) : 0, mist: 1 }, overlay: 'summit', reveal: smooth(0, 0.8, q), done: false }
+    }
     if (to === 'library') return { act: 'none', fly: { out: false, p: 1 }, veil: { a: 1, mist: 0 }, overlay: 'library', reveal: 1, done: false }
     // the hall's lamps come up as the dark lifts
     const r = quick ? smooth(0, 0.45, q) : smooth(0.1, 1.2, q)
     return { act: 'monastery', fly: { out: false, p: 1 }, veil: { a: 1 - r, mist: 0 }, overlay: 'temple', reveal: r, done: false }
+  }
+
+  // leaving the summit: its page fades and the camera flies straight back down
+  if (to === 'summit') {
+    const d = quick ? QUICK : LEAVING
+    const close = quick ? 0.2 : 0.3
+    const closing = q < close
+    const back = clamp01((q - close) / (d - close))
+    const a = quick ? (closing ? smooth(0, close, q) : 1 - smooth(0, 0.7, back)) : 0
+    return { act: 'mountain', fly: { out: true, p: quick ? 0 : 1 - back }, veil: { a, mist: 1 }, overlay: closing ? 'summit' : null, reveal: 0, done: back >= 1 }
   }
 
   // leaving: the destination closes behind the dark, then the camera pulls back out

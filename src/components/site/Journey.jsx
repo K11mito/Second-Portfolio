@@ -122,7 +122,7 @@ export default function Journey({ start = null, projects, index }) {
       }
       // the way back may mount a frame late (the library loads on demand) or sit
       // in a stage that is still hidden: keep trying for a couple of seconds
-      const sel = j.to === 'library' ? '.journey-library header button' : '#experience .journey-back'
+      const sel = j.to === 'library' ? '.journey-library header button' : j.to === 'summit' ? '#summit .journey-back' : '#experience .journey-back'
       const until = performance.now() + 2500
       let raf
       const tryFocus = () => {
@@ -138,7 +138,7 @@ export default function Journey({ start = null, projects, index }) {
       const sign = dest.els[cameFrom.current]
       cameFrom.current = null
       const a = document.activeElement
-      if (sign && (!a || a === document.body || !document.body.contains(a) || a.closest('#experience'))) sign.focus({ preventScroll: true })
+      if (sign && (!a || a === document.body || !document.body.contains(a) || a.closest('#experience') || a.closest('#summit'))) sign.focus({ preventScroll: true })
     }
   }, [j.state, j.to])
 
