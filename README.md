@@ -143,12 +143,18 @@ soon. To open it:
 
 1. In Vercel, open the project's **Storage** tab (or the Marketplace), add
    **Upstash for Redis** (the free plan is plenty) and connect it to this
-   project. That sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`
-   (`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` work too).
+   project, for the Production environment. Any Redis works: the register
+   finds `KV_REST_API_URL` and `KV_REST_API_TOKEN`, `UPSTASH_REDIS_REST_URL`
+   and `UPSTASH_REDIS_REST_TOKEN`, either under a prefix of your choosing, or
+   a `REDIS_URL` (as Redis Cloud gives).
 2. Add `SUMMIT_ADMIN_KEY`, a long random string: the key for `/summit/admin`,
    where a note can be taken down. Optionally add `SUMMIT_SALT`, any random
    string, used to hash visitors' networks for the daily limits.
 3. Redeploy.
+
+`/api/summit` says whether the register is open; when it isn't, `why` says
+whether no store was found (`not-configured`) or the one found can't be
+reached (`unreachable`).
 
 The limits (note length, notes a day, pulls a day per network) are in
 `src/lib/summitRules.js`.
