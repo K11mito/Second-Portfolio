@@ -138,7 +138,7 @@ export default function Journey({ start = null, projects, index }) {
       const sign = dest.els[cameFrom.current]
       cameFrom.current = null
       const a = document.activeElement
-      if (sign && (!a || a === document.body || !document.body.contains(a) || a.closest('#experience'))) sign.focus({ preventScroll: true })
+      if (sign && (!a || a === document.body || !document.body.contains(a) || a.closest('#experience') || a.closest('#summit'))) sign.focus({ preventScroll: true })
     }
   }, [j.state, j.to])
 

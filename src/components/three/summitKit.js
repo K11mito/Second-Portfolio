@@ -141,6 +141,10 @@ function digitStrip(fonts) {
   })
 }
 
+// the colours the butter lamp lends the register's parts (see light())
+const WARM = { plate: new THREE.Color('#ffd2a0'), wheel: new THREE.Color('#fff1dc'), steel: new THREE.Color('#ffb27a'), dark: new THREE.Color('#c99a78') }
+const SKY = new THREE.Color()
+
 /**
  * The register: post, box, plate, wheels and lever. Its base is at y = 0, its
  * face toward +z. Returns the group with methods to show a number and to set
@@ -149,10 +153,10 @@ function digitStrip(fonts) {
 export function buildCounter(fonts) {
   const group = new THREE.Group()
   group.name = 'register'
-  // (each takes a little warm emissive at night: the butter lamp at its foot, see light())
+  // (each takes the butter lamp's light at night, and the sky's, as emissive: see light())
   const brush = brushed()
-  const steel = new THREE.MeshStandardMaterial({ color: '#d7dbde', map: brush, metalness: 0.55, roughness: 0.38, emissive: '#ffb27a', emissiveMap: brush, emissiveIntensity: 0 })
-  const darkSteel = new THREE.MeshStandardMaterial({ color: '#7d858b', metalness: 0.6, roughness: 0.42, emissive: '#c99a78', emissiveIntensity: 0 })
+  const steel = new THREE.MeshStandardMaterial({ color: '#d7dbde', map: brush, metalness: 0.55, roughness: 0.38, emissive: '#000000', emissiveMap: brush })
+  const darkSteel = new THREE.MeshStandardMaterial({ color: '#7d858b', metalness: 0.6, roughness: 0.42, emissive: '#000000' })
 
   // the post, set in a collar in the snow, with a strap and a bolt or two
   const postH = 1.18
@@ -172,7 +176,7 @@ export function buildCounter(fonts) {
 
   // the plate on its face
   const plateTex = plateTexture(fonts)
-  const plateMat = new THREE.MeshStandardMaterial({ map: plateTex, metalness: 0.5, roughness: 0.4, emissive: '#ffd2a0', emissiveMap: plateTex, emissiveIntensity: 0 })
+  const plateMat = new THREE.MeshStandardMaterial({ map: plateTex, metalness: 0.5, roughness: 0.4, emissive: '#000000', emissiveMap: plateTex })
   const plate = new THREE.Mesh(new THREE.PlaneGeometry(bw - 0.03, (bw - 0.03) * (560 / 1024)), plateMat)
   plate.position.set(0, by - 0.005, bd / 2 + 0.002)
   group.add(plate)
@@ -195,7 +199,7 @@ export function buildCounter(fonts) {
     const tex = strip.clone()
     tex.needsUpdate = true
     tex.repeat.set(1, 1 / 11)
-    const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0.1, emissive: '#fff1dc', emissiveMap: tex, emissiveIntensity: 0 })
+    const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55, metalness: 0.1, emissive: '#000000', emissiveMap: tex })
     const m = new THREE.Mesh(new THREE.PlaneGeometry(cw * 0.8, wh), mat)
     m.position.set(wx0 + cw * (i + 0.5), wy, bd / 2 + 0.004)
     group.add(m)
@@ -278,12 +282,17 @@ export function buildCounter(fonts) {
     setLever(p) {
       lever.rotation.x = p * 1.75
     },
-    /** The lamp's light on it: 0 by day, 1 at full night. */
-    light(k) {
-      plateMat.emissiveIntensity = k * 0.42
-      for (const m of wheelMats) m.emissiveIntensity = k * 0.5
-      steel.emissiveIntensity = k * 0.2
-      darkSteel.emissiveIntensity = k * 0.045
+    /**
+     * The light on it besides the sun's: the butter lamp's (0 by day, 1 at full
+     * night), and the sky's, which steel (being metal) hardly takes from an
+     * ambient light, so it is added here.
+     */
+    light(lamp, sky) {
+      const glow = (m, warm, k, s) => m.emissive.copy(warm).multiplyScalar(lamp * k).add(SKY.copy(sky).multiplyScalar(s))
+      glow(plateMat, WARM.plate, 0.42, 1)
+      for (const m of wheelMats) glow(m, WARM.wheel, 0.5, 0.6)
+      glow(steel, WARM.steel, 0.2, 1)
+      glow(darkSteel, WARM.dark, 0.045, 0.5)
     },
   }
 }

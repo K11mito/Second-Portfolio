@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env } from './env'
+import { terrainUniforms } from './Terrain'
 import { getHeights, heightAt } from './terrainData'
 import { buildButterLamp, buildCairn, buildCounter, buildSnowCap, laidOnSnow, snowSurface, summitFlags } from './summitKit'
 import { flutterFlags, glowTexture } from './gompa'
@@ -57,7 +58,9 @@ export default function Summit() {
   const [kit, setKit] = useState(null)
   const roll = useRef(null)
   const shown = useRef(null)
+  const fill = useRef()
   const v = useMemo(() => new THREE.Vector3(), [])
+  const sky = useMemo(() => new THREE.Color(), [])
 
   useEffect(() => {
     let alive = true
@@ -100,7 +103,10 @@ export default function Summit() {
         place(lamp.group, -0.42, 0.34, 0.03)
         const pool = laid(-0.42, 0.34, 3.4, new THREE.MeshBasicMaterial({ map: glowTexture(), color: '#ffb36a', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }), 0.02)
         pool.visible = false
-        root.add(counter.group, cairn.group, lamp.group, pool, laid(0, 0, 1.2, shade(0.35)), laid(-1.9, -1.4, 2.2, shade(0.4)))
+        // the things on the top, too small to see from further off (where they are left undrawn)
+        const props = new THREE.Group()
+        props.add(counter.group, cairn.group, lamp.group, pool, laid(0, 0, 1.2, shade(0.35)), laid(-1.9, -1.4, 2.2, shade(0.4)))
+        root.add(props)
         root.updateMatrixWorld(true)
 
         // prayer flags from the cairn's pole: down to the snow, and across to the register
@@ -113,7 +119,7 @@ export default function Summit() {
           summitFlags(top, post, 3),
           summitFlags(top, snowAt(-3.2, -3.6, 0.25), 4),
         ]
-        root.add(...flags)
+        props.add(...flags)
         flags.forEach((m) => flutterFlags(m, 0))
 
         // where the camera stands to sign the register, and what it looks at:
@@ -134,7 +140,7 @@ export default function Summit() {
           span: 12,
         }
         if (new URLSearchParams(window.location.search).has('debug')) window.__summit = { root, counter }
-        setKit({ root, counter, flags, cap, lamp, pool })
+        setKit({ root, props, counter, flags, cap, lamp, pool, top: new THREE.Vector3(sx, surface(sx, sz), sz) })
       })
     return () => {
       alive = false
@@ -146,19 +152,35 @@ export default function Summit() {
     if (register.status === 'idle' && (env.t > 1.6 || journey.to === 'summit')) loadRegister()
   })
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
     if (!kit) return
     const on = env.act === 'mountain'
     kit.root.visible = on
     if (!on) return
+    const far = camera.position.distanceTo(kit.top)
+    kit.props.visible = far < 320
+    // Up close, the sky's light fills the shadows, as it does for anyone standing
+    // there: with the sun low (or gone), the register would be a silhouette
+    // against it. (An ambient light: adding it recompiles nothing.)
+    const lowSun = 1 - smooth(0.2, 0.6, env.skySunDir.y)
+    const close = 1 - smooth(40, 160, far)
+    if (fill.current) {
+      fill.current.color.copy(env.ambient)
+      fill.current.intensity = env.ambientIntensity * 2 * lowSun * close
+    }
     // flags flutter only while you are up there (from below they are too small to see)
     const near = (journey.to === 'summit' && journey.state !== 'idle') || window.__cam
     if (near) kit.flags.forEach((m) => flutterFlags(m, env.time))
-    // by day the fresh snow glows with the light it scatters; by night the lamp is lit
+    // the cap takes the light the mountain's own snow does (and so blends into it
+    // from afar); by day it glows a little with the light it scatters
+    const snow = terrainUniforms.uSnow.value
+    kit.cap.material.color.copy(snow)
+    kit.cap.material.emissive.copy(env.sunColor).multiply(snow)
     kit.cap.material.emissiveIntensity = 0.3 * env.daylight
+    // by night the lamp is lit
     const night = 1 - smooth(0.12, 0.72, env.daylight)
     const flick = kit.lamp.update(env.time, night)
-    kit.counter.light(night * flick)
+    kit.counter.light(night * flick, sky.copy(env.ambient).multiplyScalar(env.ambientIntensity * lowSun * close))
     kit.pool.visible = night > 0.01
     kit.pool.material.opacity = night * 0.5 * flick
     kit.counter.setLever(register.lever)
@@ -182,5 +204,10 @@ export default function Summit() {
     el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
   })
 
-  return kit ? <primitive object={kit.root} /> : null
+  return (
+    <>
+      {kit && <primitive object={kit.root} />}
+      <ambientLight ref={fill} intensity={0} />
+    </>
+  )
 }
