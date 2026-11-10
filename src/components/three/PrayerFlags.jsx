@@ -19,8 +19,8 @@ const FLAG_GROUND_NIGHT = new THREE.Color('#1b1d26')
 // syllables, rows of prayers and the four dignities. Blue, white, red, green,
 // yellow — always in that order.
 
-const FLAG_W = 1.05
-const FLAG_H = 1.21
+export const FLAG_W = 1.05
+export const FLAG_H = 1.21
 // World units per flag unit. Sets the parallax against the handheld drift and
 // how soon the strings leave as the camera moves off the summit.
 const SCALE = 3.2
@@ -28,7 +28,7 @@ const WIND = 0.4
 
 // Atlas: element columns (blue, white, red, green, yellow), fresh row above
 // weathered, each cell padded so mipmaps never bleed into a neighbour.
-const ATLAS = { w: 1360, h: 622, slotW: 272, slotH: 311, pad: 8, cellW: 256, cellH: 295 }
+export const ATLAS = { w: 1360, h: 622, slotW: 272, slotH: 311, pad: 8, cellW: 256, cellH: 295 }
 
 // Strings are composed on screen: each end is an [x, y] in normalized device
 // coordinates (-1..1, y up) at a depth in flag units, just outside the frame
@@ -201,9 +201,104 @@ const ropeFragment = /* glsl */ `
   }
 `
 
+/**
+ * The cloth's two materials, sharing their light: the printed flags and the
+ * cord. `fog` is where the haze begins and is full, in world units, and how
+ * much there is at most.
+ */
+export function flagMaterials(atlas, gl, fog = { near: 30 * SCALE, far: 90 * SCALE, max: 0.32 }) {
+  atlas.colorSpace = THREE.SRGBColorSpace
+  atlas.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy())
+  const shared = {
+    uSun: { value: new THREE.Vector3(0, 1, 0) },
+    uSunCol: { value: new THREE.Color() },
+    uSky: { value: new THREE.Color() },
+    uGround: { value: new THREE.Color('#7a6152') },
+    uFogCol: { value: new THREE.Color() },
+    uAmb: { value: 0.86 },
+    uSunI: { value: 1 },
+    uFogNear: { value: fog.near },
+    uFogFar: { value: fog.far },
+    uFogMax: { value: fog.max },
+  }
+  const flagMat = new THREE.ShaderMaterial({
+    uniforms: { map: { value: atlas }, ...shared },
+    vertexShader: clothVertex,
+    fragmentShader: clothFragment,
+    side: THREE.DoubleSide,
+  })
+  const ropeMat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color('#3a3026') }, ...shared },
+    vertexShader: ropeVertex,
+    fragmentShader: ropeFragment,
+    side: THREE.DoubleSide,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+  })
+  return { flagMat, ropeMat }
+}
+
+/** The flags' light, from the Director's sky (`bounce`: how much the cloth takes from below). */
+export function lightFlags(flagMat, bounce = 1) {
+  const u = flagMat.uniforms
+  u.uSun.value.copy(env.sunDir)
+  u.uSunCol.value.copy(env.sunColor)
+  u.uSunI.value = env.sunIntensity / 3.2
+  u.uSky.value.copy(env.ambient)
+  u.uGround.value.lerpColors(FLAG_GROUND_NIGHT, FLAG_GROUND_DAY, env.daylight).multiplyScalar(bounce)
+  // after dark the cloth would go black; thin cotton keeps a little of the sky's glow
+  u.uAmb.value = (env.ambientIntensity / 0.62) * 0.86 + (1 - env.daylight) * 0.42
+  u.uFogCol.value.copy(env.fogColor)
+}
+
+/**
+ * Per frame: the cloth's newest pose into the meshes, and the cord rebuilt as
+ * a ribbon facing the camera (never thinner than about a pixel, nor than
+ * `minHalf` flag units).
+ */
+export function drawRig(R, camera, size, tmp, minHalf = 0.011) {
+  const { client } = R
+  if (client.version !== R.seen) {
+    R.seen = client.version
+    const n3 = client.meta.nVerts * 3
+    R.pos.array.set(client.frame.subarray(0, n3))
+    R.nor.array.set(client.frame.subarray(n3, n3 * 2))
+    R.pos.needsUpdate = true
+    R.nor.needsUpdate = true
+  }
+  const camF = tmp.cam.copy(camera.position).applyMatrix4(R.inv)
+  const pxPerUnit = size.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))
+  const fr = client.frame
+  const out = R.rpos.array
+  let o = 0
+  const base = client.meta.nVerts * 6
+  for (const r of client.meta.ropes) {
+    for (let i = 0; i < r.length; i++) {
+      const k = base + (r.offset + i) * 3
+      const kp = base + (r.offset + Math.max(0, i - 1)) * 3
+      const kn = base + (r.offset + Math.min(r.length - 1, i + 1)) * 3
+      tmp.a.set(fr[k], fr[k + 1], fr[k + 2])
+      tmp.t.set(fr[kn] - fr[kp], fr[kn + 1] - fr[kp + 1], fr[kn + 2] - fr[kp + 2])
+      tmp.v.subVectors(camF, tmp.a)
+      const dist = tmp.v.length()
+      const half = Math.max(minHalf, (0.62 * dist) / pxPerUnit)
+      tmp.s.crossVectors(tmp.t, tmp.v).normalize().multiplyScalar(half)
+      out[o++] = tmp.a.x + tmp.s.x
+      out[o++] = tmp.a.y + tmp.s.y
+      out[o++] = tmp.a.z + tmp.s.z
+      out[o++] = tmp.a.x - tmp.s.x
+      out[o++] = tmp.a.y - tmp.s.y
+      out[o++] = tmp.a.z - tmp.s.z
+    }
+  }
+  R.rpos.needsUpdate = true
+  return camF
+}
+
 // Everything one built layout needs: the client driving its cloth, its meshes,
 // and the transform into the world.
-function makeRig(client, layout, flagMat, ropeMat) {
+export function makeRig(client, layout, flagMat, ropeMat) {
   const { meta } = client
   const nV = meta.nVerts
   const rnd = seeded(20240719)
@@ -312,39 +407,8 @@ export default function PrayerFlags() {
     []
   )
 
-  const { flagMat, ropeMat } = useMemo(() => {
-    atlas.colorSpace = THREE.SRGBColorSpace
-    atlas.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy())
-    const shared = {
-      uSun: { value: new THREE.Vector3(0, 1, 0) },
-      uSunCol: { value: new THREE.Color() },
-      uSky: { value: new THREE.Color() },
-      uGround: { value: new THREE.Color('#7a6152') },
-      uFogCol: { value: new THREE.Color() },
-      uAmb: { value: 0.86 },
-      uSunI: { value: 1 },
-      // a breath of air between the strings, no more: the mountain itself is crisp
-      uFogNear: { value: 30 * SCALE },
-      uFogFar: { value: 90 * SCALE },
-      uFogMax: { value: 0.32 },
-    }
-    const flagMat = new THREE.ShaderMaterial({
-      uniforms: { map: { value: atlas }, ...shared },
-      vertexShader: clothVertex,
-      fragmentShader: clothFragment,
-      side: THREE.DoubleSide,
-    })
-    const ropeMat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color('#3a3026') }, ...shared },
-      vertexShader: ropeVertex,
-      fragmentShader: ropeFragment,
-      side: THREE.DoubleSide,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2,
-    })
-    return { flagMat, ropeMat }
-  }, [atlas, gl])
+  // a breath of air between the strings, no more: the mountain itself is crisp
+  const { flagMat, ropeMat } = useMemo(() => flagMaterials(atlas, gl), [atlas, gl])
 
   // (Re)build the strings for this screen. A rebuild happens in the background
   // and swaps in when ready, so resizing never blanks the flags.
@@ -425,54 +489,10 @@ export default function PrayerFlags() {
     const { client } = R
     const dt = Math.min(delta, 1 / 20)
 
-    // newest pose from the cloth
-    if (client.version !== R.seen) {
-      R.seen = client.version
-      const n3 = client.meta.nVerts * 3
-      R.pos.array.set(client.frame.subarray(0, n3))
-      R.nor.array.set(client.frame.subarray(n3, n3 * 2))
-      R.pos.needsUpdate = true
-      R.nor.needsUpdate = true
-    }
-
-    // the cord faces the camera; never thinner than about a pixel
-    const camF = tmp.cam.copy(camera.position).applyMatrix4(R.inv)
-    const pxPerUnit = size.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))
-    const fr = client.frame
-    const out = R.rpos.array
-    let o = 0
-    const base = client.meta.nVerts * 6
-    for (const r of client.meta.ropes) {
-      for (let i = 0; i < r.length; i++) {
-        const k = base + (r.offset + i) * 3
-        const kp = base + (r.offset + Math.max(0, i - 1)) * 3
-        const kn = base + (r.offset + Math.min(r.length - 1, i + 1)) * 3
-        tmp.a.set(fr[k], fr[k + 1], fr[k + 2])
-        tmp.t.set(fr[kn] - fr[kp], fr[kn + 1] - fr[kp + 1], fr[kn + 2] - fr[kp + 2])
-        tmp.v.subVectors(camF, tmp.a)
-        const dist = tmp.v.length()
-        const half = Math.max(0.011, (0.62 * dist) / pxPerUnit)
-        tmp.s.crossVectors(tmp.t, tmp.v).normalize().multiplyScalar(half)
-        out[o++] = tmp.a.x + tmp.s.x
-        out[o++] = tmp.a.y + tmp.s.y
-        out[o++] = tmp.a.z + tmp.s.z
-        out[o++] = tmp.a.x - tmp.s.x
-        out[o++] = tmp.a.y - tmp.s.y
-        out[o++] = tmp.a.z - tmp.s.z
-      }
-    }
-    R.rpos.needsUpdate = true
-
+    // newest pose from the cloth, and the cord facing the camera
+    const camF = drawRig(R, camera, size, tmp)
     // light, from the Director's sky
-    const u = flagMat.uniforms
-    u.uSun.value.copy(env.sunDir)
-    u.uSunCol.value.copy(env.sunColor)
-    u.uSunI.value = env.sunIntensity / 3.2
-    u.uSky.value.copy(env.ambient)
-    u.uGround.value.lerpColors(FLAG_GROUND_NIGHT, FLAG_GROUND_DAY, env.daylight)
-    // after dark the cloth would go black; thin cotton keeps a little of the sky's glow
-    u.uAmb.value = (env.ambientIntensity / 0.62) * 0.86 + (1 - env.daylight) * 0.42
-    u.uFogCol.value.copy(env.fogColor)
+    lightFlags(flagMat)
 
     if (scrollState.reducedMotion) return
 

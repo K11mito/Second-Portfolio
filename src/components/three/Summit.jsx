@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useFrame, useLoader } from '@react-three/fiber'
+import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env } from './env'
 import { terrainUniforms } from './Terrain'
 import { getHeights, heightAt } from './terrainData'
-import { buildButterLamp, buildCairn, buildCounter, buildSnowCap, laidOnSnow, snowSurface, summitFlags } from './summitKit'
-import { flutterFlags, glowTexture } from './gompa'
+import { buildButterLamp, buildCairn, buildCounter, buildSnowCap, buildStake, laidOnSnow, skyReflections, snowSurface } from './summitKit'
+import { glowTexture } from './gompa'
+import SummitFlags from './SummitFlags'
 import { dest } from '@/lib/destinations'
 import { register, loadRegister } from '@/lib/summitClient'
 import { journey } from '@/lib/journey'
@@ -48,13 +49,14 @@ function shade(strength = 0.45) {
 
 /**
  * The summit: the register (a counter with a lever, counting everyone who
- * reaches the top), a cairn flying prayer flags, a butter lamp to read it by
- * at night, and a finer cap of snow. It rolls the counter to the register's
- * count, swings the lever as it is pulled, and gives the page the summit's
- * sign and the camera's place to stand.
+ * reaches the top), a cairn with lines of prayer flags tied off to stakes in
+ * the snow, a butter lamp to read it by at night, and a finer cap of snow. It
+ * rolls the counter to the register's count, swings the lever as it is pulled,
+ * and gives the page the summit's sign and the camera's place to stand.
  */
 export default function Summit() {
   const buffer = useLoader(THREE.FileLoader, '/terrain/height.bin', (l) => l.setResponseType('arraybuffer'))
+  const { gl } = useThree()
   const [kit, setKit] = useState(null)
   const roll = useRef(null)
   const shown = useRef(null)
@@ -90,7 +92,7 @@ export default function Summit() {
         }
         const laid = (lx, lz, size, material, lift) => laidOnSnow(surface, ...at(lx, lz), size, material, lift)
 
-        const cap = buildSnowCap(surface, sx, sz, 64, 120)
+        const cap = buildSnowCap(surface, sx, sz, 64, 200)
         root.add(cap)
         const counter = buildCounter(f)
         counter.group.rotation.y = ry
@@ -109,18 +111,29 @@ export default function Summit() {
         root.add(props)
         root.updateMatrixWorld(true)
 
-        // prayer flags from the cairn's pole: down to the snow, and across to the register
+        // lines of prayer flags from the cairn's pole, each tied off to a stake in the snow
         const top = cairn.group.localToWorld(cairn.top.clone())
-        const snowAt = (lx, lz, up = 0.35) => place(new THREE.Object3D(), lx, lz).position.clone().add(new THREE.Vector3(0, up, 0))
-        const post = counter.group.localToWorld(new THREE.Vector3(0, 1.2, 0))
-        const flags = [
-          summitFlags(top, snowAt(2.6, -2.8), 1),
-          summitFlags(top, snowAt(-4.2, 1.2), 2),
-          summitFlags(top, post, 3),
-          summitFlags(top, snowAt(-3.2, -3.6, 0.25), 4),
-        ]
-        props.add(...flags)
-        flags.forEach((m) => flutterFlags(m, 0))
+        const lines = [
+          [2.6, -2.8, 0.36],
+          [3.4, 0.4, 0.22],
+          [-4.2, 1.2, 0.3],
+          [-3.2, -3.6, 0.45],
+        ].map(([lx, lz, weathered], i) => {
+          const stake = buildStake(i + 1)
+          stake.group.rotation.y = ry + i
+          place(stake.group, lx, lz, 0.06)
+          props.add(stake.group)
+          stake.group.updateMatrixWorld(true)
+          const b = stake.group.localToWorld(stake.top.clone())
+          // a little lower down the pole for each line, so they don't all leave from one point
+          const a = top.clone().add(new THREE.Vector3(0, -0.07 * i, 0))
+          return { a, b, sag: a.distanceTo(b) * 0.035, weathered }
+        })
+        // the shine on its metal: the sky (redrawn as the light changes)
+        const reflections = skyReflections(gl)
+        const metals = [...counter.metals, ...lamp.metals, ...cairn.metals]
+        const envMap = reflections.update(env)
+        for (const m of metals) m.envMap = envMap
 
         // where the camera stands to sign the register, and what it looks at:
         // from a landscape screen, beside the panels the page puts on either side;
@@ -140,12 +153,27 @@ export default function Summit() {
           span: 12,
         }
         if (new URLSearchParams(window.location.search).has('debug')) window.__summit = { root, counter }
-        setKit({ root, props, counter, flags, cap, lamp, pool, top: new THREE.Vector3(sx, surface(sx, sz), sz) })
+        setKit({
+          root,
+          props,
+          counter,
+          cap,
+          lamp,
+          pool,
+          lines,
+          reflections,
+          metals,
+          seen: { view: dest.anchors.summit.view, look: dest.anchors.summit.look },
+          top: new THREE.Vector3(sx, surface(sx, sz), sz),
+        })
       })
     return () => {
       alive = false
     }
-  }, [buffer])
+  }, [buffer, gl])
+
+  // the sky reflections are let go with the summit
+  useEffect(() => () => kit?.reflections.dispose(), [kit])
 
   // the register's numbers are fetched once the summit is near: from the view of the destinations on
   useFrame(() => {
@@ -169,9 +197,11 @@ export default function Summit() {
       fill.current.color.copy(env.ambient)
       fill.current.intensity = env.ambientIntensity * 2 * lowSun * close
     }
-    // flags flutter only while you are up there (from below they are too small to see)
-    const near = (journey.to === 'summit' && journey.state !== 'idle') || window.__cam
-    if (near) kit.flags.forEach((m) => flutterFlags(m, env.time))
+    // the metal's reflections follow the sky (redrawn only when it has moved on, and only up close)
+    if (far < 160) {
+      const envMap = kit.reflections.update(env)
+      if (kit.metals[0].envMap !== envMap) for (const m of kit.metals) m.envMap = envMap
+    }
     // the cap takes the light the mountain's own snow does (and so blends into it
     // from afar); by day it glows a little with the light it scatters
     const snow = terrainUniforms.uSnow.value
@@ -209,6 +239,7 @@ export default function Summit() {
   return (
     <>
       {kit && <primitive object={kit.root} />}
+      {kit && <SummitFlags lines={kit.lines} view={kit.seen.view} look={kit.seen.look} />}
       <ambientLight ref={fill} intensity={0} />
     </>
   )

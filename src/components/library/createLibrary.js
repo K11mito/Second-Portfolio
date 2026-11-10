@@ -791,6 +791,9 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
           emissive: lin(0xffb050),
           emissiveIntensity: 0,
           side: THREE.DoubleSide,
+          // it fades as it is folded back when the text is opened: transparent
+          // from the start, so the first open has no shader to compile
+          transparent: true,
         }),
       )
       const fw = w * 0.64
@@ -844,7 +847,7 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     topLeaf.position.y = stack.position.y + (hc * 0.72) / 2 + 0.002
     topLeaf.visible = false
     g.add(topLeaf)
-    const b = { it, root: g, bottom, cloth, stack, top, pivot, flag, clothMaterial, flagMaterial, boardMat, topLeaf, titleMat, w, hc, bt, lift: 0, liftTarget: 0 }
+    const b = { it, root: g, bottom, cloth, stack, top, topHome: top.position.clone(), pivot, flag, clothMaterial, flagMaterial, boardMat, topLeaf, titleMat, w, hc, bt, lift: 0, liftTarget: 0 }
     for (const m of [bottom, cloth, top, flag].filter(Boolean)) {
       m.userData.bundle = b
       picks.push(m)
@@ -1030,8 +1033,10 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
   curtain.position.z = D / 2 + 0.3
   curtain.renderOrder = 2
   scene.add(curtain)
-  // the leaf that rises to you
-  const leafMat = painted(new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true, side: THREE.DoubleSide }))
+  // The leaf that rises to you. Solid, like the title leaf on the stack it is
+  // lifted from (the same material, so the same shader): the readable page
+  // fades in over it, never through it.
+  const leafMat = painted(new THREE.MeshBasicMaterial({ map: bundles.find(Boolean)?.titleMat.map ?? null, toneMapped: false }))
   const leaf3d = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), leafMat)
   leaf3d.visible = false
   leaf3d.renderOrder = 4
@@ -1223,50 +1228,42 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
       .addScaledVector(up, cy * halfH)
     return { p, q: camera.quaternion.clone(), scale: new THREE.Vector3(worldW, (worldW * leafBox.h) / leafBox.w, 1) }
   }
-  function fadeMaterials(b, open) {
-    // fading needs transparent materials, but only on the text in your hands
-    for (const m of [b.clothMaterial, b.flagMaterial].filter(Boolean)) {
-      m.transparent = open
-      m.needsUpdate = true
-    }
-    if (open) {
-      b.topMat = painted(b.boardMat.clone())
-      b.topMat.transparent = true
-      b.top.material = b.topMat
-      b.bottomMat = painted(b.boardMat.clone())
-      b.bottomMat.transparent = true
-      b.bottom.material = b.bottomMat
-      b.stackMat = painted(mat.edge.clone())
-      b.stackMat.transparent = true
-      b.stack.material = b.stackMat
-      b.titleMat.transparent = true
-    } else {
-      for (const m of [b.topMat, b.bottomMat, b.stackMat]) m?.dispose()
-      b.topMat = b.bottomMat = b.stackMat = null
-      b.top.material = b.boardMat
-      b.bottom.material = b.boardMat
-      b.stack.material = mat.edge
-      b.clothMaterial.opacity = 1
-      if (b.flagMaterial) b.flagMaterial.opacity = 1
-    }
+  // The text in your hands is drawn after the curtain that darkens the shelf
+  // (its silk face fades as it folds back, and must not show the lit shelf through it)
+  function hold(b, held) {
+    if (b.flag) b.flag.renderOrder = held ? 3 : 0
+  }
+  // how far a text in the reading pose goes down to be out of view, below the leaf
+  function lowered(pose) {
+    camAxes()
+    const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+    const halfH = pose.p.distanceTo(camera.position) * tanV
+    return pose.p.clone().addScaledVector(up, -(halfH + 0.5)).addScaledVector(fwd, 0.25)
   }
   function setOpened(b, k) {
-    // k: 0 wrapped, 1 unwrapped (silk face up, top board off, cloth fallen open)
+    // k: 0 wrapped, 1 unwrapped. Nothing fades but the silk face: the face is
+    // folded back, the top board is lifted and set aside (off to the side, out
+    // of view), and the cloth falls open around the leaves.
     if (b.pivot) {
-      b.pivot.rotation.x = -2.55 * smooth(0, 0.6, k)
-      b.flagMaterial.opacity = 1 - smooth(0.35, 0.65, k)
+      b.pivot.rotation.x = -2.55 * smooth(0, 0.45, k)
+      b.flagMaterial.opacity = 1 - smooth(0.12, 0.4, k)
+      b.flag.visible = k < 0.4
     }
-    const kb = smooth(0.12, 0.75, k)
-    b.top.position.y = b.bt + b.hc + b.bt / 2 - 0.002 + 0.24 * kb
-    b.top.rotation.x = -0.55 * kb
-    if (b.topMat) b.topMat.opacity = 1 - smooth(0.45, 0.9, k)
-    const kc = smooth(0.25, 1, k)
-    b.cloth.scale.set(1 + 0.12 * kc, 1 - 0.72 * kc, 1 + 0.05 * kc)
-    b.cloth.position.y = b.bt + b.hc / 2 - b.hc * 0.36 * kc
-    b.clothMaterial.opacity = 1 - smooth(0.45, 1, k)
+    const raised = smooth(0.18, 0.42, k)
+    const aside = smooth(0.3, 0.78, k)
+    // far enough along the text's length (across the screen) to leave the view
+    const frac = innerWidth / innerHeight < 0.9 ? 0.82 : 0.42
+    b.top.position.copy(b.topHome)
+    b.top.position.y += 0.07 * raised
+    b.top.position.z += (LEN / (2 * frac) + LEN / 2 + 0.15) * aside
+    b.top.rotation.x = 0
+    b.top.rotation.z = 0.12 * raised * (1 - aside)
+    b.top.visible = aside < 0.999
+    const kc = smooth(0.38, 1, k)
+    b.cloth.scale.set(1 + 0.24 * kc, 1 - 0.8 * kc, 1 + 0.06 * kc)
+    b.cloth.position.y = b.bt + (b.hc * b.cloth.scale.y) / 2
     b.stack.visible = b.it.next || k > 0.01
-    b.topLeaf.visible = !b.it.next && k > 0.3
-    b.titleMat.opacity = smooth(0.3, 0.7, k)
+    b.topLeaf.visible = !b.it.next && k > 0.01
   }
   const setLeaf = (opacity, angle) => {
     if (opacity != null) leaf.style.opacity = String(opacity)
@@ -1288,10 +1285,9 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     for (const s of shades) s.style.opacity = '0'
     state.flipped = false
     emit('open', i)
-    fadeMaterials(b, true)
-    tween(0.7, (k) => (curtainMat.opacity = 0.8 * k), easeOut)
+    hold(b, true)
 
-    // 1. lifted out of its pigeonhole and carried to you
+    // 1. lifted out of its pigeonhole and carried to you, as the shelf behind goes dark
     const from = { p: b.root.getWorldPosition(new THREE.Vector3()), q: b.root.getWorldQuaternion(new THREE.Quaternion()) }
     shelf.remove(b.root)
     scene.add(b.root)
@@ -1299,45 +1295,44 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     b.root.quaternion.copy(from.q)
     const to = readingPose(b)
     const pz = from.p.clone().add(new THREE.Vector3(0, 0.03, 0.28))
+    tween(0.9, (k) => (curtainMat.opacity = 0.8 * k), easeOut)
     await tween(0.32, (k) => b.root.position.lerpVectors(from.p, pz, k), easeOut)
     await tween(0.82, (k) => {
       b.root.position.lerpVectors(pz, to.p, k).addScaledVector(up.set(0, 1, 0), Math.sin(k * PI) * 0.1)
       b.root.quaternion.copy(from.q).slerp(to.q, k)
     })
 
-    // 2. unwrapped: the silk face lifts, the top board comes off, the cloth falls open
+    // 2. unwrapped: the silk face folds back, the top board comes off, the cloth falls open
     await tween(1.05, (k) => setOpened(b, k), (t) => t)
 
-    // 3. the top leaf rises from the stack and turns to face you
+    // 3. the top leaf rises from the stack and turns to face you, and the
+    //    text is lowered out of view beneath it
     const lp = leafPose()
     const sp = b.topLeaf.getWorldPosition(new THREE.Vector3())
     const sq = b.topLeaf.getWorldQuaternion(new THREE.Quaternion())
     const ss = new THREE.Vector3(LEN * 0.9, b.w * 0.8, 1)
+    const rp = b.root.position.clone()
+    const down = lowered({ p: rp })
     leafMat.map = b.titleMat.map
-    leafMat.opacity = 1
-    leafMat.needsUpdate = true
-    leaf3d.visible = true
-    b.topLeaf.visible = false
     leaf3d.position.copy(sp)
     leaf3d.quaternion.copy(sq)
     leaf3d.scale.copy(ss)
+    leaf3d.visible = true
+    b.topLeaf.visible = false
     await tween(
       0.85,
       (k) => {
         leaf3d.position.lerpVectors(sp, lp.p, k)
         leaf3d.quaternion.copy(sq).slerp(lp.q, k)
         leaf3d.scale.lerpVectors(ss, lp.scale, k)
-        b.stackMat.opacity = 1 - k
-        b.bottomMat.opacity = 1 - k
+        b.root.position.lerpVectors(rp, down, smooth(0.2, 1, k))
       },
       (t) => 1 - Math.pow(1 - t, 2.4),
     )
+    b.root.visible = false
 
-    // 4. the page you can read takes its place, and its first leaf is turned
-    await tween(0.24, (k) => {
-      setLeaf(k)
-      leafMat.opacity = 1 - k
-    })
+    // 4. the page you can read comes up over it, and its first leaf is turned
+    await tween(0.24, (k) => setLeaf(k))
     leaf3d.visible = false
     setLeaf(1)
     await turn(true, 0.15)
@@ -1362,6 +1357,19 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     state.flipped = toBack
   }
 
+  // the text you are reading, out of view beneath the page
+  function setAside(b) {
+    shelf.remove(b.root)
+    scene.add(b.root)
+    const pose = readingPose(b)
+    b.root.quaternion.copy(pose.q)
+    b.root.position.copy(lowered(pose))
+    setOpened(b, 1)
+    b.topLeaf.visible = false
+    b.root.visible = false
+    hold(b, true)
+  }
+
   // along the shelf without leaving: the leaf turns on to the next text
   async function go(delta) {
     if (state.busy || !state.open) return
@@ -1370,19 +1378,8 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     const at = state.flipped ? 180 : 0
     await tween(0.34, (k) => setLeaf(null, at + 90 * delta * k), easeIn)
     // put the old text back on its shelf and take the new one out, quietly
-    const old = bundles[state.i]
-    const nb = bundles[j]
-    restoreHome(old)
-    fadeMaterials(nb, true)
-    shelf.remove(nb.root)
-    scene.add(nb.root)
-    const pose = readingPose(nb)
-    nb.root.position.copy(pose.p)
-    nb.root.quaternion.copy(pose.q)
-    setOpened(nb, 1)
-    nb.stackMat.opacity = 0
-    nb.bottomMat.opacity = 0
-    nb.topLeaf.visible = false
+    restoreHome(bundles[state.i])
+    setAside(bundles[j])
     state.i = j
     emit('show', j)
     state.flipped = true
@@ -1393,7 +1390,8 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     setOpened(b, 0)
     b.topLeaf.visible = false
     b.stack.visible = !!b.it.next
-    fadeMaterials(b, false)
+    b.root.visible = true
+    hold(b, false)
     scene.remove(b.root)
     shelf.add(b.root)
     b.root.position.copy(b.home.p)
@@ -1414,35 +1412,37 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     const b = bundles[state.i]
     if (state.flipped) await turn(false)
     emit('leaving')
-    // the readable page hands back to the leaf in the scene
+    // the readable page goes, and the solid leaf in the scene is there under it
     const lp = leafPose()
     leafMat.map = b.titleMat.map
-    leafMat.needsUpdate = true
     leaf3d.position.copy(lp.p)
     leaf3d.quaternion.copy(lp.q)
     leaf3d.scale.copy(lp.scale)
     leaf3d.visible = true
-    await tween(0.2, (k) => {
-      setLeaf(1 - k)
-      leafMat.opacity = k
-    })
+    await tween(0.2, (k) => setLeaf(1 - k))
+    // the text comes back up from below as the leaf goes down onto it
+    const pose = readingPose(b)
+    const down = lowered(pose)
+    b.root.quaternion.copy(pose.q)
+    b.root.position.copy(down)
+    b.root.visible = true
     const sp = new THREE.Vector3()
     const sq = new THREE.Quaternion()
-    b.topLeaf.getWorldPosition(sp)
-    b.topLeaf.getWorldQuaternion(sq)
     const ss = new THREE.Vector3(LEN * 0.9, b.w * 0.8, 1)
-    await tween(0.7, (k) => {
+    await tween(0.75, (k) => {
+      b.root.position.lerpVectors(down, pose.p, smooth(0, 0.8, k))
+      b.root.updateMatrixWorld(true)
+      b.topLeaf.getWorldPosition(sp)
+      b.topLeaf.getWorldQuaternion(sq)
       leaf3d.position.lerpVectors(lp.p, sp, k)
       leaf3d.quaternion.copy(lp.q).slerp(sq, k)
       leaf3d.scale.lerpVectors(lp.scale, ss, k)
-      b.stackMat.opacity = k
-      b.bottomMat.opacity = k
     })
     leaf3d.visible = false
     b.topLeaf.visible = true
     // wrapped up again
     await tween(0.8, (k) => setOpened(b, 1 - k), (t) => t)
-    // and carried home
+    // and carried home, as the shelf comes back out of the dark
     const from = { p: b.root.position.clone(), q: b.root.quaternion.clone() }
     const homeW = { p: b.home.p.clone(), q: b.home.q.clone() }
     shelf.localToWorld(homeW.p)
@@ -1540,6 +1540,14 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
     }
     renderer.render(scene, camera)
   }
+  // Compile, before the first frame, the shaders an open brings in (the title
+  // leaf on the stack, and the leaf that rises), so the first open doesn't stall.
+  {
+    const warm = [leaf3d, bundles.find((b) => b && !b.it.next)?.topLeaf].filter(Boolean)
+    for (const o of warm) o.visible = true
+    renderer.compile(scene, camera)
+    for (const o of warm) o.visible = false
+  }
   raf = requestAnimationFrame(loop)
   const readyTimer = setTimeout(() => emit('ready'), 250)
 
@@ -1584,7 +1592,6 @@ export function createLibrary({ canvas, items, fonts: F, dom, on }) {
         o.geometry?.dispose()
         for (const m of [o.material].flat()) if (m) materials.add(m)
       })
-      for (const b of bundles) for (const m of [b?.topMat, b?.bottomMat, b?.stackMat]) if (m) materials.add(m)
       for (const m of materials) m.dispose()
       for (const t of textures) t.dispose()
       renderer.dispose()
