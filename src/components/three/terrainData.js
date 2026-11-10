@@ -44,39 +44,88 @@ function noise(x, z) {
 // ridged noise: sharp crests and creases, like weathered rock
 const ridged = (x, z) => 1 - Math.abs(noise(x, z) * 2 - 1)
 
-// a lesser tooth of rock on the peak's east shoulder breaks up its cone
-const TOOTH = { x: PINNACLE.x + 40, z: PINNACLE.z - 22, top: 214, plateau: 5 }
+// a smooth maximum: where two forms meet, the rock fills in between them
+const smax = (a, b, k) => (a + b + Math.sqrt((a - b) * (a - b) + k * k)) / 2
+const sstep = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
+// The temple's peak is a small massif, not a cone: the summit block with its
+// domed top, a lower shoulder stepping down to the west, a spur reaching east
+// to a tooth of rock, and a ridge falling away north-west toward the big
+// mountain until it sinks into the cloud. Each form is stretched along its own
+// line; where they meet the rock fills in, so the sides read as buttresses,
+// steps and saddles rather than one slope all the way round.
+//   dir: the bearing it is stretched along; stretch: how much longer than wide;
+//   rate: how sheer its cliffs are under the rim
+const FORMS = [
+  { x: PINNACLE.x, z: PINNACLE.z, top: PINNACLE.top, plateau: PINNACLE.plateau, dir: 0.5, stretch: 1.15, rate: 2.7 },
+  { x: PINNACLE.x - 36, z: PINNACLE.z + 12, top: 212, plateau: 7, dir: 2.6, stretch: 1.5, rate: 2.4 },
+  { x: PINNACLE.x + 34, z: PINNACLE.z - 16, top: 218, plateau: 4, dir: -0.6, stretch: 1.3, rate: 2.8 },
+  { x: PINNACLE.x + 12, z: PINNACLE.z + 32, top: 192, plateau: 6, dir: 1.3, stretch: 1.7, rate: 2.2 },
+]
+// the ridge toward the big mountain, sinking into the cloud between them: [x, z, height] at each end
+const RIDGE = { a: [PINNACLE.x - 24, PINNACLE.z - 24, 198], b: [PINNACLE.x - 110, PINNACLE.z - 96, 104] }
+
+function form(x, z, F) {
+  const dx = x - F.x
+  const dz = z - F.z
+  const c = Math.cos(F.dir)
+  const s = Math.sin(F.dir)
+  const along = (dx * c + dz * s) / F.stretch
+  const across = -dx * s + dz * c
+  const rr = Math.hypot(along, across)
+  if (rr < F.plateau) return F.top - 0.009 * rr * rr
+  const t = rr - F.plateau
+  // a rounded shoulder over a band of cliffs, easing into a skirt of scree:
+  // convex at the top and concave below, the way weathered peaks are
+  const fall = t < 100 ? F.rate * ((t * t) / (t + 9) - (t * t) / 260) : F.rate * (1e4 / 109 - 1e4 / 260) + 0.6 * (t - 100)
+  return F.top - 0.009 * F.plateau * F.plateau - fall
+}
+
+function ridge(x, z) {
+  const [ax, az, ah] = RIDGE.a
+  const [bx, bz, bh] = RIDGE.b
+  const vx = bx - ax
+  const vz = bz - az
+  const t = Math.min(1, Math.max(0, ((x - ax) * vx + (z - az) * vz) / (vx * vx + vz * vz)))
+  const d = Math.hypot(x - (ax + vx * t), z - (az + vz * t))
+  // the crest sags and steps as it falls, its flanks steeper near the top
+  const crest = ah + (bh - ah) * t - Math.sin(t * 9.5) * 6 * (1 - t)
+  return crest - d * (1.9 - 0.7 * t) - d * d * 0.004
+}
 
 export function pinnacleHeight(x, z) {
-  return Math.max(spire(x, z, PINNACLE), spire(x, z, TOOTH) - 2)
-}
+  // the outline wanders: warp the ground plan before shaping it
+  const wx = x + (noise(x * 0.018 + 3.1, z * 0.018) - 0.5) * 22
+  const wz = z + (noise(x * 0.018, z * 0.018 + 7.7) - 0.5) * 22
+  let h = form(wx, wz, FORMS[0])
+  for (let i = 1; i < FORMS.length; i++) h = smax(h, form(wx, wz, FORMS[i]), 16)
+  h = smax(h, ridge(wx, wz), 18)
 
-function spire(x, z, P) {
-  const dx = x - P.x
-  const dz = z - P.z
-  const r = Math.hypot(dx, dz)
-  const a = Math.atan2(dz, dx)
-  // buttresses and gullies: how far out it falls away varies around the peak
-  const lobes = 1 + 0.2 * Math.sin(a * 3 + 0.7) + 0.11 * Math.sin(a * 5 + 2.1) + 0.06 * Math.sin(a * 9 + 4) + 0.035 * Math.sin(a * 15 + 1.3)
-  const rr = r / lobes
-  if (rr < P.plateau) return P.top - 0.009 * rr * rr
-  const s = rr - P.plateau
-  // a sheer band of cliffs under the rim, then ever gentler scree
-  const fall = s < 110 ? 3 * s - 0.0105 * s * s : 202.9 + 0.69 * (s - 110)
-  // ledges: the fall pauses every so often, where strata outcrop
-  const ledge = Math.sin(s * 0.16 + a * 2) * 3.2
-  const crag = (ridged(x * 0.045, z * 0.045) - 0.55) * 12 + (noise(x * 0.14 + 9, z * 0.14) - 0.5) * 6
-  // couloirs: creases that run straight down the faces, as on the big mountain.
-  // Sampled on a ring (so they depend on the bearing, with no seam), drifting slowly with depth.
-  const ux = (dx / Math.max(r, 1e-3)) * 30
-  const uz = (dz / Math.max(r, 1e-3)) * 30
-  const couloir = (ridged(ux * 0.13 + s * 0.018, uz * 0.13 - s * 0.015) - 0.62) * 17
-  const k = Math.min(1, s / 12)
-  return P.top - 0.009 * P.plateau * P.plateau - fall + (crag + ledge) * k + couloir * Math.min(1, s / 22)
+  // the top stays smooth for the temple; below it, the rock is broken up
+  const dTop = Math.hypot(x - PINNACLE.x, z - PINNACLE.z)
+  const rough = sstep(PINNACLE.plateau - 1, PINNACLE.plateau + 7, dTop)
+  // bands of cliff: the slope breaks into ledges joined by steep risers, the
+  // way bedded rock weathers (the bands wander, so they never read as contours)
+  const step = 11
+  const tt = (h + (noise(x * 0.05 + 4, z * 0.05) - 0.5) * 9) / step
+  const fl = Math.floor(tt)
+  const terraced = (fl + sstep(0.3, 0.7, tt - fl)) * step - (noise(x * 0.05 + 4, z * 0.05) - 0.5) * 9
+  h += (terraced - h) * 0.6 * rough * sstep(150, 175, h)
+  const crag = (ridged(x * 0.045, z * 0.045) - 0.55) * 16 + (noise(x * 0.13 + 9, z * 0.13) - 0.5) * 9
+  // ledges where strata outcrop, at heights rather than distances
+  const ledge = Math.sin(h * 0.21 + noise(x * 0.03, z * 0.03) * 4) * 2.8
+  // gullies that run down the fall line, sampled on the bearing from the top
+  // (so they have no seam) and drifting slowly with depth
+  const r = Math.max(dTop, 1e-3)
+  const ux = ((x - PINNACLE.x) / r) * 30
+  const uz = ((z - PINNACLE.z) / r) * 30
+  const below = PINNACLE.top - h
+  const gully = (ridged(ux * 0.13 + below * 0.02, uz * 0.13 - below * 0.017) - 0.62) * 15
+  return h + (crag + ledge) * rough + gully * sstep(4, 30, below) * rough
 }
-
-// a smooth maximum: the peak's foot blends into the slopes it meets
-const smax = (a, b, k) => (a + b + Math.sqrt((a - b) * (a - b) + k * k)) / 2
 
 const cache = new WeakMap()
 /** The heightmap with the temple's peak raised in it (computed once per buffer). */
@@ -85,6 +134,8 @@ export function getHeights(buffer) {
   if (h) return h
   h = new Uint16Array(buffer.slice(0))
   const reach = 150
+  // the raised rock fades out before the edge of the patch it is drawn into
+  const fade = (x, z) => 1 - sstep(0.72, 0.98, Math.max(Math.abs(x - PINNACLE.x), Math.abs(z - PINNACLE.z)) / reach)
   const i0 = Math.max(0, Math.floor((PINNACLE.x - reach + SIZE / 2) / CELL))
   const i1 = Math.min(N - 1, Math.ceil((PINNACLE.x + reach + SIZE / 2) / CELL))
   const j0 = Math.max(0, Math.floor((PINNACLE.z - reach + SIZE / 2) / CELL))
@@ -98,7 +149,9 @@ export function getHeights(buffer) {
       const old = toWorld(h[j * N + i], t)
       const p = pinnacleHeight(x, z)
       if (p < old - 12) continue
-      h[j * N + i] = toRaw(smax(old, p, 14), t)
+      const w = fade(x, z)
+      if (w <= 0) continue
+      h[j * N + i] = toRaw(old + (smax(old, p, 14) - old) * w, t)
     }
   }
   cache.set(buffer, h)

@@ -67,7 +67,8 @@ function makeHalo(size) {
   return s
 }
 
-const IDS = ['library', 'temple']
+// the destinations whose signs ride the scene (the summit's anchor comes from <Summit/>)
+const IDS = ['library', 'temple', 'summit']
 
 /**
  * The two destinations on the mountain: the library's monastery and the

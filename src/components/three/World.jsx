@@ -9,6 +9,7 @@ import CloudSea from './CloudSea'
 import PrayerFlags from './PrayerFlags'
 import Monastery from './Monastery'
 import Gompas from './Gompas'
+import Summit from './Summit'
 
 export default function World() {
   return (
@@ -20,6 +21,7 @@ export default function World() {
       <CloudSea />
       <PrayerFlags />
       <Gompas />
+      <Summit />
       {/* The monastery is far down the page: stream it in without holding up the summit. */}
       <Suspense fallback={null}>
         <Monastery />

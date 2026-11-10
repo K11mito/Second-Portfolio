@@ -71,6 +71,14 @@ export function heroView(aspect) {
 function approach(to, out) {
   const a = dest.anchors[to]
   if (!a) return null
+  // the summit says where to stand
+  if (a.view) {
+    out.pos.copy(a.view)
+    out.look.copy(a.look)
+    out.fov = a.fov || 38
+    out.dir.copy(a.facing)
+    return out
+  }
   const target = to === 'temple' && a.wheel ? a.wheel : a.door || a.center
   const back = to === 'temple' ? 21 : 27
   const up = to === 'temple' ? 4.5 : 9

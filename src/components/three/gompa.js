@@ -491,6 +491,12 @@ function buildFlags(lines) {
   mesh.frustumCulled = false
   return mesh
 }
+/** One string of prayer flags from a to b (an instanced mesh; animate it with flutterFlags). */
+export function buildFlagLine(a, b, { sag = 0.1, gap = 1.15, size = 1, seed = 1 } = {}) {
+  return buildFlags([{ a: a.clone(), b: b.clone(), sag, gap, size, seed }])
+}
+export const flutterFlags = (mesh, time) => flutter(mesh, time)
+
 const FX = new THREE.Matrix4()
 const FB = new THREE.Matrix4()
 const FQ = new THREE.Quaternion()
