@@ -1,5 +1,6 @@
 Amita Display: Amita (Latin) with the capital A from Kurale, cut down to Latin.
-Both are licensed under the SIL Open Font License, Version 1.1; neither declares
+Caveat (Latin), the handwriting of the notes on the summit's board.
+All are licensed under the SIL Open Font License, Version 1.1; none declares
 a Reserved Font Name.
 
 Amita: Copyright (c) 2014, Eduardo Rodriguez Tunni. Copyright (c) 2000, Modular
@@ -7,6 +8,8 @@ Infotech, Pune, INDIA. All rights reserved. Copyright (c) 2011 by Brian J.
 Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com). All rights reserved.
 
 Kurale (capital A): Copyright 2013 The Kurale Project Authors (edu@tipo.net.ar)
+
+Caveat: Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

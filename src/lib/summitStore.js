@@ -1,16 +1,49 @@
 // The summit register: how many have pulled the counter's lever, and the notes
-// pinned to the board. Kept in Redis (Upstash, through its REST API: the free
-// store Vercel connects in a couple of clicks). In development and in preview
-// deployments without one, it lives in memory so the summit can be tried (a
-// preview's memory is per server instance, and is forgotten now and then); on
-// the live site without one, the summit says the register is not open yet.
+// pinned to the board. Kept in Redis: Upstash through its REST API (the free
+// store Vercel connects in a couple of clicks), or any Redis by its redis://
+// URL. In development and in preview deployments without one, it lives in
+// memory so the summit can be tried (a preview's memory is per server
+// instance, and is forgotten now and then); on the live site without one, the
+// summit says the register is not open yet.
 //
 // Server only: it reads secrets from the environment.
 
 import { BOARD_SIZE, NOTES_PER_DAY, NOTES_PER_NETWORK_PER_DAY, PULLS_PER_NETWORK_PER_DAY } from './summitRules'
 
-const URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
-const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
+/**
+ * Where the register is kept, from the environment, under whichever names the
+ * store was connected with:
+ *  - a REST endpoint and its token: KV_REST_API_URL and KV_REST_API_TOKEN
+ *    (Vercel's Upstash integration), UPSTASH_REDIS_REST_URL and _TOKEN
+ *    (Upstash's own), or either under a prefix chosen when the store was
+ *    connected (STORAGE_KV_REST_API_URL, …);
+ *  - or a redis:// URL: REDIS_URL or KV_URL, prefixed or not. An Upstash one
+ *    is reached over REST (the same host answers it, the password is the
+ *    token); any other over a connection of its own.
+ * Returns { kind: 'rest', url, token } or { kind: 'tcp', url }, or null.
+ */
+export function findStore(env = process.env) {
+  const keys = Object.keys(env).sort((a, b) => a.length - b.length)
+  for (const key of keys) {
+    const m = key.match(/^(.*?)(KV_REST_API|REDIS_REST)_URL$/)
+    const url = m && env[key]
+    const token = m && env[`${m[1]}${m[2]}_TOKEN`]
+    if (url && token && /^https?:\/\//.test(url)) return { kind: 'rest', url, token }
+  }
+  for (const key of keys) {
+    if (!/(^|_)(REDIS|KV)_URL$/.test(key) || !/^rediss?:\/\//.test(env[key] || '')) continue
+    try {
+      const u = new URL(env[key])
+      if (u.hostname.endsWith('.upstash.io') && u.password) return { kind: 'rest', url: `https://${u.hostname}`, token: decodeURIComponent(u.password) }
+    } catch {
+      continue
+    }
+    return { kind: 'tcp', url: env[key] }
+  }
+  return null
+}
+
+const STORE = findStore()
 const KEY = {
   count: 'summit:count',
   pulled: 'summit:pulled',
@@ -21,11 +54,12 @@ const KEEP = 500 // notes kept in all; the board shows the newest
 
 export class Limited extends Error {}
 
-// ---------------------------------------------------------------- Redis over REST
-async function pipeline(cmds) {
-  const res = await fetch(`${URL.replace(/\/$/, '')}/pipeline`, {
+// ---------------------------------------------------------------- Redis, over REST or a connection
+// Commands are sent in a batch and their replies come back in order.
+async function overRest(cmds) {
+  const res = await fetch(`${STORE.url.replace(/\/$/, '')}/pipeline`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${STORE.token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(cmds),
     cache: 'no-store',
   })
@@ -36,6 +70,36 @@ async function pipeline(cmds) {
     return r.result
   })
 }
+
+// one connection per server instance, opened on first use (and again after a failure)
+let connection = null
+function connect() {
+  if (!connection) {
+    connection = import('redis')
+      .then(async ({ createClient }) => {
+        const client = createClient({ url: STORE.url, socket: { connectTimeout: 5000, reconnectStrategy: (tries) => (tries > 3 ? false : 300) } })
+        // a command that fails says so itself; a dropped connection is reopened next time
+        client.on('error', () => {})
+        client.on('end', () => {
+          connection = null
+        })
+        await client.connect()
+        return client
+      })
+      .catch((err) => {
+        connection = null
+        throw err
+      })
+  }
+  return connection
+}
+async function overConnection(cmds) {
+  const client = await connect()
+  // sent together: the client pipelines commands issued in the same moment
+  return Promise.all(cmds.map((c) => client.sendCommand(c.map(String))))
+}
+
+const pipeline = (cmds) => (STORE.kind === 'rest' ? overRest(cmds) : overConnection(cmds))
 
 // claim the visitor's place and count them, in one step (atomic in Redis)
 const PULL = `
@@ -133,10 +197,10 @@ const memory = {
 
 /** The register's store, or null when none is connected (the live site without Redis). */
 export function summitStore() {
-  if (URL && TOKEN) return redis
+  if (STORE) return redis
   if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === 'preview') return memory
   return null
 }
 
 /** Whether the register is only kept in memory (a sketch: it forgets). */
-export const summitIsSketch = () => !(URL && TOKEN)
+export const summitIsSketch = () => !STORE

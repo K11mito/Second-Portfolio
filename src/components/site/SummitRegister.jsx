@@ -1,14 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { Caveat } from 'next/font/google'
+import localFont from 'next/font/local'
 import { closeDestination, useJourney } from '@/lib/journey'
 import { NOTE, NOTES_PER_DAY } from '@/lib/summitRules'
 import { loadRegister, pinNote, pullLever, register, setLever, useRegister } from '@/lib/summitClient'
 import { scrollState } from '@/lib/scroll'
 
-// the notes are handwritten (loaded only once the board is on screen)
-const hand = Caveat({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-hand', display: 'swap', preload: false })
+// The notes are handwritten (Caveat, kept with the site so a build never
+// waits on a font service; loaded only once the board is on screen)
+const hand = localFont({ src: '../../app/fonts/caveat-latin.woff2', weight: '400 700', variable: '--font-hand', display: 'swap', preload: false })
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
 const easeIn = (x) => x * x * x
