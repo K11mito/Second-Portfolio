@@ -6,6 +6,7 @@ import * as THREE from 'three'
 import { env, TERRAIN } from './env'
 import { getNoiseTexture } from './noiseTexture'
 import { makeHeightTexture } from './Terrain'
+import { getHeights } from './terrainData'
 
 // A sea of clouds filling the valleys below the summits. Three stacked noise
 // layers give it parallax and depth; each one parts around terrain that pokes
@@ -112,7 +113,7 @@ export default function CloudSea() {
   const group = useRef()
 
   const materials = useMemo(() => {
-    const heightTex = makeHeightTexture(new Uint16Array(buffer))
+    const heightTex = makeHeightTexture(getHeights(buffer))
     const shared = {
       uNoise: { value: getNoiseTexture() },
       uHeight: { value: heightTex },

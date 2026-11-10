@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { experience } from '@/content/site'
 import { scrollState } from '@/lib/scroll'
-import { ringTurn } from '@/lib/ring'
+import { closeDestination, journey, useJourney } from '@/lib/journey'
 import Ornament from './Ornament'
 import {
   bringToFront,
@@ -15,7 +15,6 @@ import {
   nudge,
   onWheel,
   setCount,
-  setTurn,
   stepBy,
   turnBy,
   update,
@@ -28,8 +27,9 @@ const pad = (n) => String(n).padStart(2, '0')
 // The ring widens with the number of cards so neighbours keep the spacing they
 // had at five, rather than crowding into each other.
 const RK = Math.sin(Math.PI / 5) / Math.sin(Math.PI / Math.max(3, N))
-// How far you scroll (in screen heights) while the cards come out of the wheel.
-const EMERGE = 0.7
+// After the hall's lamps come up, the cards take this long (seconds) to come out of the wheel.
+const DELAY = 0.45
+const OUT = 1.7
 const PERSPECTIVE = 1800 // as on .exp-viewport
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
@@ -68,16 +68,19 @@ function TurnIcon() {
   )
 }
 
-// The experience cards ride a drum in front of the monastery's prayer wheel.
-// As the hall is revealed the stage is already in place, and scrolling on draws
-// the cards out of the wheel itself: they unspool from the drum's axis as it
-// turns, grow and settle into a ring, and the heading arrives with them. Then
-// you turn it by hand, as you would a real one: drag or swipe it (it spins on
-// with some weight and settles facing a card), use the arrows or arrow keys, or
-// click a card at the side. Cards are real HTML (crisp, readable by screen
-// readers), arranged with CSS 3D; without JavaScript they fall back to a
-// swipeable list. `?wheel=scroll` restores the old scroll-driven turning.
+// The prayer-wheel temple, the mountain's second destination. The experience
+// cards ride a drum in front of the hall's great prayer wheel: when you arrive
+// (the camera flies to the temple, through the cloud, and the lamps come up)
+// they unspool from the drum's axis as it turns, grow and settle into a ring,
+// and the heading arrives with them. Then you turn it by hand, as you would a
+// real one: drag or swipe it (it spins on with some weight and settles facing a
+// card), use the arrows or arrow keys, or click a card at the side. Cards are
+// real HTML (crisp, readable by screen readers), arranged with CSS 3D, over the
+// page while you are at the temple; without JavaScript they are a plain
+// swipeable list at the foot of the page.
 export default function Experience() {
+  const j = useJourney()
+  const open = j.to === 'temple' && (j.state === 'inside' || j.state === 'leaving')
   const section = useRef(null)
   const viewport = useRef(null)
   const ring = useRef(null)
@@ -92,10 +95,7 @@ export default function Experience() {
     const vp = viewport.current
     const sec = section.current
     if (!vp || !sec) return
-    const query = new URLSearchParams(window.location.search)
-    const scrollMode = query.get('wheel') === 'scroll'
-    sec.dataset.mode = scrollMode ? 'scroll' : 'hand'
-    if (query.has('debug')) window.__wheel = wheel
+    if (new URLSearchParams(window.location.search).has('debug')) window.__wheel = wheel
     setCount(N)
     if (window.matchMedia('(pointer: coarse)').matches && hintLabel.current) hintLabel.current.textContent = 'Swipe to turn'
 
@@ -152,25 +152,21 @@ export default function Experience() {
     // keeps the same spot of it under your finger, like a real drum.
     const pxPerCard = () => geo.r * ((2 * Math.PI) / N)
 
-    // How far the cards have come out of the wheel: 0 still inside it (the
-    // stage pins as the hall is revealed), 1 in their ring.
+    // How far the cards have come out of the wheel: 0 still inside it, 1 in
+    // their ring. They come out once you are inside, and stay out as you leave.
     const emergence = () => {
-      const s = scrollState.sections.experience
-      if (!scrollState.measured || !s) return 0
-      return clamp01((scrollState.y - s.top) / (EMERGE * scrollState.vh))
+      if (journey.to !== 'temple') return 0
+      if (journey.state === 'leaving') return 1
+      if (journey.state !== 'inside') return 0
+      if (scrollState.reducedMotion) return 1
+      return clamp01(((performance.now() - journey.since) / 1000 - DELAY) / OUT)
     }
 
-    const inView = () => {
-      const s = scrollState.sections.experience
-      if (!s) return false
-      const y = scrollState.y
-      return emergence() > 0.9 && y <= s.top + s.height - scrollState.vh * 0.65
-    }
+    const inView = () => journey.state === 'inside' && journey.to === 'temple' && emergence() > 0.9
 
     // ---- drag and swipe
     let drag = null
     const onDown = (e) => {
-      if (scrollMode) return
       if (e.pointerType === 'mouse' && e.button !== 0) return
       if (e.target.closest('button, a')) return
       if (drag?.started) {
@@ -251,7 +247,6 @@ export default function Experience() {
     // ---- trackpads: a two-finger sideways swipe turns it (vertical still scrolls)
     let wheelTimer = 0
     const onWheelEvent = (e) => {
-      if (scrollMode) return
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1
       const dx = e.deltaX * unit
       const dy = e.deltaY * unit
@@ -268,7 +263,7 @@ export default function Experience() {
 
     // ---- arrow keys, whenever the wheel is on screen
     const onKey = (e) => {
-      if (scrollMode || e.defaultPrevented || e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) return
+      if (e.defaultPrevented || e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) return
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
       if (e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return
       if (!inView()) return
@@ -370,25 +365,17 @@ export default function Experience() {
       const e = emergence()
       // as they come out the drum unspools them: a little extra turn, gone once they're out
       wheel.spin = scrollState.reducedMotion ? 0 : -(1 - easeOut(e, 4)) * 1.4
-      if (scrollMode) {
-        const s = scrollState.sections.experience
-        if (scrollState.measured && s) {
-          const span = Math.max(1, s.height - scrollState.vh * (1 + EMERGE))
-          setTurn(ringTurn(clamp01((scrollState.y - s.top - EMERGE * scrollState.vh) / span), N))
-        }
-      } else {
-        update(dt)
-        // the first time you arrive, the drum gives a small swing: "this turns"
-        if (!wheel.touched && nudges < 2 && !scrollState.reducedMotion) {
-          if (inView()) {
-            seenAt = seenAt || now
-            if (now - seenAt > (nudges === 0 ? 1100 : 7000)) {
-              nudge()
-              nudges++
-              seenAt = now
-            }
-          } else seenAt = 0
-        }
+      update(dt)
+      // the first time you arrive, the drum gives a small swing: "this turns"
+      if (!wheel.touched && nudges < 2 && !scrollState.reducedMotion) {
+        if (inView()) {
+          seenAt = seenAt || now
+          if (now - seenAt > (nudges === 0 ? 1100 : 7000)) {
+            nudge()
+            nudges++
+            seenAt = now
+          }
+        } else seenAt = 0
       }
       // redraw when the drum turns or the cards move (and every frame while
       // they're coming out, as they track the drum through the camera's drift)
@@ -421,17 +408,24 @@ export default function Experience() {
   return (
     <section
       ref={section}
-      data-scene="experience"
+      id="experience"
       className="exp relative"
+      data-open={open ? 'true' : 'false'}
+      data-leaving={open && j.state === 'leaving' ? 'true' : 'false'}
       style={{ '--n': N, '--rk': RK.toFixed(4) }}
       aria-labelledby="experience-title"
     >
-      {/* links to #experience land with the cards already out of the wheel */}
-      <span id="experience" className="exp-anchor" aria-hidden="true" />
       <div className="exp-stage">
+        <button type="button" className="journey-back" onClick={closeDestination}>
+          <span aria-hidden="true">←</span>
+          The mountain
+        </button>
         <header className="shell exp-header">
           <p className="eyebrow text-snow/70">
-            <span className="text-snow">03</span> — Experience
+            <span className="tib" lang="bo" aria-hidden="true">
+              མ་ཎི་འཁོར་ལོ།
+            </span>{' '}
+            Experience · the prayer wheel
           </p>
           <h2 id="experience-title" className="title mt-5 text-[clamp(2.5rem,min(5.6vw,9.5vh),5.25rem)] text-snow">
             Some stuff I&rsquo;ve <em className="italic">done</em>

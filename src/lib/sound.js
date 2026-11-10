@@ -2,13 +2,14 @@
 
 // Optional ambient sound, synthesised with the Web Audio API (nothing to
 // download). Off by default; started only by an explicit click.
-//  - on the mountain: gusting wind that eases as you descend, swells as you sink
-//    into the cloud sea, and hushes in the white-out
-//  - in the monastery: a low drone, a singing bowl each time the prayer wheel
-//    comes to rest on a new card, and the little bell on its frame, struck
-//    once per revolution, as on a real wheel
+//  - on the mountain: gusting wind that eases as you come down from the summit,
+//    rushes as you fly through the cloud to the temple, and hushes at a door
+//  - at a destination: a low drone; in the temple, a singing bowl each time the
+//    prayer wheel comes to rest on a new card, and the little bell on its
+//    frame, struck once per revolution, as on a real wheel
 
-import { pinProgress, scrollState, timelinePosition } from './scroll'
+import { scrollState, timelinePosition } from './scroll'
+import { timeline } from './journey'
 import { onWheel } from './wheel'
 
 const listeners = new Set()
@@ -125,19 +126,20 @@ function tick() {
   if (!ctx || !scrollState.measured) return
   const now = ctx.currentTime
   const t = timelinePosition()
-  const p = pinProgress('interlude')
-  const inHall = t >= 3 && p >= 0.55
+  const tl = timeline()
+  const outside = tl.act === 'mountain'
 
-  // wind: strongest at the summit, gusting; swells into the cloud, hushes in the white
+  // wind: strongest at the summit, gusting; it rushes through the drift of
+  // cloud on the way to the temple, and hushes as a door's dark closes
   const gust = 0.62 + 0.38 * Math.sin(now * 0.41) * Math.sin(now * 0.17 + 1.3)
-  let w = inHall ? 0 : (1 - 0.4 * Math.min(t, 3) / 3) * 0.2 * gust
-  if (!inHall && t >= 3) w *= (1 + smooth(0, 0.35, p) * 1.3) * (1 - smooth(0.38, 0.52, p))
+  let w = outside ? (1 - 0.35 * smooth(0, 3, t)) * 0.2 * gust : 0
+  w *= (1 + tl.veil.a * tl.veil.mist * 1.3) * (1 - tl.veil.a * (1 - tl.veil.mist))
   nodes.wind.gain.setTargetAtTime(w, now, 0.25)
   nodes.rumble.gain.setTargetAtTime(w * 0.9, now, 0.4)
   nodes.windBand.frequency.setTargetAtTime(360 + gust * 460, now, 0.6)
 
-  // the hall: a low drone under everything
-  const hall = t >= 4 ? 1 : inHall ? smooth(0.78, 1, p) : 0
+  // inside a destination: a low drone under everything
+  const hall = tl.act === 'monastery' ? tl.reveal : tl.overlay === 'library' ? 1 : 0
   nodes.drone.gain.setTargetAtTime(hall * 0.07, now, 0.9)
 }
 

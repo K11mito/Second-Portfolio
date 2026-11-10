@@ -94,6 +94,23 @@ html[data-tod='night'] .scene-poster {
   }
 }
 
+/* The Tibetan cut of Jomolhari (OFL): only the few words, numerals and marks
+   the site uses (the library's, the prayer wheel's). */
+@font-face {
+  font-family: 'Jomolhari Library';
+  src: url('/fonts/jomolhari-library.woff2') format('woff2');
+  font-display: swap;
+  unicode-range: U+0F00-0FFF;
+}
+.tib {
+  font-family: 'Jomolhari Library', 'Noto Serif Tibetan', 'Microsoft Himalaya', serif;
+  font-size: 1.3em;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgb(var(--saffron));
+}
+
 /* Lenis (smooth wheel scrolling) */
 html.lenis,
 html.lenis body {
@@ -283,15 +300,324 @@ html.lenis body {
   position: fixed;
 }
 
-/* The descent is only tall when there is a scene to descend through. */
-.js .interlude {
-  height: 270vh;
+/* ------------------------------------------------------------------ where to now? */
+/* The view of the destinations holds still (pinned) for half a screen of
+   scroll while you choose. Their signs ride the live scene: three/Gompas pins
+   each one over its monastery's roof every frame. Without the scene (or
+   without JavaScript) they are two plain links under the type. */
+.dest-stage {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: clamp(2.5rem, 8vh, 5rem);
 }
-.js .interlude-stage {
+.js .dest {
+  height: 150svh;
+}
+.js .dest-stage {
   position: sticky;
   top: 0;
   height: 100svh;
-  padding-block: 0;
+  min-height: 0;
+}
+/* the low shade the type stands on, as at the summit. With JS it is pinned to
+   the screen and fades in and out with the view (see Atmosphere), so its dark
+   foot never slides across the screen as a hard edge. */
+.js .dest-shade {
+  position: fixed;
+  opacity: 0;
+  visibility: hidden;
+}
+.dest-shade {
+  background:
+    linear-gradient(to top, rgb(5 9 22 / 0.58) 0%, rgb(5 9 22 / 0.24) 30%, transparent 52%),
+    radial-gradient(70% 50% at 8% 88%, rgb(5 9 22 / 0.38), transparent 70%);
+}
+
+.dest-list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-inline: var(--gutter);
+}
+.dest-marker {
+  display: flex;
+  color: rgb(var(--snow));
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.dest-marker:focus-visible {
+  outline: none;
+}
+.dest-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.45rem 1.1rem 0.45rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(var(--saffron) / 0.22);
+}
+.dest-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  border-radius: 999px;
+  color: rgb(var(--saffron));
+  background: radial-gradient(circle at 50% 35%, rgb(40 26 16 / 0.82), rgb(14 10 9 / 0.86));
+  border: 1px solid rgb(var(--saffron) / 0.55);
+  box-shadow:
+    0 0 0 4px rgb(var(--saffron) / 0.1),
+    0 10px 30px -10px rgb(0 0 0 / 0.75);
+  transition:
+    transform 0.5s var(--ease-out),
+    border-color 0.4s var(--ease-out),
+    box-shadow 0.5s var(--ease-out);
+}
+.dest-pin svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+.dest-marker:hover .dest-pin,
+.dest-marker:focus-visible .dest-pin {
+  transform: scale(1.08);
+  border-color: rgb(var(--saffron));
+  box-shadow:
+    0 0 0 5px rgb(var(--saffron) / 0.18),
+    0 0 34px 2px rgb(var(--saffron) / 0.45),
+    0 10px 30px -10px rgb(0 0 0 / 0.75);
+}
+.dest-marker:focus-visible .dest-pin {
+  outline: 2px solid rgb(var(--saffron));
+  outline-offset: 5px;
+}
+.dest-label {
+  display: grid;
+  gap: 0.18rem;
+  white-space: nowrap;
+  text-shadow: 0 1px 14px rgb(4 8 20 / 0.85), 0 0 2px rgb(4 8 20 / 0.6);
+}
+.dest-kind {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgb(var(--saffron));
+}
+.dest-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.4rem;
+  line-height: 1.05;
+}
+.dest-note {
+  font-size: 0.75rem;
+  color: rgb(var(--snow) / 0.7);
+}
+.dest-stem {
+  display: none;
+}
+
+/* Live: each sign floats over its monastery, on a thread of light down to the roof */
+html[data-webgl='yes'] .dest-list {
+  position: static;
+  margin: 0;
+  padding: 0;
+}
+html[data-webgl='yes'] .dest-marker {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  opacity: var(--o, 0);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+html[data-webgl='yes'] .dest-marker[data-on='true'],
+html[data-webgl='yes'] .dest-marker:focus-visible {
+  pointer-events: auto;
+}
+html[data-webgl='yes'] .dest-marker:focus-visible {
+  opacity: max(var(--o, 0), 0.92);
+}
+html[data-webgl='yes'] .dest-inner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  transform: translateX(-50%);
+  animation: dest-bob 4.6s ease-in-out infinite;
+}
+html[data-webgl='yes'] .dest-marker[data-dest='temple'] .dest-inner {
+  animation-delay: -2.1s;
+}
+html[data-webgl='yes'] .dest-stem {
+  display: block;
+  width: 1px;
+  height: clamp(1.6rem, 4vh, 2.6rem);
+  background: linear-gradient(to bottom, rgb(var(--saffron) / 0.8), rgb(var(--saffron) / 0));
+}
+html[data-webgl='yes'] .dest-label {
+  position: absolute;
+  top: 1.375rem;
+  left: calc(100% + 0.6rem);
+  transform: translateY(-50%);
+  padding: 0.5rem 0.9rem 0.55rem;
+  border-radius: 0.85rem;
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(var(--saffron) / 0.22);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 14px 34px -18px rgb(0 0 0 / 0.85);
+  text-shadow: none;
+  transition:
+    border-color 0.4s var(--ease-out),
+    background-color 0.4s var(--ease-out);
+}
+html[data-webgl='yes'] .dest-marker[data-side='left'] .dest-label {
+  left: auto;
+  right: calc(100% + 0.6rem);
+  text-align: right;
+}
+html[data-webgl='yes'] .dest-marker:hover .dest-label,
+html[data-webgl='yes'] .dest-marker:focus-visible .dest-label {
+  border-color: rgb(var(--saffron) / 0.55);
+  background: rgb(22 15 11 / 0.72);
+}
+/* a slow ripple: these can be visited */
+html[data-webgl='yes'] .dest-pin::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgb(var(--saffron) / 0.7);
+  animation: dest-ripple 3.2s var(--ease-out) infinite;
+  pointer-events: none;
+}
+html[data-webgl='yes'] .dest-marker[data-dest='temple'] .dest-pin::after {
+  animation-delay: -1.6s;
+}
+@keyframes dest-bob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -5px);
+  }
+}
+@keyframes dest-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+@media (max-width: 767px) {
+  .dest-pin {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+  .dest-pin svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .dest-title {
+    font-size: 1.15rem;
+  }
+  .dest-note {
+    display: none;
+  }
+  html[data-webgl='yes'] .dest-label {
+    top: 1.2rem;
+    left: calc(100% + 0.45rem);
+    padding: 0.4rem 0.7rem 0.45rem;
+  }
+  html[data-webgl='yes'] .dest-marker[data-side='left'] .dest-label {
+    right: calc(100% + 0.45rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-webgl='yes'] .dest-inner,
+  html[data-webgl='yes'] .dest-pin::after {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ journeys */
+/* Away at a destination, the page steps back behind it (see Journey.jsx) */
+main,
+body > header,
+footer {
+  transition: opacity 0.5s var(--ease-out);
+}
+html[data-journey='away'] main,
+html[data-journey='away'] body > header,
+html[data-journey='away'] footer {
+  opacity: 0;
+}
+/* the library, opened over the mountain */
+.journey-library {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  animation: journey-in 0.7s var(--ease-out) both;
+}
+.journey-library[data-closing='true'] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-out);
+}
+@keyframes journey-in {
+  from {
+    opacity: 0;
+  }
+}
+/* the way back out, at a destination's top left */
+.journey-back {
+  display: none;
+}
+.js .journey-back {
+  position: absolute;
+  z-index: 4;
+  top: calc(env(safe-area-inset-top, 0px) + clamp(14px, 2.8vh, 26px));
+  left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin: -0.5em;
+  padding: 0.5em;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(var(--snow) / 0.66);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.js .journey-back:hover {
+  color: rgb(var(--snow));
 }
 
 /* ------------------------------------------------------------------ experience ring */
@@ -319,29 +645,30 @@ html.lenis body {
   display: none;
 }
 
-/* Enhanced. The stage overlaps the end of the descent by one screen, so it is
-   already pinned in place the moment the hall is revealed; then 70vh of scroll
-   draw the cards out of the wheel, and it holds while you turn it by hand. */
+/* Enhanced: the temple opens over the page when you arrive (see Journey.jsx),
+   the hall's prayer wheel turning behind its ring of cards. */
 .js .exp {
-  margin-top: -100svh;
-  height: calc(100svh + 70vh + 45vh);
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.45s var(--ease-out),
+    visibility 0s linear 0.45s;
 }
-/* ?wheel=scroll: the old scroll-driven turning, kept for comparison */
-.js .exp[data-mode='scroll'] {
-  height: calc(100svh + 70vh + var(--n) * 72vh);
+.js .exp[data-open='true'] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.45s var(--ease-out);
 }
-/* where links to #experience land: with the cards already out */
-.exp-anchor {
-  position: absolute;
-  top: 0;
-}
-.js .exp-anchor {
-  top: 70vh;
+.js .exp[data-leaving='true'] {
+  opacity: 0;
+  pointer-events: none;
 }
 .js .exp-stage {
-  position: sticky;
-  top: 0;
-  height: 100svh;
+  position: absolute;
+  inset: 0;
   padding: 0;
   overflow: hidden;
 }
@@ -414,10 +741,6 @@ html.lenis body {
 .js .exp-viewport[data-dragging='true'] {
   cursor: grabbing;
 }
-.js .exp[data-mode='scroll'] .exp-viewport {
-  cursor: auto;
-  touch-action: auto;
-}
 .js .exp-ring {
   position: relative;
   display: block;
@@ -478,9 +801,6 @@ html.lenis body {
 }
 .js .exp-arrow--next {
   right: max(0.5rem, calc(50% - var(--cw) * 0.5 - 4.25rem));
-}
-.js .exp[data-mode='scroll'] .exp-arrow {
-  display: none;
 }
 /* From tablets up the ring sits in the middle of the screen, around the drum,
    or just below the heading where that reaches across it (Experience.jsx

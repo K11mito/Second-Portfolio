@@ -5,6 +5,7 @@ import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { env, TERRAIN } from './env'
 import { getNoiseTexture } from './noiseTexture'
+import { getHeights, PINNACLE } from './terrainData'
 
 // The mountain is rebuilt at runtime from a 16-bit heightmap baked out of the
 // original Sketchfab model (21 MB of faceted, unwelded triangles -> 256 KB).
@@ -227,6 +228,59 @@ export function makeHeightTexture(heights) {
   return tex
 }
 
+// The snow mask was baked for the mountain alone. Paint the temple's peak into
+// a copy of it: dark rock ribs with snow lying in the couloirs between them,
+// running down from a white cap, the way the big faces read.
+function paintPinnacle(mask) {
+  const img = mask.image
+  if (!img || !img.width) return mask
+  const c = document.createElement('canvas')
+  c.width = img.width
+  c.height = img.height
+  const x = c.getContext('2d')
+  x.drawImage(img, 0, 0)
+  const W = c.width
+  const px = ((PINNACLE.x + SIZE / 2) / SIZE) * W
+  const py = ((PINNACLE.z + SIZE / 2) / SIZE) * W
+  const R = (110 / SIZE) * W
+  let seed = 7
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  const g = x.createRadialGradient(px, py, R * 0.12, px, py, R)
+  g.addColorStop(0, 'rgba(60,60,60,0.8)')
+  g.addColorStop(0.65, 'rgba(60,60,60,0.62)')
+  g.addColorStop(1, 'rgba(60,60,60,0)')
+  x.fillStyle = g
+  x.beginPath()
+  x.arc(px, py, R, 0, Math.PI * 2)
+  x.fill()
+  x.lineCap = 'round'
+  for (let i = 0; i < 46; i++) {
+    const a = (i / 46) * Math.PI * 2 + (r() - 0.5) * 0.12
+    const r0 = R * (0.14 + r() * 0.12)
+    const r1 = R * (0.45 + r() * 0.5)
+    const bend = (r() - 0.5) * 0.25
+    x.strokeStyle = `rgba(236,236,236,${0.45 + r() * 0.45})`
+    x.lineWidth = 0.8 + r() * 2.6
+    x.beginPath()
+    x.moveTo(px + Math.cos(a) * r0, py + Math.sin(a) * r0)
+    x.quadraticCurveTo(px + Math.cos(a + bend) * (r0 + r1) * 0.5, py + Math.sin(a + bend) * (r0 + r1) * 0.5, px + Math.cos(a + bend * 1.6) * r1, py + Math.sin(a + bend * 1.6) * r1)
+    x.stroke()
+  }
+  const cap = x.createRadialGradient(px, py, 0, px, py, R * 0.2)
+  cap.addColorStop(0, 'rgba(240,240,240,0.9)')
+  cap.addColorStop(1, 'rgba(240,240,240,0)')
+  x.fillStyle = cap
+  x.beginPath()
+  x.arc(px, py, R * 0.2, 0, Math.PI * 2)
+  x.fill()
+  const t = new THREE.CanvasTexture(c)
+  t.flipY = false
+  t.colorSpace = THREE.NoColorSpace
+  t.anisotropy = mask.anisotropy
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping
+  return t
+}
+
 // Shared uniforms so the Director can retint rock/snow/haze as the light changes.
 export const terrainUniforms = {
   uRockDark: { value: new THREE.Color('#3b3029') },
@@ -258,7 +312,7 @@ export default function Terrain() {
   const group = useRef()
 
   const { geo, low, shadowGeo, mat } = useMemo(() => {
-    const heights = new Uint16Array(buffer)
+    const heights = getHeights(buffer)
     mask.flipY = false
     mask.colorSpace = THREE.NoColorSpace
     mask.anisotropy = 8
@@ -269,7 +323,7 @@ export default function Terrain() {
       low: buildGeometry(heights, 4),
       // a quarter of the triangles, used only to cast the sun's shadows
       shadowGeo: buildGeometry(heights, 2),
-      mat: makeTerrainMaterial(mask, terrainUniforms),
+      mat: makeTerrainMaterial(paintPinnacle(mask), terrainUniforms),
     }
   }, [buffer, mask])
 
