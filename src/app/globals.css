@@ -1358,6 +1358,329 @@ button.board-toggle {
   column-gap: 0.75rem;
 }
 
+/* With the scene, the board stands in it, off to the right of the register
+   (three/summitBoard): a way over to it from the register, and once there the
+   notes to click (hit areas the scene keeps over them), a dock to write one or
+   see them all, and the list itself only when asked for. */
+.summit-panel {
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.6s var(--ease-out),
+    visibility 0s linear 0s;
+}
+.summit-lever {
+  transition: opacity 0.4s var(--ease-out);
+}
+.summit[data-view='board'] .summit-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-1.25rem, 0, 0);
+  transition:
+    opacity 0.4s var(--ease-out),
+    transform 0.5s var(--ease-out),
+    visibility 0s linear 0.5s;
+}
+.summit[data-view='board'] .summit-lever {
+  opacity: 0;
+  pointer-events: none;
+}
+html:not([data-webgl='yes']) .summit-to-board,
+html:not([data-webgl='yes']) .board-dock,
+html:not([data-webgl='yes']) .board-hits,
+html:not([data-webgl='yes']) .board-close {
+  display: none;
+}
+.board-hits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.board-hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.board-hit:not([data-placed]) {
+  display: none;
+}
+.js .summit .board-hit {
+  pointer-events: auto;
+}
+.board-hit:focus-visible {
+  outline: 2px solid rgb(var(--saffron));
+  outline-offset: 5px;
+}
+.summit-to-board {
+  position: absolute;
+  z-index: 2;
+  right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  bottom: max(1.75rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 1.1rem;
+  row-gap: 0.25rem;
+  padding: 0.85rem 1.1rem 0.85rem 1.35rem;
+  text-align: left;
+  color: rgb(var(--snow));
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(255 236 210 / 0.14);
+  border-radius: 1rem;
+  box-shadow: 0 24px 50px -24px rgb(0 0 0 / 0.8);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.5s var(--ease-out),
+    border-color 0.3s,
+    visibility 0s linear 0s;
+}
+.js .summit .summit-to-board,
+.js .summit .board-dock {
+  pointer-events: auto;
+}
+.js .summit:not([data-view='board']) .board-dock {
+  pointer-events: none;
+}
+.summit-to-board-label {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.summit-to-board-sub {
+  grid-row: 2;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--snow) / 0.58);
+}
+.summit-to-board-arrow {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  color: #1b1208;
+  background: rgb(var(--saffron));
+  transition: transform 0.4s var(--ease-out);
+}
+.summit-to-board:hover {
+  border-color: rgb(var(--saffron) / 0.5);
+}
+.summit-to-board:hover .summit-to-board-arrow {
+  transform: translateX(3px);
+}
+.summit-to-board:focus-visible {
+  outline: 2px solid rgb(var(--saffron));
+  outline-offset: 3px;
+}
+.summit[data-view='board'] .summit-to-board {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(1rem, 0, 0);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    visibility 0s linear 0.4s;
+}
+.board-dock {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: max(1.75rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: 0.45rem 0.45rem 0.45rem 1.25rem;
+  background: rgb(16 12 10 / 0.6);
+  border: 1px solid rgb(255 236 210 / 0.14);
+  border-radius: 999px;
+  box-shadow: 0 24px 50px -24px rgb(0 0 0 / 0.8);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transform: translate3d(-50%, 0, 0);
+  transition:
+    opacity 0.6s var(--ease-out) 0.5s,
+    transform 0.7s var(--ease-out) 0.5s,
+    visibility 0s linear 0s;
+}
+.summit:not([data-view='board']) .board-dock {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-50%, 1rem, 0);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+.board-dock-hint {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(var(--snow) / 0.7);
+}
+/* (on a phone: the hint above, the buttons below) */
+.summit[data-sheet='true'] .board-dock {
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 0.6rem 0.6rem;
+  border-radius: 1.4rem;
+}
+.board-dock-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.board-all {
+  padding: 0.62rem 1.05rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(var(--snow));
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid rgb(255 236 210 / 0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.board-all:hover {
+  border-color: rgb(var(--saffron) / 0.55);
+}
+.board-all:focus-visible {
+  outline: 2px solid rgb(var(--saffron));
+  outline-offset: 3px;
+}
+.board-close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  padding: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: rgb(var(--snow) / 0.8);
+  background: rgb(255 255 255 / 0.06);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.board-close:hover {
+  color: rgb(var(--snow));
+  background: rgb(255 255 255 / 0.12);
+}
+.board-close:focus-visible {
+  outline: 2px solid rgb(var(--saffron));
+  outline-offset: 2px;
+}
+/* the list of every note: only when asked for (it slides in over the scene) */
+html[data-webgl='yes'] .summit-board {
+  transition:
+    opacity 0.45s var(--ease-out),
+    transform 0.55s var(--ease-out),
+    visibility 0s linear 0s;
+}
+html[data-webgl='yes'] .summit:not([data-expanded='true']) .summit-board {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(1.5rem, 0, 0);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    visibility 0s linear 0.4s;
+}
+html[data-webgl='yes'] .summit[data-sheet='true'] .summit-board {
+  --peek: 0px;
+}
+html[data-webgl='yes'] .summit[data-sheet='true']:not([data-expanded='true']) .summit-board {
+  opacity: 1;
+  transform: translate3d(0, 100%, 0);
+}
+html[data-webgl='yes'] .summit-board .board-write-list {
+  margin-left: auto;
+}
+/* (on a phone, the way to the board sits at the foot of the screen, in the middle) */
+.summit[data-sheet='true'] .summit-to-board {
+  right: 50%;
+  transform: translate3d(50%, 0, 0);
+}
+.summit[data-sheet='true'][data-view='board'] .summit-to-board {
+  transform: translate3d(50%, 1rem, 0);
+}
+
+/* a note from the board, held up to read */
+.read-slip {
+  padding: 2.4rem 1.7rem 1.3rem;
+}
+.read-slip[data-paper='1'] {
+  background-color: #f8f6ef;
+  background-image: repeating-linear-gradient(180deg, transparent 0 2.3rem, rgb(70 110 170 / 0.2) 2.3rem calc(2.3rem + 1px));
+  background-position: 0 1.6rem;
+}
+.read-slip[data-paper='2'] {
+  background-color: #f2df98;
+}
+.read-slip[data-paper='3'] {
+  background-color: #dcc5a0;
+}
+.read-text {
+  font-family: var(--font-hand), 'Segoe Print', 'Bradley Hand', cursive;
+  font-size: clamp(1.7rem, 6vw, 2.1rem);
+  font-weight: 500;
+  line-height: 2.3rem;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+.read-sign {
+  margin-top: 1rem;
+  font-family: var(--font-hand), 'Segoe Print', 'Bradley Hand', cursive;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #5d4d3d;
+  overflow-wrap: anywhere;
+}
+.read-date {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a7a68;
+}
+.read-actions {
+  justify-content: space-between;
+}
+.read-step {
+  display: flex;
+  gap: 0.25rem;
+}
+.read-step .slip-cancel {
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+.read-actions .slip-pin {
+  margin-left: auto;
+}
+
 /* the slip of paper you write a note on */
 .slip-dialog {
   pointer-events: auto;

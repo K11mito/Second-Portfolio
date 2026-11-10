@@ -15,7 +15,10 @@ export const register = {
   number: null, // this visitor's place, once counted
   notes: [],
   lever: 0, // 0 at rest, 1 pulled all the way (the 3D lever follows it)
-  els: {}, // page elements the scene positions (the lever's handle)
+  view: 'register', // where you stand up there: at the register, or at the board
+  fresh: null, // the note just pinned (the board in 3D brings it in)
+  hover: null, // the note the pointer is over, on the board (it lifts a little off its tack)
+  els: { notes: {} }, // page elements the scene positions (the lever's handle, a hit area for each note)
   version: 0,
 }
 
@@ -77,7 +80,7 @@ export async function pullLever() {
 export async function pinNote({ text, name, from, website }) {
   if (!register.open) return { error: 'closed' }
   const out = await send('/api/summit/notes', { text, name, from, website })
-  if (out.note) emit({ notes: [out.note, ...register.notes.filter((n) => n.id !== out.note.id)] })
+  if (out.note) emit({ fresh: out.note.id, notes: [out.note, ...register.notes.filter((n) => n.id !== out.note.id)] })
   return out
 }
 
@@ -85,3 +88,8 @@ export async function pinNote({ text, name, from, website }) {
 export const setLever = (p) => {
   register.lever = p
 }
+
+/** Stand at the register, or at the board ('register' | 'board'). */
+export const setView = (view) => register.view !== view && emit({ view })
+/** The board's notes in 3D: how many it has room for (the newest). */
+export const ON_BOARD = 12

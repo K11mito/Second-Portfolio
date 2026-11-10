@@ -61,6 +61,7 @@ src/components/three/    the WebGL scene
   Gompas.jsx             puts them on the mountain, lights their lamps, pins the signs
   terrainData.js         the shared heightmap, with the temple's peak raised in it
   Summit.jsx, summitKit.js  the register on the top, its cairn, flags and butter lamp
+  summitBoard.js         the board of notes there: planks under a snowy roof, a lantern, a khata
   skyLight.js            sun altitude -> light, sky, fog and cloud colour
   Terrain.jsx            mountain rebuilt from a heightmap, snow shader, AO
   CloudSea.jsx           three noise layers that part around the peaks
@@ -98,9 +99,13 @@ src/components/three/    the WebGL scene
   real summits, with a lever on its side, beside a cairn flying prayer flags
   (and, after dark, a butter lamp to read it by). Drag the lever down, or
   press "Pull the lever": it counts each visitor once (by a cookie), and its
-  number wheels roll up. Beside it is a board of notes: write one on a slip of
-  paper and pin it up. Notes go up as written, as plain text, a few a day per
-  visitor and per network, and can be taken down at `/summit/admin`.
+  number wheels roll up. Beside it stands a notice board under a snowy roof,
+  with a lantern under the eave and a khata knotted round a post: walk over
+  and the notes are pinned to it, each in its writer's hand, lifting in the
+  wind; click one to read it. Write one on a slip of paper and it is carried
+  over and pressed onto a tack. Notes go up as written, as plain text, a few a
+  day per visitor and per network, and can be taken down at `/summit/admin`.
+  Without WebGL the board is a list on the page.
 - **Monasteries built in code.** `gompa.js` assembles them from the real
   vocabulary: battered whitewashed walls on foundations that step down to the
   rock, the maroon pembé frieze with gilded discs, black trapezoid windows,

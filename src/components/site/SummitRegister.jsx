@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import localFont from 'next/font/local'
 import { closeDestination, useJourney } from '@/lib/journey'
 import { NOTE, NOTES_PER_DAY } from '@/lib/summitRules'
-import { loadRegister, pinNote, pullLever, register, setLever, useRegister } from '@/lib/summitClient'
+import { ON_BOARD, loadRegister, pinNote, pullLever, register, setLever, setView, useRegister } from '@/lib/summitClient'
 import { scrollState } from '@/lib/scroll'
 
 // The notes are handwritten (Caveat, kept with the site so a build never
@@ -42,6 +42,10 @@ const useSheet = () =>
     () => window.matchMedia(SHEET).matches,
     () => false
   )
+
+// the board stands in the scene (with WebGL); without it, it is the list on the page
+const in3D = () => document.documentElement.dataset.webgl === 'yes'
+const signed = (n) => `${n.name || 'a climber'}${n.from ? `, ${n.from}` : ''}`
 
 const PULLED = {
   closed: 'The register isn’t open yet. Try again soon.',
@@ -90,10 +94,13 @@ export default function SummitRegister() {
   const [pulling, setPulling] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [fresh, setFresh] = useState(null) // the note just pinned
+  const [reading, setReading] = useState(null) // the note open to read
   const anim = useRef(0)
   const busy = useRef(false)
   const drag = useRef(null)
   const dialog = useRef(null)
+  const reader = useRef(null)
+  const atBoard = open && r.view === 'board'
 
   // up there, the register is fetched fresh, and kept fresh while you stay
   useEffect(() => {
@@ -112,8 +119,23 @@ export default function SummitRegister() {
     setPulling(false)
     setExpanded(false)
     setSaid(null)
+    setView('register')
     if (dialog.current?.open) dialog.current.close()
+    if (reader.current?.open) reader.current.close()
   }, [open])
+
+  // at the board, Escape walks you back to the register (rather than down the mountain)
+  useEffect(() => {
+    if (!atBoard) return
+    const onKey = (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || dialog.current?.open || reader.current?.open) return
+      e.preventDefault()
+      if (expanded && in3D()) setExpanded(false)
+      else setView('register')
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [atBoard, expanded])
 
   // ---------------------------------------------------------------- the lever
   const swing = (to, seconds, ease) =>
@@ -207,8 +229,36 @@ export default function SummitRegister() {
     }
     setText('')
     setFresh(out.note.id)
-    setExpanded(true)
     putAway()
+    // watch it go up on the board (or, without the scene, find it at the top of the list)
+    if (in3D()) {
+      setExpanded(false)
+      setView('board')
+    } else setExpanded(true)
+  }
+
+  // ---------------------------------------------------------------- reading a note on the board
+  const read = (id) => {
+    setReading(id)
+    const d = reader.current
+    if (d && !d.open) d.showModal()
+  }
+  const putDown = () => reader.current?.close()
+  const onReaderKey = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      putDown()
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') step(e.key === 'ArrowRight' ? 1 : -1)
+  }
+  const step = (by) => {
+    const list = register.notes
+    const i = list.findIndex((n) => n.id === reading)
+    if (i < 0 || !list.length) return
+    setReading(list[(i + by + list.length) % list.length].id)
+  }
+  const shown = r.notes?.find((n) => n.id === reading)
+  const hover = (id) => {
+    register.hover = id
   }
   // Escape puts the slip away (and only the slip: the page would take you down the mountain)
   const onDialogKey = (e) => {
@@ -227,10 +277,12 @@ export default function SummitRegister() {
   let after = null
   if (said?.error) after = PULLED[said.error] || PULLED.failed
   else if (said?.again) after = 'It only counts you once. Still, nice pull.'
-  else if (said?.counted) after = `Counted. Now leave a note on the board${sheet ? ' below' : ''}.`
+  else if (said?.counted) after = `Counted. Now leave a note on the board.`
 
   const notes = r.notes || []
   const counted = !!r.number
+  const pinned = notes.slice(0, ON_BOARD)
+  const howMany = notes.length ? `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}` : 'No notes yet'
 
   return (
     <section
@@ -240,6 +292,7 @@ export default function SummitRegister() {
       data-leaving={open && j.state === 'leaving' ? 'true' : 'false'}
       data-sheet={sheet ? 'true' : 'false'}
       data-expanded={expanded ? 'true' : 'false'}
+      data-view={atBoard ? 'board' : 'register'}
       aria-labelledby="summit-title"
       data-lenis-prevent
     >
@@ -262,10 +315,64 @@ export default function SummitRegister() {
         <span className="summit-lever-tag">Pull</span>
       </div>
 
-      <button type="button" className="journey-back" onClick={closeDestination}>
-        <span aria-hidden="true">←</span>
-        The mountain
+      {atBoard ? (
+        <button type="button" className="journey-back summit-back" onClick={() => setView('register')}>
+          <span aria-hidden="true">←</span>
+          The register
+        </button>
+      ) : (
+        <button type="button" className="journey-back" onClick={closeDestination}>
+          <span aria-hidden="true">←</span>
+          The mountain
+        </button>
+      )}
+
+      {/* over each note on the board in the scene, something to click to read it (three/Summit keeps them there) */}
+      <div className="board-hits" aria-hidden={!atBoard}>
+        {pinned.map((n) => (
+          <button
+            key={n.id}
+            type="button"
+            tabIndex={atBoard ? 0 : -1}
+            className="board-hit"
+            ref={(el) => {
+              if (el) register.els.notes[n.id] = el
+              else delete register.els.notes[n.id]
+            }}
+            aria-label={`Read the note from ${signed(n)}: ${n.text}`}
+            onClick={() => (atBoard ? read(n.id) : setView('board'))}
+            onPointerEnter={() => hover(n.id)}
+            onPointerLeave={() => hover(null)}
+            onFocus={() => hover(n.id)}
+            onBlur={() => hover(null)}
+          />
+        ))}
+      </div>
+
+      {/* the way over to the board, from the register */}
+      <button type="button" className="summit-to-board" onClick={() => setView('board')} tabIndex={atBoard ? -1 : 0}>
+        <span className="summit-to-board-label">The board</span>
+        <span className="summit-to-board-sub">{howMany}</span>
+        <span aria-hidden="true" className="summit-to-board-arrow">
+          →
+        </span>
       </button>
+
+      {/* at the board */}
+      <div className="board-dock" aria-hidden={!atBoard}>
+        <p className="board-dock-hint">{pinned.length ? 'Tap a note to read it' : r.open ? 'Nothing pinned up yet' : 'The board goes up with the register'}</p>
+        <div className="board-dock-row">
+          <button type="button" className="board-write" onClick={write} disabled={!r.open} tabIndex={atBoard ? 0 : -1}>
+            <PinIcon />
+            Leave a note
+          </button>
+          {notes.length > 0 && (
+            <button type="button" className="board-all" onClick={() => setExpanded(true)} tabIndex={atBoard ? 0 : -1} aria-controls="summit-notes">
+              All {howMany}
+            </button>
+          )}
+        </div>
+      </div>
 
       <header className="summit-panel glass">
         <p className="eyebrow text-snow/70">
@@ -312,12 +419,15 @@ export default function SummitRegister() {
               <h3 id="summit-board-title" className="board-title">
                 The board
               </h3>
-              <span className="board-sub">Notes left at the top</span>
+              <span className="board-sub">Left at the top</span>
             </div>
           )}
-          <button type="button" className="board-write" onClick={write} disabled={!r.open}>
+          <button type="button" className="board-write board-write-list" onClick={write} disabled={!r.open}>
             <PinIcon />
             Leave a note
+          </button>
+          <button type="button" className="board-close" onClick={() => setExpanded(false)} aria-label="Close the list">
+            <span aria-hidden="true">×</span>
           </button>
         </div>
         <div className="board-wood" onClick={() => sheet && !expanded && setExpanded(true)}>
@@ -352,6 +462,35 @@ export default function SummitRegister() {
           )}
         </div>
       </aside>
+
+      <dialog ref={reader} className="slip-dialog read-dialog" aria-label="A note from the board" onKeyDown={onReaderKey} onClose={() => setReading(null)}>
+        {shown && (
+          <article className="slip read-slip" data-paper={shown.paper ?? 0} key={shown.id}>
+            <p className="read-text">{shown.text}</p>
+            <p className="read-sign">— {signed(shown)}</p>
+            {shown.at && (
+              <time className="read-date" dateTime={shown.at}>
+                {dated(shown.at)}
+              </time>
+            )}
+            <div className="slip-actions read-actions">
+              {notes.length > 1 && (
+                <span className="read-step">
+                  <button type="button" className="slip-cancel" onClick={() => step(-1)} aria-label="Newer note">
+                    ←
+                  </button>
+                  <button type="button" className="slip-cancel" onClick={() => step(1)} aria-label="Older note">
+                    →
+                  </button>
+                </span>
+              )}
+              <button type="button" className="slip-pin" onClick={putDown}>
+                Back to the board
+              </button>
+            </div>
+          </article>
+        )}
+      </dialog>
 
       <dialog ref={dialog} className="slip-dialog" aria-labelledby="slip-title" onKeyDown={onDialogKey} onClose={() => setProblem(null)}>
         <form className="slip" onSubmit={onSubmit} noValidate>
